@@ -1,0 +1,253 @@
+---
+title: Quickstart
+description: Build your first Shopware 6 admin app with the Meteor Admin SDK in minutes
+---
+
+# Quickstart Guide
+
+This guide will walk you through creating a basic admin app that extends the Shopware 6 Administration. You'll learn how to set up the SDK, register UI extensions, and display content in the admin interface.
+
+## What You'll Build
+
+In this tutorial, you'll create a simple admin app that:
+- Adds a custom menu item to the administration
+- Displays a card on the dashboard
+- Shows a notification when loaded
+
+<Steps>
+  <Step title="Create Your Project Structure">
+    First, create a basic HTML file for your admin app:
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>My Admin App</title>
+    </head>
+    <body>
+      <div id="app"></div>
+      <script type="module" src="./main.js"></script>
+    </body>
+    </html>
+    ```
+  </Step>
+
+  <Step title="Install the Admin SDK">
+    Install the SDK using npm:
+
+    ```bash
+    npm install @shopware-ag/meteor-admin-sdk
+    ```
+
+    Or use the CDN version by adding this script tag to your HTML:
+
+    ```html
+    <script src="https://unpkg.com/@shopware-ag/meteor-admin-sdk/cdn"></script>
+    ```
+  </Step>
+
+  <Step title="Initialize Your App">
+    Create a `main.js` file that checks the location context and initializes your app:
+
+    ```javascript
+    import { location } from '@shopware-ag/meteor-admin-sdk';
+
+    if (location.is(location.MAIN_HIDDEN)) {
+      // This runs in a hidden iframe - register your extension points
+      import('./init-app.js');
+    } else {
+      // This runs when a location is displayed - render your UI
+      import('./render-location.js');
+    }
+    ```
+
+    <Info>
+      The Admin SDK uses two types of iframes:
+      - **Main Hidden**: A hidden iframe where you register all extension points
+      - **Location iframes**: Visible iframes that render UI for specific locations
+    </Info>
+  </Step>
+
+  <Step title="Register Extension Points">
+    Create `init-app.js` to register your extension points:
+
+    ```javascript
+    import { notification, ui } from '@shopware-ag/meteor-admin-sdk';
+
+    // Add a custom menu item
+    ui.menu.addMenuItem({
+      label: 'My Custom App',
+      locationId: 'my-custom-app-main',
+      displaySearchBar: true,
+    });
+
+    // Add a card to the dashboard
+    ui.componentSection.add({
+      component: 'card',
+      positionId: 'sw-dashboard-index__content',
+      props: {
+        title: 'Welcome to My App',
+        subtitle: 'Your first admin extension',
+        locationId: 'my-dashboard-card'
+      }
+    });
+
+    // Show a welcome notification
+    notification.dispatch({
+      title: 'App Loaded',
+      message: 'Your custom admin app is now active!',
+      variant: 'success'
+    });
+    ```
+  </Step>
+
+  <Step title="Render Location Content">
+    Create `render-location.js` to handle different location views:
+
+    ```javascript
+    import { location } from '@shopware-ag/meteor-admin-sdk';
+
+    const currentLocation = location.get();
+    const app = document.getElementById('app');
+
+    // Define content for each location
+    const locationContent = {
+      'my-custom-app-main': `
+        <div style="padding: 20px;">
+          <h1>My Custom App</h1>
+          <p>Welcome to your custom admin application!</p>
+        </div>
+      `,
+      'my-dashboard-card': `
+        <div style="padding: 20px;">
+          <p>This is a custom card on the dashboard.</p>
+          <button onclick="alert('Hello from your app!')">Click Me</button>
+        </div>
+      `
+    };
+
+    // Render the content for the current location
+    if (locationContent[currentLocation]) {
+      app.innerHTML = locationContent[currentLocation];
+    }
+    ```
+  </Step>
+
+  <Step title="Create the App Manifest">
+    To register your app with Shopware, create a `manifest.xml` file:
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <meta>
+        <name>MyAdminApp</name>
+        <label>My Admin App</label>
+        <description>My first Shopware admin app</description>
+        <author>Your Name</author>
+        <version>1.0.0</version>
+        <license>MIT</license>
+      </meta>
+
+      <setup>
+        <registrationUrl>http://localhost:8080/authorize</registrationUrl>
+        <secret>your-secret-key</secret>
+      </setup>
+
+      <admin>
+        <base-app-url>http://localhost:8080/index.html</base-app-url>
+      </admin>
+
+      <permissions>
+        <read>product</read>
+      </permissions>
+    </manifest>
+    ```
+
+    <Warning>
+      Replace the URLs and secret with your actual development server configuration.
+    </Warning>
+  </Step>
+
+  <Step title="Run Your App">
+    Start a local development server:
+
+    ```bash
+    # Using Python
+    python -m http.server 8080
+
+    # Or using Node.js
+    npx http-server -p 8080
+    ```
+
+    Then install your app in Shopware:
+
+    ```bash
+    bin/console app:install MyAdminApp
+    bin/console app:activate MyAdminApp
+    ```
+  </Step>
+</Steps>
+
+## Understanding the Code
+
+### Location Context
+
+The Admin SDK uses different iframe contexts:
+
+- **`location.MAIN_HIDDEN`**: A hidden iframe that runs when the administration loads. This is where you register all your extension points (menu items, tabs, cards, etc.).
+
+- **Location iframes**: Visible iframes that display your actual UI components. Each location you define gets its own iframe.
+
+### Extension Points
+
+You registered two types of extensions:
+
+1. **Menu Item** (`ui.menu.addMenuItem`): Adds an entry to the main navigation
+2. **Component Section** (`ui.componentSection.add`): Adds a card to an existing page position
+
+Each extension has a `locationId` that identifies where your content should be rendered.
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card title="Working with Data" icon="database" href="/admin-sdk/guides/data-management">
+    Learn how to read and write Shopware entities
+  </Card>
+  
+  <Card title="Custom Modules" icon="window" href="/admin-sdk/guides/custom-modules">
+    Explore all available UI extension points
+  </Card>
+  
+  <Card title="CMS Extensions" icon="cube" href="/admin-sdk/guides/cms-extensions">
+    Create custom CMS elements for Shopping Experiences
+  </Card>
+  
+  <Card title="Full Example App" icon="github" href="https://github.com/shopware/meteor/tree/main/examples/admin-sdk-app">
+    Check out the complete example app in the repository
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="My app doesn't appear in the administration">
+    - Verify your manifest.xml is correctly configured
+    - Check that your development server is running
+    - Ensure the app is installed and activated in Shopware
+    - Check the browser console for any errors
+  </Accordion>
+
+  <Accordion title="Extension points aren't registering">
+    - Make sure your code runs in the `MAIN_HIDDEN` location
+    - Verify that you're importing the SDK correctly
+    - Check that positionIds match existing admin positions
+  </Accordion>
+
+  <Accordion title="Location content isn't rendering">
+    - Confirm your locationId matches what you registered
+    - Use `location.get()` to verify the current location
+    - Check browser console for any JavaScript errors
+  </Accordion>
+</AccordionGroup>

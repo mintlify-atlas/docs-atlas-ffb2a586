@@ -1,0 +1,467 @@
+---
+title: "Theme Customization"
+description: "Learn how to customize and create themes with Meteor Design Tokens"
+---
+
+## Overview
+
+Meteor Design Tokens support theme customization out of the box, including light and dark mode. You can customize existing themes or create entirely new themes by overriding token values.
+
+## Light and Dark Mode
+
+### Enabling Dark Mode
+
+To enable dark mode, add the `data-theme="dark"` attribute to a parent element:
+
+```html
+<body data-theme="dark">
+  <!-- Your application -->
+</body>
+```
+
+### Toggling Dark Mode
+
+Implement a theme toggle using JavaScript:
+
+```js
+function toggleTheme() {
+  const body = document.body;
+  const currentTheme = body.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  
+  body.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+}
+
+// Load saved theme on page load
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.body.setAttribute('data-theme', savedTheme);
+```
+
+### React Example
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState('light');
+  
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    document.body.setAttribute('data-theme', savedTheme);
+  }, []);
+  
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+  
+  return (
+    <button onClick={toggleTheme}>
+      Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
+    </button>
+  );
+}
+```
+
+### Vue Example
+
+```vue
+<template>
+  <button @click="toggleTheme">
+    Switch to {{ theme === 'dark' ? 'Light' : 'Dark' }} Mode
+  </button>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+
+const theme = ref('light');
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', theme.value);
+  localStorage.setItem('theme', theme.value);
+};
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  theme.value = savedTheme;
+  document.body.setAttribute('data-theme', savedTheme);
+});
+</script>
+```
+
+## System Preference Detection
+
+Respect the user's system color scheme preference:
+
+```js
+function getPreferredTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    return savedTheme;
+  }
+  
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  return mediaQuery.matches ? 'dark' : 'light';
+}
+
+// Apply theme on load
+document.body.setAttribute('data-theme', getPreferredTheme());
+
+// Listen for system preference changes
+window.matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
+```
+
+## Customizing Token Values
+
+You can override token values to customize the theme:
+
+### Override Semantic Tokens
+
+```css
+:root {
+  /* Customize primary brand color */
+  --color-interaction-primary-default: #ff6b35;
+  --color-interaction-primary-hover: #e55a2b;
+  --color-interaction-primary-pressed: #cc4921;
+}
+```
+
+### Override for Dark Mode
+
+```css
+[data-theme="dark"] {
+  /* Custom dark mode colors */
+  --color-elevation-surface-default: #1a1a1a;
+  --color-text-primary-default: #f0f0f0;
+}
+```
+
+## Creating Custom Themes
+
+### Method 1: Scoped Theme Attribute
+
+Create completely custom themes using data attributes:
+
+```css
+/* Custom "purple" theme */
+[data-theme="purple"] {
+  --color-interaction-primary-default: var(--color-purple-500);
+  --color-interaction-primary-hover: var(--color-purple-600);
+  --color-interaction-primary-pressed: var(--color-purple-700);
+  --color-border-brand-default: var(--color-purple-500);
+  --color-text-brand-default: var(--color-purple-500);
+  --color-background-brand-default: var(--color-purple-50);
+}
+
+/* Custom "emerald" theme */
+[data-theme="emerald"] {
+  --color-interaction-primary-default: var(--color-emerald-600);
+  --color-interaction-primary-hover: var(--color-emerald-700);
+  --color-interaction-primary-pressed: var(--color-emerald-800);
+  --color-border-brand-default: var(--color-emerald-600);
+  --color-text-brand-default: var(--color-emerald-600);
+  --color-background-brand-default: var(--color-emerald-50);
+}
+```
+
+Apply the theme:
+
+```html
+<body data-theme="purple">
+  <!-- Your application -->
+</body>
+```
+
+### Method 2: CSS Classes
+
+Alternatively, use classes for theme switching:
+
+```css
+.theme-ocean {
+  --color-interaction-primary-default: var(--color-cyan-500);
+  --color-interaction-primary-hover: var(--color-cyan-600);
+  --color-interaction-primary-pressed: var(--color-cyan-700);
+  --color-elevation-surface-default: var(--color-cyan-50);
+}
+```
+
+```html
+<body class="theme-ocean">
+  <!-- Your application -->
+</body>
+```
+
+## Brand Color Customization
+
+For brand-specific customization, override the brand color palette:
+
+```css
+:root {
+  /* Override brand primitives */
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
+  
+  /* Semantic tokens will automatically use the new brand colors */
+}
+```
+
+## Multi-Theme Application
+
+Support multiple theme variants in your application:
+
+```js
+const themes = {
+  light: 'light',
+  dark: 'dark',
+  purple: 'purple',
+  emerald: 'emerald',
+  ocean: 'ocean'
+};
+
+function setTheme(themeName) {
+  if (!themes[themeName]) {
+    console.error('Theme not found:', themeName);
+    return;
+  }
+  
+  document.body.setAttribute('data-theme', themeName);
+  localStorage.setItem('theme', themeName);
+}
+
+// Theme selector component
+function ThemeSelector() {
+  return (
+    <select onChange={(e) => setTheme(e.target.value)}>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="purple">Purple</option>
+      <option value="emerald">Emerald</option>
+      <option value="ocean">Ocean</option>
+    </select>
+  );
+}
+```
+
+## Component-Specific Theming
+
+Apply theme overrides to specific components or sections:
+
+```css
+/* Default card */
+.card {
+  background-color: var(--color-elevation-surface-raised);
+  color: var(--color-text-primary-default);
+}
+
+/* Feature card with custom theme */
+.card--feature {
+  --color-elevation-surface-raised: var(--color-purple-50);
+  --color-text-primary-default: var(--color-purple-900);
+  --color-border-primary-default: var(--color-purple-200);
+}
+```
+
+```html
+<div class="card card--feature">
+  <h3>Feature Card</h3>
+  <p>This card has custom theme overrides</p>
+</div>
+```
+
+## High Contrast Mode
+
+Create a high contrast theme for accessibility:
+
+```css
+[data-theme="high-contrast"] {
+  /* Maximum contrast for text */
+  --color-text-primary-default: #000000;
+  --color-elevation-surface-default: #ffffff;
+  
+  /* Stronger borders */
+  --color-border-primary-default: #000000;
+  --color-border-secondary-default: #666666;
+  
+  /* Clear interactive states */
+  --color-interaction-primary-default: #0000ff;
+  --color-interaction-primary-hover: #0000cc;
+  --color-text-brand-default: #0000ff;
+}
+
+[data-theme="high-contrast"][data-mode="dark"] {
+  --color-text-primary-default: #ffffff;
+  --color-elevation-surface-default: #000000;
+  --color-border-primary-default: #ffffff;
+  --color-interaction-primary-default: #66b3ff;
+}
+```
+
+## CSS-in-JS Theme Provider
+
+### React with Context
+
+```jsx
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const ThemeContext = createContext();
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    document.body.setAttribute('data-theme', savedTheme);
+  }, []);
+  
+  const updateTheme = (newTheme) => {
+    setTheme(newTheme);
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+  
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme: updateTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+```
+
+Usage:
+
+```jsx
+function App() {
+  const { theme, setTheme } = useTheme();
+  
+  return (
+    <div>
+      <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        Toggle Theme
+      </button>
+    </div>
+  );
+}
+```
+
+## Smooth Theme Transitions
+
+Add smooth transitions when switching themes:
+
+```css
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Disable transitions on theme change to prevent flash */
+.theme-transition-disable * {
+  transition: none !important;
+}
+```
+
+```js
+function setThemeWithTransition(newTheme) {
+  // Disable transitions briefly
+  document.body.classList.add('theme-transition-disable');
+  
+  // Set new theme
+  document.body.setAttribute('data-theme', newTheme);
+  
+  // Re-enable transitions after a frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.body.classList.remove('theme-transition-disable');
+    });
+  });
+}
+```
+
+## Theme Testing
+
+Test your themes during development:
+
+```js
+// Quick theme switcher for development
+if (process.env.NODE_ENV === 'development') {
+  window.setTheme = (theme) => {
+    document.body.setAttribute('data-theme', theme);
+    console.log('Theme set to:', theme);
+  };
+  
+  console.log('Theme switcher available: window.setTheme("dark" | "light")');
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Test in both light and dark modes">
+    Always test your UI in both light and dark themes to ensure proper contrast and readability.
+  </Accordion>
+  
+  <Accordion title="Respect user preferences">
+    Check system preferences and remember user choices. Don't force a theme on users.
+  </Accordion>
+  
+  <Accordion title="Override semantic tokens, not primitives">
+    When customizing themes, override semantic tokens rather than primitive values to maintain consistency.
+  </Accordion>
+  
+  <Accordion title="Test accessibility">
+    Ensure your custom themes maintain WCAG contrast ratios for text and interactive elements.
+  </Accordion>
+  
+  <Accordion title="Document custom tokens">
+    If creating custom tokens, document their purpose and usage for your team.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Dark mode not applying">
+    Ensure you've imported both light and dark CSS files, and that the `data-theme="dark"` attribute is set on a parent element.
+  </Accordion>
+  
+  <Accordion title="Theme flashing on page load">
+    Apply the theme attribute in a blocking script before the page renders, or use a CSS approach to hide content until theme is set.
+  </Accordion>
+  
+  <Accordion title="Custom tokens not working">
+    Make sure your custom token CSS is loaded after the Meteor token CSS to properly override values.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Usage Guide" icon="code" href="/design-tokens/usage">
+    Learn more about using tokens in your CSS
+  </Card>
+  <Card title="Primitives Reference" icon="palette" href="/design-tokens/primitives">
+    Explore all available primitive tokens
+  </Card>
+</CardGroup>

@@ -1,0 +1,97 @@
+---
+title: Loader
+description: A loading spinner component for indicating processing states and async operations.
+---
+
+## Import
+
+```vue
+import { MtLoader } from '@/components/feedback-indicator/mt-loader/mt-loader.vue';
+```
+
+## Props
+
+<ParamField path="size" type="string" default="50px">
+  The diameter of the loader spinner. Must be specified with `px` unit (e.g., `"50px"`, `"100px"`).
+  
+  The border width automatically adjusts based on size:
+  - Size ≤ 16px: border width = size/6
+  - Size ≤ 32px: border width = size/8
+  - Size > 32px: border width = size/12
+</ParamField>
+
+## Usage Examples
+
+### Default Loader
+
+```vue
+<template>
+  <mt-loader />
+</template>
+```
+
+### Custom Sizes
+
+```vue
+<template>
+  <!-- Small loader -->
+  <mt-loader size="24px" />
+  
+  <!-- Medium loader (default) -->
+  <mt-loader size="50px" />
+  
+  <!-- Large loader -->
+  <mt-loader size="100px" />
+</template>
+```
+
+### Loading Overlay
+
+```vue
+<template>
+  <div style="position: relative; min-height: 400px;">
+    <mt-loader v-if="isLoading" />
+    <div v-else>
+      <!-- Your content here -->
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const isLoading = ref(true);
+
+setTimeout(() => {
+  isLoading.value = false;
+}, 2000);
+</script>
+```
+
+### Centered in Container
+
+```vue
+<template>
+  <div class="loading-container">
+    <mt-loader size="60px" />
+  </div>
+</template>
+
+<style scoped>
+.loading-container {
+  position: relative;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+```
+
+## Styling Notes
+
+- The loader creates a semi-transparent overlay (`opacity: 0.8`) with absolute positioning
+- Background color is set to `--color-background-tertiary-default`
+- The spinner uses `--color-border-brand-default` for the animated border
+- The loader spans the full width and height of its positioned parent
+- Animation is a smooth cubic-bezier rotation (1.4s duration)

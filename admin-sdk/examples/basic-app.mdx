@@ -1,0 +1,553 @@
+---
+title: Basic App Example
+description: Complete example of a basic admin app with menu items, cards, and action buttons
+---
+
+This example demonstrates a complete admin app with various extension points including menu items, component sections, and action buttons.
+
+## Overview
+
+This example shows:
+- Menu item registration
+- Component section injection
+- Action button implementation
+- Notification handling
+- Location-based rendering
+
+## Project Structure
+
+```
+basic-admin-app/
+├── src/
+│   ├── frontend/
+│   │   ├── main.ts
+│   │   ├── init/
+│   │   │   └── init-app.ts
+│   │   └── locations/
+│   │       ├── init-locations.ts
+│   │       └── views/
+│   └── server.ts
+└── package.json
+```
+
+## Complete Code
+
+### Entry Point
+
+```typescript title="src/frontend/main.ts"
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+if (location.is(location.MAIN_HIDDEN)) {
+    /**
+     * This gets executed in the administration in a hidden iframe.
+     * Register all extension points here.
+     */
+    import('./init/init-app');
+} else {
+    /**
+     * This gets executed when the administration renders a location.
+     * Render the correct view based on the location.
+     */
+    import('./locations/init-locations');
+}
+```
+
+### Extension Registration
+
+```typescript title="src/frontend/init/init-app.ts"
+import { notification, ui } from '@shopware-ag/meteor-admin-sdk';
+
+/**
+ * Register all extension points
+ */
+
+// Add a component section (card) before the chart
+ui.componentSection.add({
+    component: 'card',
+    positionId: 'sw-chart-card__before',
+    props: {
+        title: 'Meteor Admin SDK',
+        subtitle: 'Welcome to the example',
+        locationId: 'ex-chart-card-before'
+    }
+});
+
+// Add a menu item with search bar
+ui.menu.addMenuItem({
+    label: 'Meteor Admin SDK example',
+    locationId: 'ex-meteor-admin-sdk-example-module',
+    displaySearchBar: true,
+})
+
+// Add a tab to product detail page
+ui.tabs('sw-product-detail').addTabItem({
+    label: 'Example',
+    componentSectionId: 'ex-product-extension-example-page',
+})
+
+// Add cards to the new tab
+ui.componentSection.add({
+    component: 'card',
+    positionId: 'ex-product-extension-example-page',
+    props: {
+        title: 'Data handling examples',
+        subtitle: 'Test the data handling capabilities of the Meteor Admin SDK',
+        locationId: 'ex-product-extension-example-data'
+    }
+});
+
+ui.componentSection.add({
+    component: 'card',
+    positionId: 'ex-product-extension-example-page',
+    props: {
+        title: 'iFrame resize example',
+        subtitle: 'Test the resize capabilities of the iFrame',
+        locationId: 'ex-product-extension-example-resize'
+    }
+});
+
+// Register action button
+ui.actionButton.add({
+    name: 'ex-action-button',
+    label: 'Example action button',
+    entity: 'product',
+    view: 'list',
+    callback: (entity, entityIdList) => {
+        notification.dispatch({
+            title: `Action button for entity ${entity} clicked`,
+            message: `The following entity IDs were selected: ${entityIdList.join(', <br />')}`,
+        })
+    }
+});
+```
+
+### Location Renderer
+
+```typescript title="src/frontend/locations/init-locations.ts"
+import { createApp, h, defineAsyncComponent } from 'vue';
+import { createI18n } from 'vue-i18n';
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+// Register all components for the location
+const locations = {
+    'ex-product-extension-example-resize': defineAsyncComponent(
+        () => import('./views/ResizeExample.vue')
+    ),
+    'ex-product-extension-example-data': defineAsyncComponent(
+        () => import('./views/DataExample.vue')
+    ),
+    'ex-chart-card-before': defineAsyncComponent(
+        () => import('./views/ChartCard.vue')
+    ),
+    'ex-meteor-admin-sdk-example-module': defineAsyncComponent(
+        () => import('./views/MainModule.vue')
+    ),
+};
+
+const app = createApp({
+    render: () => h(locations[location.get()])
+});
+
+const i18n = createI18n({
+    locale: 'en',
+    messages: {
+        en: {
+            hello: 'Hello world!',
+        },
+    },
+});
+
+app.use(i18n);
+app.mount('#app');
+```
+
+### Chart Card Component
+
+```vue title="src/frontend/locations/views/ChartCard.vue"
+<template>
+    <div class="welcome-card">
+        <h2>{{ greeting }}</h2>
+        <p>This card is injected before the chart using the Admin SDK.</p>
+        
+        <sw-button @click="showNotification">
+            Show Notification
+        </sw-button>
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { notification } from '@shopware-ag/meteor-admin-sdk';
+import { SwButton } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+    },
+    data() {
+        return {
+            greeting: 'Welcome to Meteor Admin SDK'
+        };
+    },
+    methods: {
+        showNotification() {
+            notification.dispatch({
+                title: 'Hello from Admin SDK',
+                message: 'This is a custom notification from your app!',
+                variant: 'success',
+                growl: true
+            });
+        }
+    }
+});
+</script>
+
+<style scoped>
+.welcome-card {
+    padding: 20px;
+}
+
+.welcome-card h2 {
+    margin-bottom: 12px;
+    color: #1a202c;
+}
+
+.welcome-card p {
+    margin-bottom: 16px;
+    color: #4a5568;
+}
+</style>
+```
+
+### Data Example Component
+
+```vue title="src/frontend/locations/views/DataExample.vue"
+<template>
+    <div class="data-example">
+        <h3>Product Data Subscription</h3>
+        <p>This example shows real-time data subscription.</p>
+
+        <div class="actions">
+            <sw-button @click="subscribeToData">
+                Subscribe to Product Data
+            </sw-button>
+            
+            <sw-button @click="getData" variant="ghost">
+                Get Current Data
+            </sw-button>
+        </div>
+
+        <div v-if="productData" class="data-display">
+            <h4>Current Product Data:</h4>
+            <pre>{{ JSON.stringify(productData, null, 2) }}</pre>
+        </div>
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { data, notification } from '@shopware-ag/meteor-admin-sdk';
+import { SwButton } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+    },
+    data() {
+        return {
+            productData: null,
+            isSubscribed: false
+        };
+    },
+    methods: {
+        async getData() {
+            try {
+                const result = await data.get({
+                    id: 'sw-product-detail__product',
+                    selectors: ['name', 'productNumber', 'stock', 'active']
+                });
+                
+                this.productData = result;
+                
+                notification.dispatch({
+                    title: 'Data Retrieved',
+                    message: 'Product data loaded successfully',
+                    variant: 'success'
+                });
+            } catch (error) {
+                notification.dispatch({
+                    title: 'Error',
+                    message: 'Failed to load product data',
+                    variant: 'error'
+                });
+            }
+        },
+        
+        subscribeToData() {
+            if (this.isSubscribed) {
+                notification.dispatch({
+                    title: 'Already Subscribed',
+                    message: 'You are already subscribed to product data',
+                    variant: 'info'
+                });
+                return;
+            }
+
+            data.subscribe(
+                'sw-product-detail__product',
+                (response) => {
+                    this.productData = response.data;
+                },
+                {
+                    selectors: ['name', 'productNumber', 'stock', 'active']
+                }
+            );
+            
+            this.isSubscribed = true;
+            
+            notification.dispatch({
+                title: 'Subscribed',
+                message: 'Now listening for product data changes',
+                variant: 'success'
+            });
+        }
+    }
+});
+</script>
+
+<style scoped>
+.data-example {
+    padding: 20px;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.data-display {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f7fafc;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.data-display h4 {
+    margin-bottom: 12px;
+}
+
+pre {
+    margin: 0;
+    font-size: 12px;
+    color: #2d3748;
+}
+</style>
+```
+
+### Resize Example Component
+
+```vue title="src/frontend/locations/views/ResizeExample.vue"
+<template>
+    <div class="resize-example">
+        <h3>iFrame Resize Test</h3>
+        <p>Add content to test automatic iframe resizing.</p>
+
+        <sw-button @click="addContent">
+            Add Content Block
+        </sw-button>
+        
+        <sw-button @click="removeContent" variant="ghost-danger">
+            Remove Content Block
+        </sw-button>
+
+        <div v-for="(block, index) in contentBlocks" :key="index" class="content-block">
+            <h4>Content Block {{ index + 1 }}</h4>
+            <p>This is a dynamically added content block. The iframe should automatically resize to accommodate this content.</p>
+        </div>
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { SwButton } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+    },
+    data() {
+        return {
+            contentBlocks: []
+        };
+    },
+    methods: {
+        addContent() {
+            this.contentBlocks.push({});
+        },
+        
+        removeContent() {
+            if (this.contentBlocks.length > 0) {
+                this.contentBlocks.pop();
+            }
+        }
+    }
+});
+</script>
+
+<style scoped>
+.resize-example {
+    padding: 20px;
+}
+
+.content-block {
+    margin-top: 20px;
+    padding: 20px;
+    background: #edf2f7;
+    border-radius: 8px;
+    border-left: 4px solid #4299e1;
+}
+
+.content-block h4 {
+    margin-bottom: 8px;
+    color: #2c5282;
+}
+</style>
+```
+
+### Development Server
+
+```typescript title="src/server.ts"
+import express from 'express';
+import { createServer as createViteServer } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+const app = express();
+const port = 3000;
+
+async function startServer() {
+    const vite = await createViteServer({
+        server: {
+            middlewareMode: true
+        },
+        appType: 'custom',
+        plugins: [vue()]
+    });
+
+    app.use(vite.middlewares);
+
+    app.listen(port, () => {
+        console.log(`Admin SDK App running at http://localhost:${port}`);
+    });
+}
+
+startServer();
+```
+
+### Package Configuration
+
+```json title="package.json"
+{
+  "name": "basic-admin-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node src/server.ts",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@shopware-ag/meteor-admin-sdk": "latest",
+    "@shopware-ag/meteor-component-library": "latest",
+    "@vitejs/plugin-vue": "^4.6.2",
+    "express": "^4.18.2",
+    "vite": "^5.1.4",
+    "vue": "^3.5.0",
+    "vue-i18n": "^9.9.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^18.19.19",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
+```
+
+## Running the Example
+
+<Steps>
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Start Development Server
+
+```bash
+npm run dev
+```
+
+### Install in Shopware
+
+1. Create app folder: `custom/apps/BasicAdminApp/`
+2. Add manifest.xml with app configuration
+3. Install the app:
+
+```bash
+bin/console app:install BasicAdminApp
+```
+
+### View in Admin
+
+Open the Shopware administration and you should see:
+- New menu item: "Meteor Admin SDK example"
+- Card on the dashboard before the chart
+- New tab on product detail pages
+- Action button on product list pages
+
+</Steps>
+
+## Expected Output
+
+### Dashboard Card
+
+On the dashboard, you'll see a new card titled "Meteor Admin SDK" with:
+- Welcome message
+- Button to show notifications
+
+### Menu Item
+
+A new menu item appears in the navigation with a searchable page.
+
+### Product Detail Tab
+
+When viewing a product:
+1. New "Example" tab appears
+2. Two cards with interactive examples:
+   - Data handling with subscribe/get buttons
+   - Resize testing with dynamic content
+
+### Product List Action
+
+When viewing the product list:
+1. Select one or more products
+2. Click the "Example action button"
+3. See notification with selected product IDs
+
+## Key Takeaways
+
+1. **Location-based rendering**: Use `location.is()` to differentiate between registration and rendering
+2. **Async components**: Load views dynamically with `defineAsyncComponent`
+3. **Component library**: Use Meteor Component Library for consistent UI
+4. **Notifications**: Provide user feedback with `notification.dispatch()`
+5. **Data access**: Use `data.get()` and `data.subscribe()` for real-time data
+
+## Learn More
+
+- [Building Apps Guide](/admin-sdk/guides/building-apps)
+- [Data Management Guide](/admin-sdk/guides/data-management)
+- [GitHub Example](https://github.com/shopware/meteor/tree/main/examples/admin-sdk-app)

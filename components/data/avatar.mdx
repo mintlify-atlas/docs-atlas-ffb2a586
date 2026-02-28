@@ -1,0 +1,170 @@
+---
+title: Avatar
+description: An avatar component for displaying user profile pictures or initials with customizable sizes and variants.
+---
+
+## Import
+
+```vue
+import { MtAvatar } from '@/components/icons-media/mt-avatar/mt-avatar.vue';
+```
+
+## Props
+
+<ParamField path="size" type="string" default="m">
+  The size of the avatar.
+  
+  **Options:** `2xs`, `xs`, `s`, `m`, `l`
+  
+  **Sizes:**
+  - `2xs`: 16px
+  - `xs`: 24px
+  - `s`: 32px
+  - `m`: 40px
+  - `l`: 48px
+</ParamField>
+
+<ParamField path="firstName" type="string">
+  First name of the user. Used to generate initials when no image is provided.
+</ParamField>
+
+<ParamField path="lastName" type="string">
+  Last name of the user. Used to generate initials when no image is provided.
+</ParamField>
+
+<ParamField path="imageUrl" type="string">
+  URL of the avatar image. When provided, displays the image instead of initials.
+</ParamField>
+
+<ParamField path="variant" type="string" default="circle">
+  The shape of the avatar.
+  
+  **Options:** `circle`, `square`
+</ParamField>
+
+## Slots
+
+<ParamField path="default" type="slot">
+  Custom content to display inside the avatar. Overrides both image and initials.
+</ParamField>
+
+## Usage Examples
+
+### Avatar with Initials
+
+```vue
+<template>
+  <mt-avatar 
+    first-name="John" 
+    last-name="Doe" 
+  />
+</template>
+```
+
+### Avatar with Image
+
+```vue
+<template>
+  <mt-avatar 
+    first-name="Jane"
+    last-name="Smith"
+    image-url="https://example.com/avatar.jpg"
+  />
+</template>
+```
+
+### Different Sizes
+
+```vue
+<template>
+  <div style="display: flex; gap: 12px; align-items: center;">
+    <mt-avatar size="2xs" first-name="John" last-name="Doe" />
+    <mt-avatar size="xs" first-name="John" last-name="Doe" />
+    <mt-avatar size="s" first-name="John" last-name="Doe" />
+    <mt-avatar size="m" first-name="John" last-name="Doe" />
+    <mt-avatar size="l" first-name="John" last-name="Doe" />
+  </div>
+</template>
+```
+
+### Square Variant
+
+```vue
+<template>
+  <mt-avatar 
+    variant="square"
+    first-name="Sarah" 
+    last-name="Johnson"
+  />
+</template>
+```
+
+### Custom Content
+
+```vue
+<template>
+  <mt-avatar size="l">
+    <mt-icon name="solid-user" />
+  </mt-avatar>
+</template>
+```
+
+### Avatar Group
+
+```vue
+<template>
+  <div style="display: flex; margin-left: -8px;">
+    <mt-avatar 
+      v-for="user in users" 
+      :key="user.id"
+      :first-name="user.firstName"
+      :last-name="user.lastName"
+      :image-url="user.avatar"
+      style="margin-left: -8px; border: 2px solid white;"
+    />
+  </div>
+</template>
+
+<script setup>
+const users = [
+  { id: 1, firstName: 'John', lastName: 'Doe', avatar: null },
+  { id: 2, firstName: 'Jane', lastName: 'Smith', avatar: null },
+  { id: 3, firstName: 'Bob', lastName: 'Wilson', avatar: null },
+];
+</script>
+```
+
+### With Fallback
+
+```vue
+<template>
+  <mt-avatar 
+    first-name="Alex"
+    last-name="Brown"
+    :image-url="avatarUrl"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+// If image fails to load, initials will be shown automatically
+const avatarUrl = ref('https://example.com/invalid-image.jpg');
+</script>
+```
+
+## Color Assignment
+
+The avatar automatically assigns a background color based on the name length:
+
+- **Colors available:** orange, pink, yellow, purple, red, blue, green
+- Color is determined by `(firstName.length + lastName.length) % 7`
+- This ensures consistent colors for the same name
+- Different theme support (automatically adapts to light/dark mode)
+
+## Accessibility
+
+- The avatar uses `role="img"` for semantic meaning
+- Includes empty `alt` attribute as it's typically decorative
+- Initials are displayed in a `span` with appropriate test ID
+- Font size scales proportionally with avatar size (40% of container)

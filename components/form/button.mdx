@@ -1,0 +1,132 @@
+---
+title: Button
+description: Interactive button component for user actions
+---
+
+The `MtButton` component is a versatile button that supports multiple variants, sizes, icons, and loading states.
+
+## Import
+
+```vue
+import { MtButton } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="variant" type="'primary' | 'secondary' | 'tertiary' | 'critical'" default="'secondary'">
+  The visual style variant of the button.
+</ParamField>
+
+<ParamField path="size" type="'x-small' | 'small' | 'default' | 'large'" default="'small'">
+  The size of the button.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Toggles the disabled state of the button.
+</ParamField>
+
+<ParamField path="ghost" type="boolean" default="false">
+  Applies a ghost style with transparent background and border.
+</ParamField>
+
+<ParamField path="square" type="boolean" default="false">
+  Makes the button square-shaped, useful for icon-only buttons.
+</ParamField>
+
+<ParamField path="block" type="boolean" default="false">
+  Makes the button full-width and centered.
+</ParamField>
+
+<ParamField path="isLoading" type="boolean" default="false">
+  Shows a loading spinner and hides button content.
+</ParamField>
+
+<ParamField path="is" type="Component | string" default="'button'">
+  The HTML element or Vue component to render as.
+</ParamField>
+
+<ParamField path="link" type="string">
+  **Deprecated**: Use `is="a"` and `href` instead. URL to navigate to when clicked.
+</ParamField>
+
+## Slots
+
+<ParamField path="default" type="slot">
+  The button label content.
+</ParamField>
+
+<ParamField path="iconFront" type="slot">
+  Icon displayed before the button text. Receives `size` prop.
+</ParamField>
+
+<ParamField path="iconBack" type="slot">
+  Icon displayed after the button text. Receives `size` prop.
+</ParamField>
+
+## Usage
+
+### Basic Button
+
+```vue
+<template>
+  <mt-button variant="primary">
+    Click me
+  </mt-button>
+</template>
+```
+
+### Button with Icons
+
+```vue
+<template>
+  <mt-button variant="primary">
+    <template #iconFront="{ size }">
+      <mt-icon name="regular-plus-xs" :size="size" />
+    </template>
+    Add Item
+  </mt-button>
+</template>
+```
+
+### Loading State
+
+```vue
+<template>
+  <mt-button variant="primary" :is-loading="isSubmitting">
+    Submit
+  </mt-button>
+</template>
+```
+
+### Button Sizes
+
+```vue
+<template>
+  <div>
+    <mt-button size="x-small">Extra Small</mt-button>
+    <mt-button size="small">Small</mt-button>
+    <mt-button size="default">Default</mt-button>
+    <mt-button size="large">Large</mt-button>
+  </div>
+</template>
+```
+
+### Button Variants
+
+```vue
+<template>
+  <div>
+    <mt-button variant="primary">Primary</mt-button>
+    <mt-button variant="secondary">Secondary</mt-button>
+    <mt-button variant="tertiary">Tertiary</mt-button>
+    <mt-button variant="critical">Critical</mt-button>
+  </div>
+</template>
+```
+
+## Accessibility
+
+- Uses native `<button>` element by default for proper keyboard navigation
+- Disabled buttons have `tabindex="-1"` when inside tooltips
+- Loading state is communicated through visual spinner
+- Focus visible with outline for keyboard navigation

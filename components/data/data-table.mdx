@@ -1,0 +1,404 @@
+---
+title: Data Table
+description: A comprehensive data table component with sorting, filtering, pagination, column customization, and bulk actions.
+---
+
+<Warning>
+This component is experimental. The API may change in future versions.
+</Warning>
+
+## Import
+
+```vue
+import { MtDataTable } from '@/components/table-and-list/mt-data-table/mt-data-table.vue';
+import type { ColumnDefinition } from '@/components/table-and-list/mt-data-table/mt-data-table.vue';
+```
+
+## Column Definition Types
+
+```typescript
+interface BaseColumnDefinition {
+  label: string;              // Column header label
+  property: string;           // Data property key
+  position: number;           // Initial position (use 100-step increments)
+  sortable?: boolean;         // Enable sorting (default: true)
+  width?: number;             // Column width in pixels
+  allowResize?: boolean;      // Allow user resizing
+  cellWrap?: 'nowrap' | 'normal';  // Text wrapping behavior
+  visible?: boolean;          // Initial visibility
+}
+
+type ColumnDefinition = 
+  | TextColumnDefinition
+  | NumberColumnDefinition
+  | BadgeColumnDefinition
+  | PriceColumnDefinition;
+```
+
+## Main Props
+
+### Data & Columns
+
+<ParamField path="dataSource" type="Array<{ id: string; [key: string]: unknown }>" required>
+  The data to display in the table. Each item must have a unique `id` property.
+</ParamField>
+
+<ParamField path="columns" type="ColumnDefinition[]" required>
+  Column definitions specifying how to render each column. Each column must have `label`, `property`, `renderer`, and `position`.
+</ParamField>
+
+<ParamField path="columnChanges" type="Record<string, ColumnChanges>" default="{}">
+  Object storing user customizations (width, position, visibility) for persisting table state.
+</ParamField>
+
+### Display
+
+<ParamField path="title" type="string">
+  Table title displayed in the card header.
+</ParamField>
+
+<ParamField path="subtitle" type="string">
+  Table subtitle displayed below the title.
+</ParamField>
+
+<ParamField path="caption" type="string" default="Data table">
+  Accessibility caption for screen readers.
+</ParamField>
+
+<ParamField path="layout" type="'default' | 'full'" default="default">
+  Table layout mode.
+</ParamField>
+
+### Pagination
+
+<ParamField path="currentPage" type="number" required>
+  Current page number (1-indexed).
+</ParamField>
+
+<ParamField path="paginationLimit" type="number" required>
+  Number of items per page.
+</ParamField>
+
+<ParamField path="paginationTotalItems" type="number" required>
+  Total number of items across all pages.
+</ParamField>
+
+<ParamField path="paginationOptions" type="number[]" default="[5, 10, 25, 50]">
+  Available items-per-page options.
+</ParamField>
+
+### Sorting
+
+<ParamField path="sortBy" type="string">
+  Property name of the currently sorted column.
+</ParamField>
+
+<ParamField path="sortDirection" type="'ASC' | 'DESC'" default="ASC">
+  Current sort direction.
+</ParamField>
+
+### Search & Filters
+
+<ParamField path="disableSearch" type="boolean" default="false">
+  Disable the search input.
+</ParamField>
+
+<ParamField path="searchValue" type="string">
+  Current search query value.
+</ParamField>
+
+<ParamField path="filters" type="Filter[]" default="[]">
+  Available filter definitions.
+</ParamField>
+
+<ParamField path="appliedFilters" type="Filter[]" default="[]">
+  Currently applied filters.
+</ParamField>
+
+<ParamField path="numberOfResults" type="number">
+  Number of results matching current filters.
+</ParamField>
+
+### Features
+
+<ParamField path="isLoading" type="boolean" default="false">
+  Show loading skeleton state.
+</ParamField>
+
+<ParamField path="enableReload" type="boolean" default="false">
+  Show reload button in footer.
+</ParamField>
+
+<ParamField path="allowRowSelection" type="boolean" default="false">
+  Enable row selection checkboxes.
+</ParamField>
+
+<ParamField path="selectedRows" type="string[]" default="[]">
+  Array of selected row IDs.
+</ParamField>
+
+<ParamField path="disableRowSelect" type="string[]" default="[]">
+  Array of row IDs that cannot be selected.
+</ParamField>
+
+<ParamField path="enableRowNumbering" type="boolean" default="false">
+  Show row numbers in first column.
+</ParamField>
+
+<ParamField path="showStripes" type="boolean" default="true">
+  Enable alternating row background colors.
+</ParamField>
+
+<ParamField path="showOutlines" type="boolean" default="true">
+  Show cell borders.
+</ParamField>
+
+<ParamField path="enableOutlineFraming" type="boolean" default="false">
+  Highlight cell outlines on hover.
+</ParamField>
+
+### Actions
+
+<ParamField path="disableEdit" type="boolean" default="false">
+  Hide edit actions.
+</ParamField>
+
+<ParamField path="disableDelete" type="boolean" default="false">
+  Hide delete actions.
+</ParamField>
+
+<ParamField path="disableSettingsTable" type="boolean" default="false">
+  Hide table settings menu.
+</ParamField>
+
+<ParamField path="allowBulkEdit" type="boolean" default="false">
+  Enable bulk edit when rows are selected.
+</ParamField>
+
+<ParamField path="allowBulkDelete" type="boolean" default="false">
+  Enable bulk delete when rows are selected.
+</ParamField>
+
+<ParamField path="bulkEditMoreActions" type="Array">
+  Additional custom bulk actions.
+</ParamField>
+
+<ParamField path="additionalContextButtons" type="Array">
+  Additional context menu items for each row.
+</ParamField>
+
+## Events
+
+<ParamField path="reload" type="event">
+  Emitted when reload button is clicked.
+</ParamField>
+
+<ParamField path="pagination-limit-change" type="event">
+  Emitted when items per page changes.
+</ParamField>
+
+<ParamField path="pagination-current-page-change" type="event">
+  Emitted when page changes.
+</ParamField>
+
+<ParamField path="search-value-change" type="event">
+  Emitted when search input changes.
+</ParamField>
+
+<ParamField path="sort-change" type="event">
+  Emitted when sort column or direction changes.
+</ParamField>
+
+<ParamField path="open-details" type="event">
+  Emitted when row edit is triggered.
+</ParamField>
+
+<ParamField path="item-delete" type="event">
+  Emitted when delete action is triggered for a row.
+</ParamField>
+
+<ParamField path="selection-change" type="event">
+  Emitted when a single row selection changes.
+</ParamField>
+
+<ParamField path="multiple-selection-change" type="event">
+  Emitted when select all is toggled.
+</ParamField>
+
+<ParamField path="bulk-edit" type="event">
+  Emitted when bulk edit action is triggered.
+</ParamField>
+
+<ParamField path="bulk-delete" type="event">
+  Emitted when bulk delete action is triggered.
+</ParamField>
+
+<ParamField path="update:appliedFilters" type="event">
+  Emitted when filters change.
+</ParamField>
+
+<ParamField path="context-select" type="event">
+  Emitted when custom context menu item is clicked.
+</ParamField>
+
+## Usage Examples
+
+### Basic Table
+
+```vue
+<template>
+  <mt-data-table
+    :data-source="products"
+    :columns="columns"
+    :current-page="currentPage"
+    :pagination-limit="limit"
+    :pagination-total-items="totalItems"
+    title="Products"
+    @pagination-current-page-change="currentPage = $event"
+    @pagination-limit-change="limit = $event"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const products = ref([
+  { id: '1', name: 'Product A', price: 29.99, stock: 150 },
+  { id: '2', name: 'Product B', price: 49.99, stock: 75 },
+  { id: '3', name: 'Product C', price: 19.99, stock: 200 },
+]);
+
+const columns = [
+  {
+    label: 'Name',
+    property: 'name',
+    renderer: 'text',
+    position: 100,
+    sortable: true
+  },
+  {
+    label: 'Price',
+    property: 'price',
+    renderer: 'price',
+    position: 200
+  },
+  {
+    label: 'Stock',
+    property: 'stock',
+    renderer: 'number',
+    position: 300
+  }
+];
+
+const currentPage = ref(1);
+const limit = ref(10);
+const totalItems = ref(products.value.length);
+</script>
+```
+
+### Table with Search and Sorting
+
+```vue
+<template>
+  <mt-data-table
+    :data-source="filteredData"
+    :columns="columns"
+    :current-page="page"
+    :pagination-limit="limit"
+    :pagination-total-items="total"
+    :search-value="searchQuery"
+    :sort-by="sortBy"
+    :sort-direction="sortDirection"
+    @search-value-change="handleSearch"
+    @sort-change="handleSort"
+  />
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+
+const searchQuery = ref('');
+const sortBy = ref('name');
+const sortDirection = ref('ASC');
+
+const handleSearch = (query) => {
+  searchQuery.value = query;
+  // Implement search logic
+};
+
+const handleSort = ({ sortBy: column, sortDirection: direction }) => {
+  sortBy.value = column;
+  sortDirection.value = direction;
+  // Implement sorting logic
+};
+</script>
+```
+
+### Table with Row Selection and Bulk Actions
+
+```vue
+<template>
+  <mt-data-table
+    :data-source="items"
+    :columns="columns"
+    :allow-row-selection="true"
+    :selected-rows="selectedRows"
+    :allow-bulk-edit="true"
+    :allow-bulk-delete="true"
+    @selection-change="handleSelectionChange"
+    @bulk-edit="handleBulkEdit"
+    @bulk-delete="handleBulkDelete"
+  />
+</template>
+
+<script setup>
+const selectedRows = ref([]);
+
+const handleSelectionChange = (rowId, isSelected) => {
+  if (isSelected) {
+    selectedRows.value.push(rowId);
+  } else {
+    selectedRows.value = selectedRows.value.filter(id => id !== rowId);
+  }
+};
+
+const handleBulkEdit = () => {
+  console.log('Bulk edit:', selectedRows.value);
+};
+
+const handleBulkDelete = () => {
+  console.log('Bulk delete:', selectedRows.value);
+};
+</script>
+```
+
+### Table with Custom Columns
+
+```vue
+<template>
+  <mt-data-table :data-source="data" :columns="columns">
+    <template #column-status="{ data }">
+      <mt-badge :variant="getStatusVariant(data.status)">
+        {{ data.status }}
+      </mt-badge>
+    </template>
+    
+    <template #column-actions="{ data }">
+      <mt-button size="small" @click="customAction(data)">
+        Custom Action
+      </mt-button>
+    </template>
+  </mt-data-table>
+</template>
+```
+
+## Column Renderers
+
+The data table supports these built-in renderers:
+
+- `text`: Standard text display
+- `number`: Formatted number display
+- `badge`: Badge component for status/labels
+- `price`: Currency formatting
+
+See individual renderer documentation for specific properties.

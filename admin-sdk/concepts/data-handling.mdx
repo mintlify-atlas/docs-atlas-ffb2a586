@@ -1,0 +1,912 @@
+---
+title: Data Handling
+description: Work with Shopware entities using the Repository pattern and Criteria API
+---
+
+## Overview
+
+The Admin SDK provides a powerful data access layer that allows apps to interact with Shopware entities. It uses the Repository pattern for CRUD operations and the Criteria API for advanced querying and filtering.
+
+## Repository Pattern
+
+The Repository pattern provides a consistent interface for accessing Shopware entities.
+
+### Creating a Repository
+
+```typescript
+// From data/index.ts:131
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const orderRepository = data.repository('order');
+const customerRepository = data.repository('customer');
+```
+
+### Repository Interface
+
+Each repository provides these methods (data/repository.ts:9-18):
+
+```typescript
+type Repository<EntityName> = {
+  search: (criteria: Criteria, context?: ApiContext) => Promise<EntityCollection<EntityName> | null>,
+  get: (id: string, context?: ApiContext, criteria?: Criteria) => Promise<Entity<EntityName> | null>,
+  save: (entity: Entity<EntityName>, context?: ApiContext) => Promise<void | null>,
+  clone: (entityId: string, context?: ApiContext, behavior?: any) => Promise<unknown | null>,
+  hasChanges: (entity: Entity<EntityName>) => Promise<boolean | null>,
+  saveAll: (entities: EntityCollection<EntityName>, context?: ApiContext) => Promise<unknown | null>,
+  delete: (entityId: string, context?: ApiContext) => Promise<void | null>,
+  create: (context?: ApiContext, entityId?: string) => Promise<Entity<EntityName> | null>,
+};
+```
+
+## CRUD Operations
+
+### Create Entity
+
+Create a new entity instance:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+
+// Create new product entity
+const newProduct = await productRepository.create();
+
+newProduct.name = 'My New Product';
+newProduct.productNumber = 'PROD-001';
+newProduct.stock = 100;
+newProduct.price = [{
+  currencyId: 'b7d2554b0ce847cd82f3ac9bd1c0dfca',
+  gross: 99.99,
+  net: 84.03,
+  linked: true,
+}];
+
+// Mark as new and save
+newProduct.markAsNew();
+await productRepository.save(newProduct);
+```
+
+**Implementation** (data/repository.ts:60-63):
+```typescript
+create: (context?: ApiContext, entityId?: string): Promise<Entity<EntityName> | null> => {
+  return send('repositoryCreate', { entityName, entityId, context });
+}
+```
+
+### Read/Get Entity
+
+Retrieve a single entity by ID:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const productId = '01234567890abcdef01234567890abcd';
+
+// Get product
+const product = await productRepository.get(productId);
+
+if (product) {
+  console.log(product.name);
+  console.log(product.productNumber);
+}
+
+// Get with associations
+const criteria = new data.Classes.Criteria();
+criteria.addAssociation('manufacturer');
+criteria.addAssociation('categories');
+
+const productWithAssociations = await productRepository.get(productId, undefined, criteria);
+```
+
+**Implementation** (data/repository.ts:25-28):
+```typescript
+get: (id: string, context?: ApiContext, criteria?: Criteria): Promise<Entity<EntityName> | null> => {
+  return send('repositoryGet', { entityName, id, context, criteria });
+}
+```
+
+### Search Entities
+
+Search for multiple entities with criteria:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const criteria = new data.Classes.Criteria();
+
+// Add filters
+criteria.addFilter(
+  data.Classes.Criteria.equals('active', true)
+);
+
+criteria.addFilter(
+  data.Classes.Criteria.range('stock', { gte: 10 })
+);
+
+// Add sorting
+criteria.addSorting(
+  data.Classes.Criteria.sort('name', 'ASC')
+);
+
+// Set pagination
+criteria.setPage(1);
+criteria.setLimit(25);
+
+// Execute search
+const result = await productRepository.search(criteria);
+
+if (result) {
+  console.log(`Found ${result.total} products`);
+  result.forEach(product => {
+    console.log(product.name);
+  });
+}
+```
+
+**Implementation** (data/repository.ts:22-24):
+```typescript
+search: (criteria: Criteria, context?: ApiContext): Promise<EntityCollection<EntityName> | null> => {
+  return send('repositorySearch', { entityName, context, criteria });
+}
+```
+
+### Update Entity
+
+Modify and save an existing entity:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const productId = '01234567890abcdef01234567890abcd';
+
+// Get entity
+const product = await productRepository.get(productId);
+
+if (product) {
+  // Modify properties
+  product.name = 'Updated Product Name';
+  product.stock = 50;
+  
+  // Check if entity has changes
+  const hasChanges = await productRepository.hasChanges(product);
+  console.log('Has changes:', hasChanges);
+  
+  // Save changes
+  await productRepository.save(product);
+  console.log('Product updated successfully');
+}
+```
+
+**Implementation** (data/repository.ts:29-31):
+```typescript
+save: (entity: Entity<EntityName>, context?: ApiContext): Promise<void | null> => {
+  return send('repositorySave', { entityName, entity, context });
+}
+```
+
+### Delete Entity
+
+Remove an entity:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const productId = '01234567890abcdef01234567890abcd';
+
+// Delete product
+await productRepository.delete(productId);
+console.log('Product deleted successfully');
+```
+
+**Implementation** (data/repository.ts:57-59):
+```typescript
+delete: (entityId: string, context?: ApiContext): Promise<void | null> => {
+  return send('repositoryDelete', { entityName, entityId, context });
+}
+```
+
+### Clone Entity
+
+Create a copy of an existing entity:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const productId = '01234567890abcdef01234567890abcd';
+
+// Clone product
+const clonedProduct = await productRepository.clone(productId);
+console.log('Product cloned:', clonedProduct);
+```
+
+**Implementation** (data/repository.ts:33-49):
+```typescript
+clone: (entityId: string, contextOrBehavior?: any, behaviorOrContext?: any): Promise<unknown | null> => {
+  let context: ApiContext;
+  let behavior: any;
+  if(isApiContext(contextOrBehavior)) {
+    context = contextOrBehavior;
+    behavior = behaviorOrContext;
+  } else if (isApiContext(behaviorOrContext)) {
+    context = behaviorOrContext;
+    behavior = contextOrBehavior;
+  } else {
+    throw new Error('Invalid arguments for clone method');
+  }
+  return send('repositoryClone', { entityName, entityId, context, behavior });
+}
+```
+
+### Save Multiple Entities
+
+Save a collection of entities:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const criteria = new data.Classes.Criteria();
+criteria.setLimit(10);
+
+const products = await productRepository.search(criteria);
+
+if (products) {
+  // Modify all products
+  products.forEach(product => {
+    product.active = true;
+  });
+  
+  // Save all at once
+  await productRepository.saveAll(products);
+  console.log('All products updated');
+}
+```
+
+**Implementation** (data/repository.ts:54-56):
+```typescript
+saveAll: (entities: EntityCollection<EntityName>, context?: ApiContext): Promise<unknown | null> => {
+  return send('repositorySaveAll', { entityName, entities, context });
+}
+```
+
+## Criteria API
+
+The Criteria class provides a fluent interface for building complex queries.
+
+### Basic Criteria
+
+```typescript
+// From data/Criteria.ts:211-228
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const criteria = new data.Classes.Criteria();
+
+// Set pagination
+criteria.setPage(1);      // Page number (1-indexed)
+criteria.setLimit(25);    // Results per page
+
+// Set search term
+criteria.setTerm('search text');
+
+// Set total count mode
+criteria.setTotalCountMode(data.Classes.Criteria.TotalCountMode.EXACT_TOTAL_COUNT);
+```
+
+**Constructor** (data/Criteria.ts:211):
+```typescript
+constructor(page: number|null = 1, limit: number|null = null) {
+  this.page = page;
+  this.limit = limit;
+  // ... other initialization
+}
+```
+
+### Filters
+
+The Criteria API provides various filter types:
+
+#### Equals Filter
+
+```typescript
+// From data/Criteria.ts:720-722
+const criteria = new data.Classes.Criteria();
+
+// Filter by exact value
+criteria.addFilter(
+  data.Classes.Criteria.equals('active', true)
+);
+
+criteria.addFilter(
+  data.Classes.Criteria.equals('manufacturerId', '01234567890abcdef01234567890abcd')
+);
+```
+
+#### EqualsAny Filter
+
+```typescript
+// From data/Criteria.ts:700-702
+const criteria = new data.Classes.Criteria();
+
+// Filter by multiple possible values
+criteria.addFilter(
+  data.Classes.Criteria.equalsAny('id', [
+    '01234567890abcdef01234567890abcd',
+    'fedcba0987654321fedcba0987654321',
+  ])
+);
+```
+
+#### Range Filter
+
+```typescript
+// From data/Criteria.ts:710-712
+const criteria = new data.Classes.Criteria();
+
+// Filter by range
+criteria.addFilter(
+  data.Classes.Criteria.range('price', { gte: 10, lte: 100 })
+);
+
+criteria.addFilter(
+  data.Classes.Criteria.range('stock', { gte: 1 })
+);
+
+criteria.addFilter(
+  data.Classes.Criteria.range('releaseDate', { lte: '2024-12-31' })
+);
+```
+
+#### Contains Filter
+
+```typescript
+// From data/Criteria.ts:670-672
+const criteria = new data.Classes.Criteria();
+
+// Filter by partial match (LIKE %value%)
+criteria.addFilter(
+  data.Classes.Criteria.contains('name', 'shirt')
+);
+```
+
+#### Prefix Filter
+
+```typescript
+// From data/Criteria.ts:680-682
+const criteria = new data.Classes.Criteria();
+
+// Filter by prefix (LIKE value%)
+criteria.addFilter(
+  data.Classes.Criteria.prefix('productNumber', 'PROD-')
+);
+```
+
+#### Suffix Filter
+
+```typescript
+// From data/Criteria.ts:690-692
+const criteria = new data.Classes.Criteria();
+
+// Filter by suffix (LIKE %value)
+criteria.addFilter(
+  data.Classes.Criteria.suffix('name', ' Edition')
+);
+```
+
+#### Multi Filter (AND/OR)
+
+```typescript
+// From data/Criteria.ts:752-754
+const criteria = new data.Classes.Criteria();
+
+// Combine multiple filters with AND
+criteria.addFilter(
+  data.Classes.Criteria.multi('AND', [
+    data.Classes.Criteria.equals('active', true),
+    data.Classes.Criteria.range('stock', { gte: 10 }),
+  ])
+);
+
+// Combine multiple filters with OR
+criteria.addFilter(
+  data.Classes.Criteria.multi('OR', [
+    data.Classes.Criteria.contains('name', 'shirt'),
+    data.Classes.Criteria.contains('name', 'pants'),
+  ])
+);
+```
+
+#### Not Filter
+
+```typescript
+// From data/Criteria.ts:736-738
+const criteria = new data.Classes.Criteria();
+
+// Negate filters
+criteria.addFilter(
+  data.Classes.Criteria.not('AND', [
+    data.Classes.Criteria.equals('active', false),
+  ])
+);
+```
+
+### Sorting
+
+```typescript
+// From data/Criteria.ts:642-644
+const criteria = new data.Classes.Criteria();
+
+// Sort by field
+criteria.addSorting(
+  data.Classes.Criteria.sort('name', 'ASC')
+);
+
+criteria.addSorting(
+  data.Classes.Criteria.sort('createdAt', 'DESC')
+);
+
+// Natural sorting (e.g., 'item1', 'item2', 'item10')
+criteria.addSorting(
+  data.Classes.Criteria.naturalSorting('name', 'ASC')
+);
+
+// Count sorting (sort by association count)
+criteria.addSorting(
+  data.Classes.Criteria.countSorting('products', 'DESC')
+);
+```
+
+### Associations
+
+Load related entities:
+
+```typescript
+// From data/Criteria.ts:437-447
+const criteria = new data.Classes.Criteria();
+
+// Load simple associations
+criteria.addAssociation('manufacturer');
+criteria.addAssociation('categories');
+
+// Load nested associations
+criteria.addAssociation('manufacturer.media');
+criteria.addAssociation('categories.products');
+
+// Configure association criteria
+const manufacturerCriteria = criteria.getAssociation('manufacturer');
+manufacturerCriteria.addSorting(
+  data.Classes.Criteria.sort('name', 'ASC')
+);
+```
+
+### Aggregations
+
+Perform data aggregations:
+
+```typescript
+// From data/Criteria.ts:549-621
+const criteria = new data.Classes.Criteria();
+
+// Count aggregation
+criteria.addAggregation(
+  data.Classes.Criteria.count('total-count', 'id')
+);
+
+// Sum aggregation
+criteria.addAggregation(
+  data.Classes.Criteria.sum('total-stock', 'stock')
+);
+
+// Average aggregation
+criteria.addAggregation(
+  data.Classes.Criteria.avg('avg-price', 'price')
+);
+
+// Min/Max aggregations
+criteria.addAggregation(
+  data.Classes.Criteria.min('min-price', 'price')
+);
+
+criteria.addAggregation(
+  data.Classes.Criteria.max('max-price', 'price')
+);
+
+// Stats aggregation (sum, max, min, avg, count)
+criteria.addAggregation(
+  data.Classes.Criteria.stats('price-stats', 'price')
+);
+
+// Terms aggregation (group by field)
+criteria.addAggregation(
+  data.Classes.Criteria.terms('manufacturers', 'manufacturerId', 10)
+);
+```
+
+### Advanced Features
+
+#### Post-Filter
+
+Filters applied after aggregations:
+
+```typescript
+// From data/Criteria.ts:369-372
+const criteria = new data.Classes.Criteria();
+
+// Add post-filter (doesn't affect aggregations)
+criteria.addPostFilter(
+  data.Classes.Criteria.equals('active', true)
+);
+```
+
+#### Field Selection
+
+Limit returned fields:
+
+```typescript
+// From data/Criteria.ts:418-422
+const criteria = new data.Classes.Criteria();
+
+// Only load specific fields
+criteria.addFields('id', 'name', 'productNumber', 'stock');
+```
+
+#### Total Count Mode
+
+```typescript
+// From data/Criteria.ts:3-10, 320-327
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const criteria = new data.Classes.Criteria();
+
+// No total count (fastest)
+criteria.setTotalCountMode(data.Classes.Criteria.TotalCountMode.NO_TOTAL_COUNT);
+
+// Exact total count (slow for large datasets)
+criteria.setTotalCountMode(data.Classes.Criteria.TotalCountMode.EXACT_TOTAL_COUNT);
+
+// Pagination total count (fast, limit * 5 + 1)
+criteria.setTotalCountMode(data.Classes.Criteria.TotalCountMode.PAGINATION_TOTAL_COUNT);
+```
+
+## Entity Class
+
+Entities are returned as special Entity objects with additional methods.
+
+### Entity Properties
+
+From _internals/data/Entity.ts:23-34:
+
+```typescript
+class Entity<EntityName> {
+  id: string;                      // Entity ID
+  _origin: Entities[EntityName];   // Original server data
+  _entityName: EntityName;         // Entity type name
+  _draft: Entities[EntityName];    // Modified data
+  _isDirty: boolean;               // Has unsaved changes
+  _isNew: boolean;                 // Is new entity
+}
+```
+
+### Entity Methods
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const product = await productRepository.get('01234567890abcdef01234567890abcd');
+
+if (product) {
+  // Check if entity is new
+  if (product.isNew()) {
+    console.log('This is a new entity');
+  }
+  
+  // Check if entity has changes
+  if (product.getIsDirty()) {
+    console.log('Entity has unsaved changes');
+  }
+  
+  // Get original values from server
+  const originalData = product.getOrigin();
+  console.log('Original name:', originalData.name);
+  
+  // Get current draft with modifications
+  const draftData = product.getDraft();
+  console.log('Current name:', draftData.name);
+  
+  // Get entity name
+  console.log('Entity type:', product.getEntityName()); // 'product'
+  
+  // Mark entity as new (for creation)
+  product.markAsNew();
+}
+```
+
+**Method implementations** (_internals/data/Entity.ts:76-123):
+
+```typescript
+// From _internals/data/Entity.ts:83-85
+markAsNew(): void {
+  this._isNew = true;
+}
+
+// From _internals/data/Entity.ts:90-92
+isNew(): boolean {
+  return this._isNew;
+}
+
+// From _internals/data/Entity.ts:97-99
+getIsDirty(): boolean {
+  return this._isDirty;
+}
+
+// From _internals/data/Entity.ts:104-106
+getOrigin(): Entities[EntityName] {
+  return this._origin;
+}
+
+// From _internals/data/Entity.ts:111-114
+getDraft(): Entities[EntityName] {
+  return this._draft;
+}
+
+// From _internals/data/Entity.ts:119-122
+getEntityName(): string {
+  return this._entityName as string;
+}
+```
+
+## EntityCollection
+
+Search results return an EntityCollection:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const productRepository = data.repository('product');
+const criteria = new data.Classes.Criteria();
+const products = await productRepository.search(criteria);
+
+if (products) {
+  // Collection properties
+  console.log(`Total: ${products.total}`);
+  console.log(`Count: ${products.length}`);
+  
+  // Iterate over entities
+  products.forEach(product => {
+    console.log(product.name);
+  });
+  
+  // Array methods work
+  const activeProducts = products.filter(p => p.active);
+  const productNames = products.map(p => p.name);
+}
+```
+
+## Dataset API
+
+For sharing reactive data between the admin and apps:
+
+### Subscribe to Dataset
+
+```typescript
+// From data/index.ts:57
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const unsubscribe = data.subscribe(
+  'my-dataset-id',
+  (dataset) => {
+    console.log('Dataset updated:', dataset.data);
+  },
+  {
+    selectors: ['field1', 'field2'], // Optional: limit data
+  }
+);
+
+// Clean up
+unsubscribe();
+```
+
+### Get Dataset
+
+```typescript
+// From data/index.ts:58
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const dataset = await data.get({
+  id: 'my-dataset-id',
+  selectors: ['field1', 'field2'],
+});
+
+console.log(dataset);
+```
+
+### Update Dataset
+
+```typescript
+// From data/index.ts:59
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+await data.update({
+  id: 'my-dataset-id',
+  data: { field1: 'new value' },
+});
+```
+
+## Practical Examples
+
+### Product Search with Filters
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+async function searchProducts(searchTerm: string, categoryId: string) {
+  const productRepository = data.repository('product');
+  const criteria = new data.Classes.Criteria();
+  
+  // Search term
+  criteria.setTerm(searchTerm);
+  
+  // Filters
+  criteria.addFilter(
+    data.Classes.Criteria.equals('active', true)
+  );
+  
+  criteria.addFilter(
+    data.Classes.Criteria.multi('OR', [
+      data.Classes.Criteria.equals('categoryId', categoryId),
+      data.Classes.Criteria.contains('categories.id', categoryId),
+    ])
+  );
+  
+  // Associations
+  criteria.addAssociation('manufacturer');
+  criteria.addAssociation('cover');
+  
+  // Sorting
+  criteria.addSorting(
+    data.Classes.Criteria.sort('name', 'ASC')
+  );
+  
+  // Pagination
+  criteria.setPage(1);
+  criteria.setLimit(25);
+  
+  const products = await productRepository.search(criteria);
+  return products;
+}
+```
+
+### Create and Save Product
+
+```typescript
+import { data, context } from '@shopware-ag/meteor-admin-sdk';
+
+async function createProduct() {
+  const productRepository = data.repository('product');
+  const currencyInfo = await context.getCurrency();
+  
+  // Create new product
+  const product = await productRepository.create();
+  
+  // Set properties
+  product.name = 'My New Product';
+  product.productNumber = `PROD-${Date.now()}`;
+  product.stock = 100;
+  product.taxId = '01234567890abcdef01234567890abcd';
+  product.active = true;
+  product.price = [{
+    currencyId: currencyInfo.systemCurrencyId,
+    gross: 99.99,
+    net: 84.03,
+    linked: true,
+  }];
+  
+  // Mark as new and save
+  product.markAsNew();
+  await productRepository.save(product);
+  
+  console.log('Product created:', product.id);
+  return product;
+}
+```
+
+### Bulk Update
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+async function activateAllProducts() {
+  const productRepository = data.repository('product');
+  const criteria = new data.Classes.Criteria();
+  
+  // Get inactive products
+  criteria.addFilter(
+    data.Classes.Criteria.equals('active', false)
+  );
+  criteria.setLimit(100);
+  
+  const products = await productRepository.search(criteria);
+  
+  if (products && products.length > 0) {
+    // Update all
+    products.forEach(product => {
+      product.active = true;
+    });
+    
+    // Save all at once
+    await productRepository.saveAll(products);
+    console.log(`Activated ${products.length} products`);
+  }
+}
+```
+
+## Best Practices
+
+### 1. Use Criteria for Efficient Queries
+
+```typescript
+// Good: Load only needed associations
+const criteria = new data.Classes.Criteria();
+criteria.addAssociation('manufacturer');
+
+// Avoid: Loading unnecessary data
+const criteria = new data.Classes.Criteria();
+criteria.addAssociation('manufacturer.products.categories.products');
+```
+
+### 2. Limit Results
+
+```typescript
+// Always set a limit for search queries
+const criteria = new data.Classes.Criteria();
+criteria.setLimit(25); // Don't load thousands of records
+```
+
+### 3. Use Field Selection
+
+```typescript
+// Load only needed fields
+const criteria = new data.Classes.Criteria();
+criteria.addFields('id', 'name', 'productNumber');
+```
+
+### 4. Check for Changes Before Saving
+
+```typescript
+const hasChanges = await productRepository.hasChanges(product);
+if (hasChanges) {
+  await productRepository.save(product);
+}
+```
+
+### 5. Handle Errors
+
+```typescript
+try {
+  await productRepository.save(product);
+} catch (error) {
+  console.error('Failed to save product:', error);
+  // Handle error appropriately
+}
+```
+
+## Performance Tips
+
+- Use `TotalCountMode.NO_TOTAL_COUNT` when you don't need pagination (data/Criteria.ts:4)
+- Limit associations to only what you need
+- Use post-filters for UI filtering without affecting aggregations
+- Batch operations with `saveAll()` instead of multiple `save()` calls
+- Use field selection to reduce data transfer
+
+## Next Steps
+
+- Learn about [Context API](/admin-sdk/concepts/context) for checking privileges before data operations
+- Explore [Architecture](/admin-sdk/concepts/architecture) to understand the underlying communication
+- Check [Location Module](/admin-sdk/concepts/location) for managing your app's iframe

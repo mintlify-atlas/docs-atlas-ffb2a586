@@ -1,0 +1,158 @@
+---
+title: Notification (Snackbar)
+description: A non-intrusive notification component that appears at the bottom-right of the screen for displaying temporary messages.
+---
+
+## Import
+
+```vue
+import { MtSnackbar } from '@/components/feedback-indicator/mt-snackbar/mt-snackbar.vue';
+import { useSnackbar } from '@/components/feedback-indicator/mt-snackbar/composables/use-snackbar';
+```
+
+## Overview
+
+The Snackbar component (also referred to as Notification) provides a way to display temporary messages at the bottom-right of the screen. It supports multiple notifications stacked together with smooth animations.
+
+## Snackbar Interface
+
+```typescript
+interface Snackbar {
+  id: string;
+  // Add your snackbar properties here based on the implementation
+}
+```
+
+## Component Props
+
+The `MtSnackbar` component manages snackbars internally using the `useSnackbar` composable. It doesn't accept direct props but renders snackbars from the global state.
+
+## Composable API
+
+### useSnackbar()
+
+Returns an object with:
+
+<ParamField path="snackbars" type="Ref<Snackbar[]>">
+  Reactive array of current snackbar notifications.
+</ParamField>
+
+<ParamField path="removeSnackbar" type="function">
+  Function to remove a snackbar by ID.
+  
+  **Signature:** `(id: string) => void`
+</ParamField>
+
+## Usage Examples
+
+### Setup the Snackbar Component
+
+First, add the snackbar component to your root layout:
+
+```vue
+<template>
+  <div id="app">
+    <router-view />
+    <mt-snackbar />
+  </div>
+</template>
+
+<script setup>
+import { MtSnackbar } from '@/components/feedback-indicator/mt-snackbar/mt-snackbar.vue';
+</script>
+```
+
+### Display Notifications
+
+```vue
+<template>
+  <mt-button @click="showNotification">
+    Show Notification
+  </mt-button>
+</template>
+
+<script setup>
+import { useSnackbar } from '@/components/feedback-indicator/mt-snackbar/composables/use-snackbar';
+
+const { snackbars, addSnackbar } = useSnackbar();
+
+const showNotification = () => {
+  addSnackbar({
+    id: Date.now().toString(),
+    message: 'Operation completed successfully!',
+    type: 'positive'
+  });
+};
+</script>
+```
+
+### Multiple Stacked Notifications
+
+```vue
+<script setup>
+import { useSnackbar } from '@/components/feedback-indicator/mt-snackbar/composables/use-snackbar';
+
+const { addSnackbar } = useSnackbar();
+
+const showMultiple = () => {
+  addSnackbar({
+    id: '1',
+    message: 'First notification',
+    type: 'info'
+  });
+  
+  setTimeout(() => {
+    addSnackbar({
+      id: '2',
+      message: 'Second notification',
+      type: 'positive'
+    });
+  }, 500);
+  
+  setTimeout(() => {
+    addSnackbar({
+      id: '3',
+      message: 'Third notification',
+      type: 'attention'
+    });
+  }, 1000);
+};
+</script>
+```
+
+### Manual Dismissal
+
+```vue
+<script setup>
+import { useSnackbar } from '@/components/feedback-indicator/mt-snackbar/composables/use-snackbar';
+
+const { addSnackbar, removeSnackbar } = useSnackbar();
+
+const notificationId = ref(null);
+
+const showPersistent = () => {
+  notificationId.value = Date.now().toString();
+  addSnackbar({
+    id: notificationId.value,
+    message: 'This will stay until manually dismissed',
+    type: 'info',
+    persistent: true
+  });
+};
+
+const dismissNotification = () => {
+  if (notificationId.value) {
+    removeSnackbar(notificationId.value);
+  }
+};
+</script>
+```
+
+## Behavior
+
+- Notifications appear at the bottom-right corner of the screen
+- Multiple notifications stack vertically with smooth slide-in animations
+- Hover over notifications to prevent auto-dismissal
+- Notifications slide in from the right and slide out to the bottom when dismissed
+- Heights are dynamically calculated for smooth stacking animations
+- Portal rendering ensures notifications appear above other content

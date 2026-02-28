@@ -1,0 +1,97 @@
+---
+title: Badge
+description: A compact badge component for displaying status indicators, labels, and counts with various variants and sizes.
+---
+
+## Import
+
+```vue
+import { MtBadge } from '@/components/feedback-indicator/mt-badge/mt-badge.vue';
+```
+
+## Props
+
+<ParamField path="variant" type="string" default="neutral">
+  The visual style variant of the badge.
+  
+  **Options:** `neutral`, `info`, `attention`, `critical`, `positive`
+</ParamField>
+
+<ParamField path="icon" type="string">
+  Optional icon name to display inside the badge. Uses the icon component system.
+</ParamField>
+
+<ParamField path="size" type="string" default="s">
+  The size of the badge.
+  
+  **Options:** `s`, `m`, `l`
+</ParamField>
+
+<ParamField path="statusIndicator" type="boolean" default="false">
+  When enabled, displays a colored dot indicator inside the badge for status visualization.
+</ParamField>
+
+## Slots
+
+<ParamField path="default" type="slot">
+  The main content area for badge text or custom content.
+</ParamField>
+
+## Usage Examples
+
+### Basic Badge
+
+```vue
+<template>
+  <mt-badge>Default</mt-badge>
+  <mt-badge variant="info">Info</mt-badge>
+  <mt-badge variant="positive">Success</mt-badge>
+  <mt-badge variant="attention">Warning</mt-badge>
+  <mt-badge variant="critical">Error</mt-badge>
+</template>
+```
+
+### Badge with Icon
+
+```vue
+<template>
+  <mt-badge variant="info" icon="solid-info-circle">
+    Information
+  </mt-badge>
+  <mt-badge variant="positive" icon="solid-check-circle">
+    Completed
+  </mt-badge>
+</template>
+```
+
+### Badge with Status Indicator
+
+```vue
+<template>
+  <mt-badge variant="positive" :status-indicator="true">
+    Active
+  </mt-badge>
+  <mt-badge variant="critical" :status-indicator="true">
+    Offline
+  </mt-badge>
+</template>
+```
+
+### Different Sizes
+
+```vue
+<template>
+  <mt-badge size="s">Small</mt-badge>
+  <mt-badge size="m">Medium</mt-badge>
+  <mt-badge size="l">Large</mt-badge>
+</template>
+```
+
+### Count Badge
+
+```vue
+<template>
+  <mt-badge variant="critical" size="s">99+</mt-badge>
+  <mt-badge variant="info" size="m">12</mt-badge>
+</template>
+```

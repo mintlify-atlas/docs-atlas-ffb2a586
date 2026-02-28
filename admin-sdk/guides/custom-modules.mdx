@@ -1,0 +1,366 @@
+---
+title: Custom Admin Modules
+description: Learn how to add custom modules, menu items, and routes to the Shopware administration
+---
+
+This guide shows you how to create custom admin modules with navigation items, custom routes, and dedicated pages.
+
+## Overview
+
+Custom modules allow you to:
+- Add new main navigation entries
+- Create custom menu items under existing modules
+- Build dedicated pages with custom functionality
+- Add settings pages
+
+## Main Modules
+
+Main modules create new top-level navigation entries in the admin sidebar.
+
+### Creating a Main Module
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+ui.mainModule.addMainModule({
+    heading: 'My Custom Module',
+    locationId: 'my-custom-module-main',
+    displaySearchBar: true,
+    displayLanguageSwitch: false
+});
+```
+
+### Parameters
+
+- **heading**: The label shown in the navigation
+- **locationId**: Unique identifier for rendering the module view
+- **displaySearchBar**: Show/hide the search bar (default: true)
+- **displayLanguageSwitch**: Show/hide language switcher (default: false)
+
+### Complete Main Module Example
+
+```typescript
+import { ui, context, notification } from '@shopware-ag/meteor-admin-sdk';
+
+// Register the main module
+ui.mainModule.addMainModule({
+    heading: 'Analytics Dashboard',
+    locationId: 'analytics-dashboard-main',
+    displaySearchBar: false,
+});
+
+// In your location renderer, create the view
+import { defineComponent } from 'vue';
+import { SwButton } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton
+    },
+    template: `
+        <div style="padding: 20px;">
+            <h1>Analytics Dashboard</h1>
+            <p>Welcome to your custom module!</p>
+            
+            <div>
+                <h3>Current Language</h3>
+                <sw-button @click="getLanguage">Get Language</sw-button>
+                <p>Language ID: {{ languageId }}</p>
+            </div>
+        </div>
+    `,
+    data() {
+        return {
+            languageId: ''
+        };
+    },
+    methods: {
+        async getLanguage() {
+            const language = await context.getLanguage();
+            this.languageId = language.languageId;
+        }
+    }
+});
+```
+
+## Menu Items
+
+Menu items are added under existing modules or your custom main modules.
+
+### Adding a Menu Item
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+ui.menu.addMenuItem({
+    label: 'Custom Reports',
+    locationId: 'custom-reports-page',
+    displaySearchBar: true,
+    parent: 'sw-order',  // Add under Orders module
+    position: 10         // Control the order
+});
+```
+
+### Parameters
+
+- **label**: The menu item text
+- **locationId**: Unique identifier for the page
+- **displaySearchBar**: Show/hide search bar
+- **parent**: Parent module ID (e.g., 'sw-order', 'sw-product')
+- **position**: Numeric position for ordering (optional)
+
+### Common Parent IDs
+
+```typescript
+// Built-in parent module IDs
+'sw-catalogue'      // Catalogues
+'sw-order'          // Orders
+'sw-customer'       // Customers
+'sw-content'        // Content
+'sw-marketing'      // Marketing
+'sw-settings'       // Settings
+'sw-extension'      // Extensions
+```
+
+### Multiple Menu Items Example
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+// Add multiple menu items under Orders
+ui.menu.addMenuItem({
+    label: 'Export Orders',
+    locationId: 'export-orders-page',
+    parent: 'sw-order',
+    position: 10
+});
+
+ui.menu.addMenuItem({
+    label: 'Import Orders',
+    locationId: 'import-orders-page',
+    parent: 'sw-order',
+    position: 20
+});
+
+ui.menu.addMenuItem({
+    label: 'Order Analytics',
+    locationId: 'order-analytics-page',
+    parent: 'sw-order',
+    position: 30
+});
+```
+
+### Third-Level Menu Items
+
+Create nested menu structures:
+
+```typescript
+// Add a menu item under an existing submenu
+ui.menu.addMenuItem({
+    label: 'Advanced Options',
+    locationId: 'advanced-options-page',
+    parent: 'sw-manufacturer',  // Submenu of Catalogues
+    displaySearchBar: false
+});
+```
+
+## Settings Items
+
+Add custom pages to the Settings module:
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+ui.settings.addSettingsItem({
+    label: 'Integration Settings',
+    locationId: 'integration-settings-page',
+    icon: 'default-action-settings',
+    displaySearchBar: false,
+    tab: 'plugins'  // 'plugins', 'shop', or 'system'
+});
+```
+
+### Settings Tabs
+
+- **plugins**: Plugin-related settings
+- **shop**: Shop-wide settings
+- **system**: System configuration
+
+### Available Icons
+
+Common icon names:
+
+```typescript
+'default-action-settings'
+'default-object-books'
+'default-action-cloud-upload'
+'default-object-plug'
+'default-object-rocket'
+'default-action-share'
+```
+
+## Action Buttons
+
+Add custom action buttons to entity pages:
+
+```typescript
+import { ui, notification, window } from '@shopware-ag/meteor-admin-sdk';
+
+// Detail page action button
+ui.actionButton.add({
+    action: 'custom-product-action',
+    entity: 'product',
+    view: 'detail',
+    label: 'Export Product',
+    callback: () => {
+        notification.dispatch({
+            title: 'Export Started',
+            message: 'Product export in progress...',
+            variant: 'info'
+        });
+    }
+});
+
+// List page action button with selected items
+ui.actionButton.add({
+    name: 'bulk-export',
+    entity: 'product',
+    view: 'list',
+    label: 'Bulk Export',
+    callback: (entity, entityIdList) => {
+        notification.dispatch({
+            title: 'Bulk Export',
+            message: `Exporting ${entityIdList.length} products`,
+            variant: 'success'
+        });
+    }
+});
+```
+
+## Smart Bar Buttons
+
+Add buttons to the smart bar in main modules:
+
+```typescript
+import { ui, notification } from '@shopware-ag/meteor-admin-sdk';
+
+ui.mainModule.addSmartBarButton({
+    locationId: 'my-custom-module-main',
+    buttonId: 'save-button',
+    label: 'Save',
+    variant: 'primary',
+    onClickCallback: () => {
+        // Save logic here
+        notification.dispatch({
+            title: 'Saved',
+            message: 'Changes saved successfully',
+            variant: 'success'
+        });
+    }
+});
+```
+
+### Button Variants
+
+- **primary**: Blue button (main action)
+- **ghost**: Transparent button
+- **danger**: Red button (destructive action)
+- **ghost-danger**: Transparent red button
+- **contrast**: High contrast button
+- **context**: Context-specific styling
+
+## Complete Module Example
+
+```typescript
+import { ui, context, data, notification, window } from '@shopware-ag/meteor-admin-sdk';
+import { defineComponent } from 'vue';
+import { SwButton, SwTextField } from '@shopware-ag/meteor-component-library';
+
+const { repository, Classes: { Criteria } } = data;
+
+// Register the main module
+ui.mainModule.addMainModule({
+    heading: 'Order Manager',
+    locationId: 'order-manager-main',
+    displaySearchBar: true,
+});
+
+// Add smart bar button
+ui.mainModule.addSmartBarButton({
+    locationId: 'order-manager-main',
+    buttonId: 'export-btn',
+    label: 'Export Orders',
+    variant: 'primary',
+    onClickCallback: () => {
+        notification.dispatch({
+            title: 'Export Started',
+            message: 'Exporting orders...',
+            variant: 'info'
+        });
+    }
+});
+
+// Create the view component
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+        'sw-text-field': SwTextField,
+    },
+    template: `
+        <div style="padding: 20px;">
+            <h1>Order Manager</h1>
+
+            <div>
+                <h3>Quick Stats</h3>
+                <sw-button @click="loadOrderStats">Load Statistics</sw-button>
+                <p>Total Orders: {{ totalOrders }}</p>
+            </div>
+
+            <div>
+                <h3>Navigate</h3>
+                <sw-button @click="goToDashboard">Go to Dashboard</sw-button>
+            </div>
+        </div>
+    `,
+    data() {
+        return {
+            totalOrders: 0
+        };
+    },
+    methods: {
+        async loadOrderStats() {
+            const criteria = new Criteria();
+            criteria.setLimit(1);
+
+            const orders = await repository('order').search(criteria);
+            if (orders) {
+                this.totalOrders = orders.total;
+            }
+        },
+
+        goToDashboard() {
+            window.routerPush({
+                name: 'sw.dashboard.index',
+                params: {}
+            });
+        }
+    },
+    mounted() {
+        this.loadOrderStats();
+    }
+});
+```
+
+## Best Practices
+
+1. **Clear naming**: Use descriptive labels and locationIds
+2. **Logical grouping**: Add menu items under appropriate parent modules
+3. **Consistent positioning**: Use position parameter to maintain order
+4. **Appropriate search bars**: Show search bar only when relevant
+5. **User feedback**: Always provide feedback for actions using notifications
+
+## Next Steps
+
+- Learn about [Building Apps](/admin-sdk/guides/building-apps) for complete app structure
+- See [Data Management](/admin-sdk/guides/data-management) for working with entities
+- Check out the [Basic App Example](/admin-sdk/examples/basic-app) for implementation

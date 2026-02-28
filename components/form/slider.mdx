@@ -1,0 +1,200 @@
+---
+title: Slider
+description: Range slider for numeric value selection
+---
+
+The `MtSlider` component allows users to select a numeric value or range using an interactive slider.
+
+## Import
+
+```vue
+import { MtSlider } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="number | number[]" required>
+  The value of the slider. If `isRange` is true, this should be an array with two values.
+</ParamField>
+
+<ParamField path="label" type="string" required>
+  Defines the label of the slider.
+</ParamField>
+
+<ParamField path="min" type="number" default="0">
+  Defines the minimum value of the number.
+</ParamField>
+
+<ParamField path="max" type="number" default="100">
+  Defines the maximum value of the number.
+</ParamField>
+
+<ParamField path="step" type="number" default="1">
+  Defines the amount by which the number is increased or decreased per step.
+</ParamField>
+
+<ParamField path="isRange" type="boolean" default="false">
+  Defines if it is a range slider.
+</ParamField>
+
+<ParamField path="minDistance" type="number" default="0">
+  Defines the minimum distance between the two sliders. Should be a multiple of the step.
+</ParamField>
+
+<ParamField path="markCount" type="number" default="5">
+  Defines the amount of marks on the slider.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables the slider.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Marks the field as required.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Toggles inheritance visualization.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Determines if the field is inheritable.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: number | number[]) => void">
+  Emitted when the slider value changes.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="(event: unknown) => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="(event: unknown) => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+## Slots
+
+<ParamField path="hint" type="slot">
+  Additional hint content.
+</ParamField>
+
+## Usage
+
+### Basic Slider
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const volume = ref(50);
+</script>
+
+<template>
+  <mt-slider 
+    v-model="volume"
+    label="Volume"
+    :min="0"
+    :max="100"
+  />
+</template>
+```
+
+### Range Slider
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const priceRange = ref([20, 80]);
+</script>
+
+<template>
+  <mt-slider 
+    v-model="priceRange"
+    label="Price range"
+    is-range
+    :min="0"
+    :max="100"
+  />
+</template>
+```
+
+### Custom Step Size
+
+```vue
+<template>
+  <mt-slider 
+    v-model="value"
+    label="Value"
+    :min="0"
+    :max="100"
+    :step="5"
+  />
+</template>
+```
+
+### With Minimum Distance
+
+```vue
+<template>
+  <mt-slider 
+    v-model="range"
+    label="Temperature range"
+    is-range
+    :min="-20"
+    :max="40"
+    :min-distance="5"
+  />
+</template>
+```
+
+### Custom Mark Count
+
+```vue
+<template>
+  <mt-slider 
+    v-model="value"
+    label="Rating"
+    :min="0"
+    :max="10"
+    :mark-count="11"
+  />
+</template>
+```
+
+### Percentage Slider
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const percentage = ref(75);
+</script>
+
+<template>
+  <mt-slider 
+    v-model="percentage"
+    label="Progress"
+    :min="0"
+    :max="100"
+  >
+    <template #hint>
+      {{ percentage }}%
+    </template>
+  </mt-slider>
+</template>
+```
+
+## Accessibility
+
+- Uses native range input for accessibility
+- Keyboard navigation (arrow keys to adjust value)
+- Tooltip shows current value on hover
+- Visual marks indicate scale
+- Number fields allow direct input
+- ARIA labels for screen readers
+- Disabled state prevents interaction

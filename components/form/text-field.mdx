@@ -1,0 +1,229 @@
+---
+title: Text Field
+description: Single-line text input component
+---
+
+The `MtTextField` component provides a single-line text input with various features like validation, copying, and character limits.
+
+## Import
+
+```vue
+import { MtTextField } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string | number">
+  The value of the text field.
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for your text field. Usually used to guide the user what value this field controls.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  A placeholder text being displayed if no value is set.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  A text that helps the user to understand what this field does.
+</ParamField>
+
+<ParamField path="size" type="'small' | 'default'" default="'default'">
+  The size of the text field.
+</ParamField>
+
+<ParamField path="copyable" type="boolean" default="false">
+  Toggles the copy function of the text field.
+</ParamField>
+
+<ParamField path="copyableTooltip" type="boolean" default="false">
+  If set to true the tooltip will change on successful copy.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Determines if the field is disabled.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Determines if the field is required.
+</ParamField>
+
+<ParamField path="maxLength" type="number">
+  If set to a value a character counter will be displayed.
+</ParamField>
+
+<ParamField path="error" type="object">
+  An error in your business logic related to this field.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Toggles the inheritance visualization.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Determines if the field is inheritable.
+</ParamField>
+
+<ParamField path="disableInheritanceToggle" type="boolean" default="false">
+  Determines the active state of the inheritance toggle.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for the input.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string) => void">
+  Emitted when the text value changes.
+</ParamField>
+
+<ParamField path="change" type="(value: string) => void">
+  Emitted when input loses focus.
+</ParamField>
+
+<ParamField path="focus" type="(event: FocusEvent) => void">
+  Emitted when the field gains focus.
+</ParamField>
+
+<ParamField path="blur" type="(event: FocusEvent) => void">
+  Emitted when the field loses focus.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="(event: unknown) => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="(event: unknown) => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+## Slots
+
+<ParamField path="prefix" type="slot">
+  Content displayed before the input.
+</ParamField>
+
+<ParamField path="suffix" type="slot">
+  Content displayed after the input.
+</ParamField>
+
+<ParamField path="hint" type="slot">
+  Additional hint content below the field.
+</ParamField>
+
+## Usage
+
+### Basic Text Field
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const name = ref('');
+</script>
+
+<template>
+  <mt-text-field 
+    v-model="name"
+    label="Name"
+    placeholder="Enter your name"
+  />
+</template>
+```
+
+### With Character Limit
+
+```vue
+<template>
+  <mt-text-field 
+    v-model="bio"
+    label="Bio"
+    :max-length="160"
+    help-text="Short description about yourself"
+  />
+</template>
+```
+
+### Copyable Field
+
+```vue
+<template>
+  <mt-text-field 
+    v-model="apiKey"
+    label="API Key"
+    copyable
+    copyable-tooltip
+  />
+</template>
+```
+
+### Small Size
+
+```vue
+<template>
+  <mt-text-field 
+    v-model="compactValue"
+    label="Value"
+    size="small"
+  />
+</template>
+```
+
+### With Prefix and Suffix
+
+```vue
+<template>
+  <mt-text-field v-model="username" label="Username">
+    <template #prefix>
+      <span>@</span>
+    </template>
+    <template #suffix>
+      <mt-icon name="regular-user" />
+    </template>
+  </mt-text-field>
+</template>
+```
+
+### Required Field
+
+```vue
+<script setup>
+import { ref, computed } from 'vue';
+const email = ref('');
+const error = computed(() => 
+  !email.value ? { detail: 'This field is required' } : null
+);
+</script>
+
+<template>
+  <mt-text-field 
+    v-model="email"
+    label="Email"
+    :error="error"
+    required
+  />
+</template>
+```
+
+### Disabled Field
+
+```vue
+<template>
+  <mt-text-field 
+    v-model="lockedValue"
+    label="Status"
+    disabled
+  />
+</template>
+```
+
+## Accessibility
+
+- Uses native text input for proper behavior
+- Label properly associated with input via `for` attribute
+- Error messages linked via aria-describedby
+- Character count announced to screen readers
+- Focus visible outline for keyboard navigation
+- Placeholder text accessible
+- Required fields marked with asterisk

@@ -1,0 +1,148 @@
+---
+title: Checkbox
+description: Checkbox input for binary choices
+---
+
+The `MtCheckbox` component allows users to toggle between checked and unchecked states.
+
+## Import
+
+```vue
+import { MtCheckbox } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="boolean">
+  v-model binding for the checkbox value.
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for the checkbox.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name of the input field when submitting a form.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Toggles the disabled state of the checkbox.
+</ParamField>
+
+<ParamField path="checked" type="boolean">
+  **Deprecated**: Use `v-model` instead. Determines the checked state of the checkbox.
+</ParamField>
+
+<ParamField path="partial" type="boolean" default="false">
+  Determines if the field is partially checked (indeterminate state).
+</ParamField>
+
+<ParamField path="bordered" type="boolean" default="false">
+  Determines if the field is surrounded by a border.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Marks the field as required with an asterisk.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information for the field.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object for this field.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Determines if the field is inherited.
+</ParamField>
+
+<ParamField path="inheritedValue" type="boolean">
+  Inherited value from another SalesChannel.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: boolean) => void">
+  Emitted when the checkbox value changes.
+</ParamField>
+
+<ParamField path="change" type="(value: boolean) => void">
+  **Deprecated**: Use `update:modelValue` instead.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="() => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="() => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+## Slots
+
+<ParamField path="label" type="slot">
+  Custom label content.
+</ParamField>
+
+## Usage
+
+### Basic Checkbox
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const agreed = ref(false);
+</script>
+
+<template>
+  <mt-checkbox 
+    v-model="agreed"
+    label="I agree to the terms and conditions"
+  />
+</template>
+```
+
+### Checkbox with Help Text
+
+```vue
+<template>
+  <mt-checkbox 
+    v-model="subscribed"
+    label="Subscribe to newsletter"
+    help-text="Receive weekly updates about new features"
+  />
+</template>
+```
+
+### Bordered Checkbox
+
+```vue
+<template>
+  <mt-checkbox 
+    v-model="enabled"
+    label="Enable feature"
+    bordered
+  />
+</template>
+```
+
+### Indeterminate State
+
+```vue
+<template>
+  <mt-checkbox 
+    v-model="someChecked"
+    label="Select all"
+    :partial="someChildrenChecked && !allChildrenChecked"
+  />
+</template>
+```
+
+## Accessibility
+
+- Uses native checkbox input with proper ARIA attributes
+- Label is clickable and associated with input via `for` attribute
+- Disabled state prevents interaction and changes cursor
+- Focus visible outline for keyboard navigation
+- Required fields marked with asterisk

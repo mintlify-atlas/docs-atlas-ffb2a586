@@ -1,0 +1,134 @@
+---
+title: "Design Tokens Overview"
+description: "Learn about Meteor Design System tokens and their structure"
+---
+
+## What are Design Tokens?
+
+Design tokens are the visual design atoms of the Meteor Design System. They are named entities that store visual design attributes such as colors, typography, spacing, and other UI properties. Tokens provide a single source of truth for design decisions and ensure consistency across the Shopware ecosystem.
+
+## Why Use Design Tokens?
+
+Design tokens offer several benefits:
+
+- **Consistency**: Maintain uniform visual design across all Shopware products
+- **Scalability**: Update design values in one place and propagate changes everywhere
+- **Theme Support**: Built-in light and dark mode support
+- **Developer Experience**: Work with semantic, human-readable variable names
+- **Cross-Platform**: Use the same design language across web, native, and other platforms
+
+## Token Structure
+
+Meteor tokens are organized in a hierarchical structure with two main layers:
+
+### Primitive Tokens
+
+Primitive tokens are the foundation of the design system. They contain raw color palettes, sizing scales, and font weights without semantic meaning.
+
+```json
+{
+  "color": {
+    "brand": {
+      "500": {
+        "$value": "#0870ff",
+        "$type": "color"
+      }
+    }
+  },
+  "scale": {
+    "size": {
+      "16": {
+        "$value": 16,
+        "$type": "float"
+      }
+    }
+  }
+}
+```
+
+### Semantic Tokens
+
+Semantic tokens reference primitive tokens and provide context-specific meaning. They define how primitives should be applied in the UI.
+
+```json
+{
+  "color": {
+    "interaction": {
+      "primary": {
+        "default": {
+          "$value": "{color.brand.500}",
+          "$type": "color",
+          "$description": "Use for resting primary interactive elements."
+        }
+      }
+    }
+  }
+}
+```
+
+## Token Categories
+
+The Meteor Design System organizes tokens into these categories:
+
+### Colors
+
+- **Interaction**: Colors for interactive elements (buttons, links)
+- **Background**: Surface and background colors
+- **Text**: Typography colors for different emphasis levels
+- **Border**: Border and divider colors
+- **Icon**: Icon colors for various states
+- **Elevation**: Shadow and backdrop colors
+
+### Typography
+
+- **Font Family**: Typeface definitions for headings and body text
+- **Font Size**: Text size scale from 2xs to 3xl
+- **Font Weight**: Weight scale from regular to bold
+- **Line Height**: Line height values for each text size
+
+### Spacing
+
+- **Scale**: Numeric scale from 0 to 256 for margins, padding, and gaps
+
+### Border Radius
+
+- **Radius Scale**: From none to round for element corner rounding
+
+## CSS Custom Properties
+
+Tokens are delivered as CSS custom properties (CSS variables) for easy consumption:
+
+```css
+:root {
+  /* Primitive tokens */
+  --color-brand-500: #0870ff;
+  --scale-size-16: 1rem;
+  
+  /* Semantic tokens */
+  --color-interaction-primary-default: #0870ff;
+  --font-size-s: 1rem;
+}
+```
+
+## Package Contents
+
+The `@shopware-ag/meteor-tokens` package includes:
+
+- **Primitive CSS**: Foundation color palettes and scales
+- **Theme CSS**: Light and dark theme semantic tokens
+- **JSON Dictionaries**: Raw token definitions for tooling
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/design-tokens/installation">
+    Get started by installing the tokens package
+  </Card>
+  <Card title="Usage" icon="code" href="/design-tokens/usage">
+    Learn how to use tokens in your CSS
+  </Card>
+  <Card title="Primitives" icon="palette" href="/design-tokens/primitives">
+    Explore the primitive token reference
+  </Card>
+  <Card title="Theme Customization" icon="paintbrush" href="/design-tokens/theme-customization">
+    Customize and theme your application
+  </Card>
+</CardGroup>

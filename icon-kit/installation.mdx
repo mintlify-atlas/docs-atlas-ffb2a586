@@ -1,0 +1,125 @@
+---
+title: Installation
+description: Install the Meteor Icon Kit in your project
+---
+
+# Installation
+
+Get started with the Meteor Icon Kit by installing the package in your project.
+
+## Prerequisites
+
+Before installing the Icon Kit, ensure you have Node.js and a package manager installed:
+
+- **npm** (comes with Node.js)
+- **yarn** (optional alternative)
+- **pnpm** (optional alternative)
+
+To verify your installation:
+
+```bash
+npm -v
+# or
+yarn -v
+```
+
+## Install the Package
+
+Choose your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install @shopware-ag/meteor-icon-kit
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-icon-kit
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-icon-kit
+```
+
+</CodeGroup>
+
+## Import CSS Styles
+
+After installation, you need to import the Icon Kit styles into your project. The styles enable proper rendering and allow for dynamic color changes.
+
+### Option 1: SCSS/Sass Import
+
+If your project uses Sass or SCSS, import the styles directly:
+
+```scss
+@import "@shopware-ag/meteor-icon-kit/icons/meteor-icon-kit.scss";
+```
+
+### Option 2: CSS Import
+
+For standard CSS, link to the compiled stylesheet:
+
+```html
+<link
+  rel="stylesheet"
+  href="node_modules/@shopware-ag/meteor-icon-kit/icons/meteor-icon-kit.css"
+/>
+```
+
+### Option 3: JavaScript Import
+
+In modern bundlers (Vite, Webpack), you can import CSS directly in your JavaScript:
+
+```js
+import '@shopware-ag/meteor-icon-kit/icons/meteor-icon-kit.css';
+```
+
+## Verify Installation
+
+To verify the installation was successful, try importing an icon:
+
+```js
+import ActivityIcon from '@shopware-ag/meteor-icon-kit/icons/regular/activity.svg';
+
+console.log(ActivityIcon); // Should output the SVG path
+```
+
+## Package Structure
+
+After installation, the package contains:
+
+```
+@shopware-ag/meteor-icon-kit/
+├── icons/
+│   ├── regular/          # Outlined icon style
+│   │   ├── activity.svg
+│   │   ├── archive.svg
+│   │   └── ...
+│   ├── solid/            # Filled icon style
+│   │   ├── activity.svg
+│   │   ├── archive.svg
+│   │   └── ...
+│   ├── meta.json         # Icon metadata
+│   └── meteor-icon-kit.css
+├── package.json
+└── README.md
+```
+
+## TypeScript Support
+
+If you're using TypeScript and importing SVGs as modules, you may need to add type declarations:
+
+```typescript
+// svg.d.ts
+declare module '*.svg' {
+  const content: any;
+  export default content;
+}
+```
+
+## Next Steps
+
+Now that you've installed the Icon Kit, learn how to use icons in your application:
+
+- [Usage](/icon-kit/usage) - Learn how to use icons
+- [Icon Library](/icon-kit/icon-library) - Browse available icons

@@ -1,0 +1,272 @@
+---
+title: Installation
+description: Install and configure the Meteor Component Library in your Vue 3 application
+---
+
+Get started with the Meteor Component Library by following these installation and setup instructions.
+
+## Requirements
+
+Before installing, ensure you have:
+
+- **Vue 3** application
+- **Node.js** 18 or higher
+- **vue-i18n** plugin for translations
+
+## Install the Package
+
+Install the component library and its peer dependencies:
+
+<CodeGroup>
+```bash npm
+npm install @shopware-ag/meteor-component-library vue-i18n
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-component-library vue-i18n
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-component-library vue-i18n
+```
+</CodeGroup>
+
+## Import Styles
+
+Import the required CSS files in your application's root file (e.g., `main.ts` or `main.js`):
+
+```typescript
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+```
+
+<Note>
+  The `font.css` import includes the Inter font family, which is used throughout the Shopware administration.
+</Note>
+
+## Configure Vue i18n
+
+The component library requires the Vue i18n plugin for translations. Configure it in your application:
+
+```typescript main.ts
+import { createApp } from 'vue';
+import { createI18n } from 'vue-i18n';
+import App from './App.vue';
+
+// Create i18n instance
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en-GB',
+  fallbackLocale: 'en-GB',
+});
+
+const app = createApp(App);
+
+// Register i18n plugin
+app.use(i18n);
+
+app.mount('#app');
+```
+
+<Info>
+  The component library includes English (`en-GB`) and German (`de-DE`) translations by default. For other languages, you'll need to add custom snippets.
+</Info>
+
+## Complete Setup Example
+
+Here's a complete example of setting up your Vue application with the Meteor Component Library:
+
+```typescript main.ts
+import { createApp } from 'vue';
+import { createI18n } from 'vue-i18n';
+import App from './App.vue';
+
+// Import Meteor styles
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+
+// Configure i18n
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en-GB',
+  fallbackLocale: 'en-GB',
+  messages: {
+    'en-GB': {
+      // Your custom translations
+    },
+  },
+});
+
+// Create and configure app
+const app = createApp(App);
+app.use(i18n);
+app.mount('#app');
+```
+
+## Using Components
+
+Each component can be imported independently from the package root:
+
+### Single Component Import
+
+```vue
+<template>
+  <mt-button variant="primary" @click="handleClick">
+    Click me
+  </mt-button>
+</template>
+
+<script setup lang="ts">
+import { MtButton } from '@shopware-ag/meteor-component-library';
+
+const handleClick = () => {
+  console.log('Button clicked!');
+};
+</script>
+```
+
+### Multiple Components
+
+```vue
+<template>
+  <mt-card>
+    <mt-text-field 
+      label="Username" 
+      v-model="username"
+    />
+    <mt-password-field 
+      label="Password" 
+      v-model="password"
+    />
+    <mt-button variant="primary" @click="login">
+      Login
+    </mt-button>
+  </mt-card>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { 
+  MtCard, 
+  MtTextField, 
+  MtPasswordField, 
+  MtButton 
+} from '@shopware-ag/meteor-component-library';
+
+const username = ref('');
+const password = ref('');
+
+const login = () => {
+  // Login logic
+};
+</script>
+```
+
+## TypeScript Support
+
+The component library includes full TypeScript definitions. No additional `@types` packages are required.
+
+```typescript
+import type { Toast, Filter, Option } from '@shopware-ag/meteor-component-library';
+
+// Use types in your application
+const showToast = (toast: Toast) => {
+  // ...
+};
+```
+
+## Peer Dependencies
+
+The component library has a peer dependency on:
+
+- `@shopware-ag/meteor-icon-kit` - Icon system (automatically installed if using workspace)
+
+If you're not using a workspace setup, you may need to install this separately:
+
+```bash
+npm install @shopware-ag/meteor-icon-kit
+```
+
+## Tree Shaking
+
+The library is optimized for tree-shaking. When you import specific components, only those components and their dependencies are included in your bundle:
+
+```typescript
+// Only MtButton and its dependencies are bundled
+import { MtButton } from '@shopware-ag/meteor-component-library';
+```
+
+## Verification
+
+Verify your installation by creating a simple test component:
+
+```vue App.vue
+<template>
+  <div id="app">
+    <mt-banner variant="info">
+      Meteor Component Library is successfully installed!
+    </mt-banner>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { MtBanner } from '@shopware-ag/meteor-component-library';
+</script>
+```
+
+If you see the banner rendered with proper styling, you're all set!
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Component Overview" icon="grid" href="/components/overview">
+    Explore all available components
+  </Card>
+  
+  <Card title="Form Components" icon="square-check" href="/components/form/button">
+    Learn about form inputs and controls
+  </Card>
+  
+  <Card title="Storybook" icon="book-open" href="https://meteor-component-library.vercel.app/">
+    View interactive component examples
+  </Card>
+  
+  <Card title="Design System" icon="palette" href="https://shopware.design/">
+    Explore the Meteor Design System
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Components are not styled correctly">
+    Make sure you've imported both CSS files:
+    ```typescript
+    import '@shopware-ag/meteor-component-library/styles.css';
+    import '@shopware-ag/meteor-component-library/font.css';
+    ```
+    These imports should be in your main application file before any component usage.
+  </Accordion>
+
+  <Accordion title="Translation warnings in console">
+    The component library requires vue-i18n to be configured. Ensure you've created and registered the i18n instance:
+    ```typescript
+    const i18n = createI18n({ legacy: false });
+    app.use(i18n);
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript errors for component props">
+    Make sure you're using TypeScript 5.0 or higher. The library includes full type definitions at:
+    ```
+    @shopware-ag/meteor-component-library/dist/esm/index.d.ts
+    ```
+  </Accordion>
+  
+  <Accordion title="Icons are not showing">
+    If icons aren't displaying, you may need to install the icon kit peer dependency:
+    ```bash
+    npm install @shopware-ag/meteor-icon-kit
+    ```
+  </Accordion>
+</AccordionGroup>

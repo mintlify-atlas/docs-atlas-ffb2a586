@@ -1,0 +1,454 @@
+---
+title: Notification
+description: Display notifications and toasts to users in the Shopware Administration
+---
+
+The notification module provides methods for displaying user notifications and toast messages.
+
+## Notification
+
+### dispatch()
+
+Dispatch a notification to the user.
+
+<ParamField path="message" type="string" required>
+  The message content to display. HTML syntax can be used but will be sanitized. Only basic tags and attributes are allowed.
+</ParamField>
+
+<ParamField path="title" type="string" required>
+  The notification title
+</ParamField>
+
+<ParamField path="growl" type="boolean">
+  Create a growl notification (auto-dismiss)
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="variant" type="string">
+  Notification variant: `'success'`, `'info'`, `'warning'`, or `'error'`
+  
+  Default: `'info'`
+</ParamField>
+
+<ParamField path="appearance" type="string">
+  Notification style: `'notification'` or `'system'`. Use `'system'` only for technical application notifications.
+  
+  Default: `'notification'`
+</ParamField>
+
+<ParamField path="actions" type="Array<Action>">
+  Array of action buttons for the notification
+  
+  ```typescript
+  {
+    label: string;
+    method?: () => void;
+    route?: string;
+    disabled?: boolean;
+  }
+  ```
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the notification is dispatched
+</ResponseField>
+
+### Example - Success Notification
+
+```typescript
+import { notification } from '@shopware-ag/admin-sdk';
+
+await notification.dispatch({
+  title: 'Success',
+  message: 'Product has been saved successfully!',
+  variant: 'success',
+  growl: true
+});
+```
+
+### Example - Error Notification
+
+```typescript
+import { notification } from '@shopware-ag/admin-sdk';
+
+await notification.dispatch({
+  title: 'Error',
+  message: 'Failed to save product. Please try again.',
+  variant: 'error',
+  growl: true
+});
+```
+
+### Example - Warning Notification
+
+```typescript
+await notification.dispatch({
+  title: 'Warning',
+  message: 'Some fields are missing. Please complete the form.',
+  variant: 'warning',
+  growl: true
+});
+```
+
+### Example - Info Notification
+
+```typescript
+await notification.dispatch({
+  title: 'Information',
+  message: 'Your changes will be synced automatically.',
+  variant: 'info',
+  growl: true
+});
+```
+
+### Example - With Actions
+
+```typescript
+import { notification } from '@shopware-ag/admin-sdk';
+
+await notification.dispatch({
+  title: 'Update Available',
+  message: 'A new version of the extension is available.',
+  variant: 'info',
+  growl: false, // Don't auto-dismiss
+  actions: [
+    {
+      label: 'View Details',
+      route: '/admin#/sw/extension/store/detail/my-extension',
+    },
+    {
+      label: 'Update Now',
+      method: async () => {
+        await performUpdate();
+      },
+    },
+    {
+      label: 'Dismiss',
+      method: () => {
+        // Notification will close
+      },
+    }
+  ]
+});
+```
+
+### Example - HTML Content
+
+```typescript
+await notification.dispatch({
+  title: 'Import Complete',
+  message: `
+    Import finished successfully:
+    <ul>
+      <li><strong>100</strong> products imported</li>
+      <li><strong>25</strong> categories updated</li>
+      <li><strong>5</strong> errors occurred</li>
+    </ul>
+  `,
+  variant: 'success',
+  growl: false,
+  actions: [
+    {
+      label: 'View Errors',
+      route: '/admin#/sw/import/errors',
+    }
+  ]
+});
+```
+
+### Example - System Notification
+
+```typescript
+// System appearance for technical notifications
+await notification.dispatch({
+  title: 'System Update',
+  message: 'The system will restart in 5 minutes for maintenance.',
+  variant: 'warning',
+  appearance: 'system',
+  growl: false,
+  actions: [
+    {
+      label: 'Postpone',
+      method: postponeMaintenance,
+    }
+  ]
+});
+```
+
+---
+
+## Toast
+
+Toasts are lightweight notifications for quick feedback.
+
+### toast.dispatch()
+
+Dispatch a toast message.
+
+<ParamField path="msg" type="string" required>
+  Toast message (should be 3 words maximum for best UX)
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Toast type: `'informal'`, `'critical'`, or `'positive'`
+</ParamField>
+
+<ParamField path="dismissible" type="boolean" required>
+  Whether the toast can be manually dismissed
+</ParamField>
+
+<ParamField path="icon" type="string">
+  Optional icon to display before the message
+</ParamField>
+
+<ParamField path="action" type="object">
+  Optional action button
+  
+  ```typescript
+  {
+    label: string;
+    callback: () => void;
+  }
+  ```
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the toast is dispatched
+</ResponseField>
+
+### Example - Success Toast
+
+```typescript
+import { toast } from '@shopware-ag/admin-sdk';
+
+await toast.dispatch({
+  msg: 'Saved successfully',
+  type: 'positive',
+  dismissible: true
+});
+```
+
+### Example - Error Toast
+
+```typescript
+await toast.dispatch({
+  msg: 'Save failed',
+  type: 'critical',
+  dismissible: true,
+  icon: 'regular-times-circle'
+});
+```
+
+### Example - Info Toast
+
+```typescript
+await toast.dispatch({
+  msg: 'Processing...',
+  type: 'informal',
+  dismissible: false
+});
+```
+
+### Example - Toast with Action
+
+```typescript
+await toast.dispatch({
+  msg: 'Item deleted',
+  type: 'positive',
+  dismissible: true,
+  action: {
+    label: 'Undo',
+    callback: () => {
+      restoreDeletedItem();
+    }
+  }
+});
+```
+
+---
+
+## Use Cases
+
+### Save Operation
+
+```typescript
+import { notification } from '@shopware-ag/admin-sdk';
+
+async function saveProduct(product) {
+  try {
+    await api.saveProduct(product);
+    
+    await notification.dispatch({
+      title: 'Success',
+      message: `Product "${product.name}" has been saved.`,
+      variant: 'success',
+      growl: true
+    });
+  } catch (error) {
+    await notification.dispatch({
+      title: 'Error',
+      message: `Failed to save product: ${error.message}`,
+      variant: 'error',
+      growl: true,
+      actions: [
+        {
+          label: 'Retry',
+          method: () => saveProduct(product)
+        }
+      ]
+    });
+  }
+}
+```
+
+### Validation Errors
+
+```typescript
+import { notification } from '@shopware-ag/admin-sdk';
+
+function validateForm(data) {
+  const errors = [];
+  
+  if (!data.name) errors.push('Name is required');
+  if (!data.price) errors.push('Price is required');
+  if (!data.stock) errors.push('Stock is required');
+  
+  if (errors.length > 0) {
+    notification.dispatch({
+      title: 'Validation Error',
+      message: `
+        Please fix the following errors:
+        <ul>
+          ${errors.map(err => `<li>${err}</li>`).join('')}
+        </ul>
+      `,
+      variant: 'warning',
+      growl: false
+    });
+    
+    return false;
+  }
+  
+  return true;
+}
+```
+
+### Background Tasks
+
+```typescript
+import { notification, toast } from '@shopware-ag/admin-sdk';
+
+async function importProducts(file) {
+  // Show toast for immediate feedback
+  await toast.dispatch({
+    msg: 'Import started',
+    type: 'informal',
+    dismissible: true
+  });
+  
+  try {
+    const result = await api.importProducts(file);
+    
+    // Show detailed notification when complete
+    await notification.dispatch({
+      title: 'Import Complete',
+      message: `
+        Successfully imported ${result.success} products.
+        ${result.errors > 0 ? `${result.errors} errors occurred.` : ''}
+      `,
+      variant: result.errors > 0 ? 'warning' : 'success',
+      growl: false,
+      actions: result.errors > 0 ? [
+        {
+          label: 'View Errors',
+          route: '/admin#/sw/import/errors'
+        }
+      ] : []
+    });
+  } catch (error) {
+    await notification.dispatch({
+      title: 'Import Failed',
+      message: error.message,
+      variant: 'error',
+      growl: true
+    });
+  }
+}
+```
+
+---
+
+## Type Definitions
+
+### notificationDispatch
+
+```typescript
+type notificationDispatch = {
+  responseType: void;
+  message: string;
+  title: string;
+  growl?: boolean;
+  variant?: 'success' | 'info' | 'warning' | 'error';
+  appearance?: 'system' | 'notification';
+  actions?: Array<{
+    label: string;
+    method?: () => void;
+    route?: string;
+    disabled?: boolean;
+  }>;
+};
+```
+
+### toastDispatch
+
+```typescript
+type toastDispatch = {
+  responseType: void;
+  msg: string;
+  type: 'informal'|'critical'|'positive';
+  dismissible: boolean;
+  icon?: string;
+  action?: {
+    label: string;
+    callback: () => void;
+  };
+};
+```
+
+## Best Practices
+
+<Tip>
+  Use toasts for quick, non-critical feedback. Use notifications for important messages that require user attention.
+</Tip>
+
+<Warning>
+  Toast messages should be short (3 words max). Use notifications for longer messages.
+</Warning>
+
+<Note>
+  Set `growl: false` for notifications that require user action. Growl notifications auto-dismiss after a few seconds.
+</Note>
+
+## Notification Variants
+
+- `success` - Green, for successful operations
+- `info` - Blue, for informational messages
+- `warning` - Orange, for warnings and validation errors
+- `error` - Red, for errors and failures
+
+## Toast Types
+
+- `positive` - Green, for successful operations
+- `informal` - Blue, for neutral messages
+- `critical` - Red, for errors
+
+## HTML Sanitization
+
+Notification messages support HTML but are sanitized for security. Allowed tags:
+- Text formatting: `<strong>`, `<em>`, `<u>`
+- Lists: `<ul>`, `<ol>`, `<li>`
+- Links: `<a href="...">`
+- Line breaks: `<br>`
+
+All other tags and attributes are stripped.

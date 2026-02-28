@@ -1,0 +1,223 @@
+---
+title: Building Admin Apps
+description: Step-by-step guide to building admin applications with the Meteor Admin SDK
+---
+
+This guide walks you through building a complete admin application using the Meteor Admin SDK. You'll learn how to structure your project, configure your app, and extend the administration interface.
+
+## Overview
+
+Admin apps are standalone applications that integrate with the Shopware administration. They run in an iframe and communicate with the admin interface through the Meteor Admin SDK.
+
+<Steps>
+
+### Step 1: Set Up Your Project
+
+First, create your project structure and install the necessary dependencies:
+
+```bash
+mkdir my-admin-app
+cd my-admin-app
+npm init -y
+npm install @shopware-ag/meteor-admin-sdk vue vite
+```
+
+### Step 2: Create the Project Structure
+
+Organize your project with the following structure:
+
+```
+my-admin-app/
+├── src/
+│   ├── frontend/
+│   │   ├── main.ts          # Entry point
+│   │   ├── init/
+│   │   │   └── init-app.ts  # Extension registration
+│   │   └── locations/
+│   │       └── init-locations.ts  # Location rendering
+│   └── server.ts            # Development server
+├── package.json
+└── tsconfig.json
+```
+
+### Step 3: Create the Main Entry Point
+
+Create `src/frontend/main.ts` to handle location-based rendering:
+
+```typescript
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+if (location.is(location.MAIN_HIDDEN)) {
+    /**
+     * This gets executed in the administration in a hidden iframe.
+     * Register all extension points here.
+     */
+    import('./init/init-app');
+} else {
+    /**
+     * This gets executed when the administration renders a location.
+     * Render the appropriate view based on the location.
+     */
+    import('./locations/init-locations');
+}
+```
+
+### Step 4: Register Extension Points
+
+Create `src/frontend/init/init-app.ts` to register your extensions:
+
+```typescript
+import { ui, notification } from '@shopware-ag/meteor-admin-sdk';
+
+// Add a menu item
+ui.menu.addMenuItem({
+    label: 'My Custom App',
+    locationId: 'my-app-main-page',
+    displaySearchBar: true,
+});
+
+// Add a card to an existing page
+ui.componentSection.add({
+    component: 'card',
+    positionId: 'sw-product-detail__before',
+    props: {
+        title: 'My Custom Card',
+        subtitle: 'Additional product information',
+        locationId: 'my-app-product-card'
+    }
+});
+
+// Add an action button
+ui.actionButton.add({
+    name: 'my-action-button',
+    label: 'Custom Action',
+    entity: 'product',
+    view: 'list',
+    callback: (entity, entityIdList) => {
+        notification.dispatch({
+            title: `Action triggered for ${entity}`,
+            message: `Selected IDs: ${entityIdList.join(', ')}`,
+            variant: 'success'
+        });
+    }
+});
+```
+
+### Step 5: Create Location Views
+
+Create `src/frontend/locations/init-locations.ts` to render your views:
+
+```typescript
+import { createApp, h, defineAsyncComponent } from 'vue';
+import { location } from '@shopware-ag/meteor-admin-sdk';
+import '@shopware-ag/meteor-component-library/styles.css';
+
+// Register components for each location
+const locations = {
+    'my-app-main-page': defineAsyncComponent(
+        () => import('./views/MainPage.vue')
+    ),
+    'my-app-product-card': defineAsyncComponent(
+        () => import('./views/ProductCard.vue')
+    ),
+};
+
+const app = createApp({
+    render: () => h(locations[location.get()])
+});
+
+app.mount('#app');
+```
+
+### Step 6: Configure Your Development Server
+
+Create `src/server.ts` for local development:
+
+```typescript
+import express from 'express';
+import { createServer as createViteServer } from 'vite';
+
+const app = express();
+const port = 3000;
+
+async function startServer() {
+    const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'custom'
+    });
+
+    app.use(vite.middlewares);
+
+    app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+    });
+}
+
+startServer();
+```
+
+### Step 7: Install the App in Shopware
+
+Create the app manifest file in your Shopware installation:
+
+1. Copy your app folder to `custom/apps/MyApp/`
+2. Create `manifest.xml` with your app configuration
+3. Install the app: `bin/console app:install MyApp`
+
+</Steps>
+
+## App Configuration
+
+Your `package.json` should include the necessary dependencies:
+
+```json
+{
+  "name": "my-admin-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node src/server.ts",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@shopware-ag/meteor-admin-sdk": "latest",
+    "@shopware-ag/meteor-component-library": "latest",
+    "vue": "^3.5.0",
+    "express": "^4.18.2",
+    "vite": "^5.1.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^18.19.19",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
+```
+
+## Key Concepts
+
+### Location-Based Rendering
+
+The SDK uses a location-based system where:
+- `MAIN_HIDDEN` location is for registering extension points in a hidden iframe
+- Other locations are for rendering UI components
+
+### Extension Points
+
+You can extend the admin interface with:
+- **Menu items**: Add custom navigation entries
+- **Component sections**: Inject cards and components into existing pages
+- **Action buttons**: Add custom actions to entity views
+- **Tabs**: Add new tabs to detail pages
+- **Main modules**: Create entirely new admin sections
+
+## Next Steps
+
+- Learn about [Data Management](/admin-sdk/guides/data-management) to work with Shopware data
+- Explore [Custom Modules](/admin-sdk/guides/custom-modules) to create new admin sections
+- Check out the [Basic App Example](/admin-sdk/examples/basic-app) for a complete working example
+
+## Additional Resources
+
+- [GitHub: admin-sdk-app example](https://github.com/shopware/meteor/tree/main/examples/admin-sdk-app)
+- [Admin SDK API Reference](/admin-sdk/api/data)

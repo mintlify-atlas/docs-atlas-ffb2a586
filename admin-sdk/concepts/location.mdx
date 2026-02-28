@@ -1,0 +1,556 @@
+---
+title: Location Module
+description: Control iframe positioning and behavior in the Shopware Admin
+---
+
+## Overview
+
+The Location module provides utilities for managing your app's iframe within the Shopware Administration. It handles iframe height adjustments, URL synchronization, and location identification.
+
+## Location Identification
+
+### Get Current Location
+
+Retrieve the location ID of your current iframe:
+
+```typescript
+// From location/index.ts:9-11
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+const locationId = location.get();
+console.log('Current location:', locationId);
+```
+
+### Check Specific Location
+
+Verify if your app is in a specific location:
+
+```typescript
+// From location/index.ts:5-7
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+if (location.is('my-custom-module')) {
+  console.log('App is in custom module location');
+}
+
+if (location.is('sw-product-detail')) {
+  console.log('App is in product detail page');
+}
+```
+
+### Check if Running in Iframe
+
+Determine if your app is embedded in an iframe:
+
+```typescript
+// From location/index.ts:13-15
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+if (location.isIframe()) {
+  console.log('Running inside iframe');
+  // Enable SDK features
+} else {
+  console.log('Running standalone');
+  // Disable SDK features or show warning
+}
+```
+
+## How Location IDs Work
+
+Location IDs are passed via URL parameters:
+
+```typescript
+// From _internals/utils.ts:13-17
+export function getLocationId(): string|null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('location-id');
+}
+```
+
+Example iframe URLs:
+```
+https://your-app.com/module?location-id=my-main-module
+https://your-app.com/tab?location-id=product-detail-tab
+https://your-app.com/card?location-id=payment-overview
+```
+
+## Location Types
+
+### Main Module
+
+Register a standalone module in the admin navigation:
+
+```typescript
+// From ui/main-module/index.ts:7-31
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+await ui.mainModule.add({
+  heading: 'My Custom Module',
+  locationId: 'my-custom-module',
+  displaySearchBar: true,
+  displayLanguageSwitch: false,
+});
+```
+
+Your iframe will be loaded with `?location-id=my-custom-module`.
+
+### Menu Item
+
+Add a menu item that links to your module:
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+await ui.menu.addMenuItem({
+  label: 'My App',
+  locationId: 'my-custom-module',
+  displaySearchBar: true,
+  parent: 'sw-catalogue',
+});
+```
+
+### Settings Page
+
+Add a settings page:
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+await ui.settings.addSettingsItem({
+  label: 'My App Settings',
+  locationId: 'my-app-settings',
+  tab: 'plugins',
+});
+```
+
+### Tab in Detail Page
+
+Add a tab to existing detail pages:
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+await ui.tabs.addTabItem({
+  label: 'My Custom Tab',
+  locationId: 'my-product-tab',
+  componentSectionId: 'sw-product-detail',
+});
+```
+
+### Action Button
+
+Add an action button to list views:
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+await ui.actionButton.add({
+  action: 'my-custom-action',
+  entity: 'product',
+  view: 'list',
+  label: 'Custom Action',
+});
+```
+
+### Component Section
+
+Render custom content in specific admin sections:
+
+```typescript
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+await ui.componentSection.add({
+  componentSectionId: 'sw-product-detail',
+  locationId: 'my-component-section',
+  positionId: 'before-general-card',
+});
+```
+
+## Height Management
+
+### Update Height Manually
+
+Set a specific height for your iframe:
+
+```typescript
+// From location/index.ts:17-32
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+// Set specific height
+await location.updateHeight(600);
+
+// Or use current document height
+await location.updateHeight();
+```
+
+**Implementation** (location/index.ts:17-32):
+```typescript
+export const updateHeight = (height?: number): Promise<void|null> => {
+  if (height) {
+    return send('locationUpdateHeight', {
+      height,
+      locationId: getLocationId(),
+    });
+  }
+
+  // If no height is defined then send the current document height
+  const currentHeight = document.documentElement.offsetHeight;
+
+  return send('locationUpdateHeight', {
+    height: currentHeight,
+    locationId: getLocationId(),
+  });
+};
+```
+
+### Auto-Resize Observer
+
+Automatically adjust iframe height when content changes:
+
+```typescript
+// From location/index.ts:36-51
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+// Start automatic height adjustment
+location.startAutoResizer();
+
+// Your content can now grow/shrink dynamically
+
+// Stop when component unmounts
+location.stopAutoResizer();
+```
+
+**Implementation** (location/index.ts:36-51):
+```typescript
+let resizeObserver: ResizeObserver | null = null;
+
+export const startAutoResizer = (): void => {
+  // Create an Observer instance
+  resizeObserver = new ResizeObserver(() => {
+    void updateHeight();
+  });
+
+  // Start observing a DOM node
+  resizeObserver.observe(document.body);
+};
+
+export const stopAutoResizer = (): void => {
+  if (resizeObserver) {
+    resizeObserver.unobserve(document.body);
+    resizeObserver.disconnect();
+  }
+};
+```
+
+**Important:** Remember to add `body { overflow: hidden }` to your CSS to prevent double scrollbars.
+
+## URL Synchronization
+
+### Update URL
+
+Synchronize your iframe's URL with the admin:
+
+```typescript
+// From location/index.ts:53-60
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+const newUrl = new URL(window.location.href);
+newUrl.searchParams.set('tab', 'settings');
+newUrl.hash = '#advanced';
+
+await location.updateUrl(newUrl);
+```
+
+**Implementation** (location/index.ts:53-60):
+```typescript
+export const updateUrl = (url: URL): Promise<void|null> => {
+  return send('locationUpdateUrl', {
+    hash: url.hash,
+    pathname: url.pathname,
+    searchParams: [...url.searchParams.entries()],
+    locationId: getLocationId(),
+  });
+};
+```
+
+### Auto URL Updater
+
+Automatically synchronize URL changes:
+
+```typescript
+// From location/index.ts:64-85
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+// Start automatic URL synchronization
+location.startAutoUrlUpdater();
+
+// Now URL changes are automatically synced
+window.history.pushState({}, '', '/new-path?param=value');
+
+// Stop when component unmounts
+location.stopAutoUrlUpdater();
+```
+
+**Implementation** (location/index.ts:64-85):
+```typescript
+let urlUpdateInterval: null|number = null;
+
+export const startAutoUrlUpdater = (): void => {
+  let prevUrl: string|undefined = undefined;
+
+  if (urlUpdateInterval) {
+    clearInterval(urlUpdateInterval);
+  }
+
+  urlUpdateInterval = setInterval(() => {
+    const currUrl = window.location.href;
+
+    if (currUrl !== prevUrl) {
+      prevUrl = currUrl;
+      void updateUrl(new URL(currUrl));
+    }
+  }, 50) as unknown as number;
+};
+
+export const stopAutoUrlUpdater = (): void => {
+  if (urlUpdateInterval) {
+    clearInterval(urlUpdateInterval);
+  }
+};
+```
+
+The URL updater checks every 50ms for changes.
+
+## Practical Examples
+
+### Vue Component with Auto-Resize
+
+```vue
+<script setup>
+import { onMounted, onUnmounted } from 'vue';
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+onMounted(() => {
+  // Start auto-resizing when component mounts
+  location.startAutoResizer();
+});
+
+onUnmounted(() => {
+  // Clean up when component unmounts
+  location.stopAutoResizer();
+});
+</script>
+
+<template>
+  <div class="app-container">
+    <h1>My App Content</h1>
+    <!-- Content will auto-resize iframe -->
+  </div>
+</template>
+
+<style>
+body {
+  overflow: hidden; /* Prevent double scrollbars */
+}
+</style>
+```
+
+### React Component with URL Sync
+
+```typescript
+import { useEffect } from 'react';
+import { location } from '@shopware-ag/meteor-admin-sdk';
+import { useLocation } from 'react-router-dom';
+
+function App() {
+  const reactLocation = useLocation();
+
+  useEffect(() => {
+    // Start URL synchronization
+    location.startAutoUrlUpdater();
+
+    return () => {
+      // Clean up
+      location.stopAutoUrlUpdater();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Update height when route changes
+    location.updateHeight();
+  }, [reactLocation]);
+
+  return (
+    <div className="app-container">
+      {/* Your app content */}
+    </div>
+  );
+}
+```
+
+### Conditional Rendering by Location
+
+```typescript
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+function renderApp() {
+  const locationId = location.get();
+
+  switch (locationId) {
+    case 'my-main-module':
+      return <MainModuleView />;
+    
+    case 'product-detail-tab':
+      return <ProductTabView />;
+    
+    case 'my-settings-page':
+      return <SettingsView />;
+    
+    default:
+      console.warn(`Unknown location: ${locationId}`);
+      return <ErrorView message="Unknown location" />;
+  }
+}
+```
+
+### Dynamic Height Updates
+
+```typescript
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+let isExpanded = false;
+
+async function toggleSection() {
+  isExpanded = !isExpanded;
+  
+  const section = document.getElementById('expandable-section');
+  section.style.display = isExpanded ? 'block' : 'none';
+  
+  // Update iframe height after DOM changes
+  await location.updateHeight();
+}
+```
+
+## Special Location Constant
+
+### MAIN_HIDDEN
+
+A special location ID for hidden main modules:
+
+```typescript
+// From location/index.ts:87
+export const MAIN_HIDDEN = 'sw-main-hidden';
+
+// Usage
+if (location.get() === location.MAIN_HIDDEN) {
+  console.log('This module is hidden from main navigation');
+}
+```
+
+## Message Types
+
+The location module uses these message types:
+
+### locationUpdateHeight
+
+```typescript
+// From location/index.ts:89-101
+type locationUpdateHeight = {
+  responseType: void,
+  height: number,              // The height of the iframe
+  locationId: string | null,   // The locationId of the current element
+}
+```
+
+### locationUpdateUrl
+
+```typescript
+// From location/index.ts:103-137
+type locationUpdateUrl = {
+  responseType: void,
+  hash: string,                              // e.g., '#/sw/dashboard'
+  pathname: string,                          // e.g., '/'
+  searchParams: Array<[string, string]>,     // e.g., [['foo', 'bar'], ['baz', 'qux']]
+  locationId: string | null,
+}
+```
+
+## Best Practices
+
+### 1. Always Use Auto-Resizer for Dynamic Content
+
+```typescript
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+// Good: Automatic adjustment
+location.startAutoResizer();
+
+// Less ideal: Manual updates
+setInterval(() => location.updateHeight(), 100);
+```
+
+### 2. Clean Up Observers
+
+Always stop observers when components unmount:
+
+```typescript
+// Vue
+onUnmounted(() => {
+  location.stopAutoResizer();
+  location.stopAutoUrlUpdater();
+});
+
+// React
+useEffect(() => {
+  location.startAutoResizer();
+  return () => location.stopAutoResizer();
+}, []);
+```
+
+### 3. Prevent Double Scrollbars
+
+Add CSS to prevent scrollbars in the iframe:
+
+```css
+body {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+```
+
+### 4. Validate Location Context
+
+```typescript
+import { location } from '@shopware-ag/meteor-admin-sdk';
+
+if (!location.isIframe()) {
+  console.error('This app must run inside the Shopware Admin');
+  // Show error message or redirect
+}
+```
+
+### 5. Use Unique Location IDs
+
+Ensure your location IDs are unique to avoid conflicts:
+
+```typescript
+// Good
+locationId: 'acme-analytics-dashboard'
+
+// Avoid
+locationId: 'dashboard'  // Too generic
+```
+
+## Performance Considerations
+
+- The auto-resizer uses `ResizeObserver`, which is efficient for detecting size changes
+- The auto-URL updater polls every 50ms—consider if you need it for your use case
+- Each `updateHeight()` call sends a message to the parent window—avoid excessive calls
+- Use auto-resizer instead of manual intervals for better performance
+
+## Next Steps
+
+- Learn about [Architecture](/admin-sdk/concepts/architecture) for message passing details
+- Explore [Context API](/admin-sdk/concepts/context) for accessing Shopware context
+- Understand [Data Handling](/admin-sdk/concepts/data-handling) for working with entities

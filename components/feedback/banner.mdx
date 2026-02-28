@@ -1,0 +1,146 @@
+---
+title: Banner
+description: A banner component for displaying important messages, alerts, and notifications with contextual variants and optional close functionality.
+---
+
+## Import
+
+```vue
+import { MtBanner } from '@/components/feedback-indicator/mt-banner/mt-banner.vue';
+```
+
+## Props
+
+<ParamField path="variant" type="string" default="neutral">
+  The visual style variant that determines the banner's appearance and semantic meaning.
+  
+  **Options:** `neutral`, `info`, `attention`, `critical`, `positive`, `inherited`
+</ParamField>
+
+<ParamField path="title" type="string">
+  Optional title text displayed at the top of the banner message.
+</ParamField>
+
+<ParamField path="hideIcon" type="boolean" default="false">
+  When true, hides the default variant icon from the banner.
+</ParamField>
+
+<ParamField path="closable" type="boolean" default="false">
+  When true, displays a close button allowing users to dismiss the banner.
+</ParamField>
+
+<ParamField path="bannerIndex" type="string">
+  Optional identifier passed to the close event for tracking which banner was closed.
+</ParamField>
+
+<ParamField path="icon" type="string">
+  Custom icon name to override the default variant icon.
+</ParamField>
+
+## Events
+
+<ParamField path="close" type="event">
+  Emitted when the close button is clicked. Receives the `bannerIndex` as parameter.
+  
+  **Signature:** `(bannerIndex?: string) => void`
+</ParamField>
+
+## Slots
+
+<ParamField path="default" type="slot">
+  The main content area for the banner message.
+</ParamField>
+
+<ParamField path="customIcon" type="slot">
+  Override the default icon with custom content.
+</ParamField>
+
+## Usage Examples
+
+### Basic Banner
+
+```vue
+<template>
+  <mt-banner variant="info">
+    This is an informational message.
+  </mt-banner>
+  
+  <mt-banner variant="positive">
+    Operation completed successfully!
+  </mt-banner>
+  
+  <mt-banner variant="attention">
+    Please review your settings.
+  </mt-banner>
+  
+  <mt-banner variant="critical">
+    An error occurred. Please try again.
+  </mt-banner>
+</template>
+```
+
+### Banner with Title
+
+```vue
+<template>
+  <mt-banner variant="info" title="Important Update">
+    We've updated our terms of service. Please review the changes.
+  </mt-banner>
+</template>
+```
+
+### Closable Banner
+
+```vue
+<template>
+  <mt-banner 
+    variant="attention" 
+    :closable="true"
+    banner-index="warning-1"
+    @close="handleBannerClose"
+  >
+    This message can be dismissed.
+  </mt-banner>
+</template>
+
+<script setup>
+const handleBannerClose = (bannerIndex) => {
+  console.log('Banner closed:', bannerIndex);
+};
+</script>
+```
+
+### Banner without Icon
+
+```vue
+<template>
+  <mt-banner variant="neutral" :hide-icon="true">
+    Clean message without icon.
+  </mt-banner>
+</template>
+```
+
+### Banner with Custom Icon
+
+```vue
+<template>
+  <mt-banner variant="info" icon="solid-bell">
+    You have new notifications.
+  </mt-banner>
+</template>
+```
+
+### Banner with Rich Content
+
+```vue
+<template>
+  <mt-banner variant="positive" title="Success">
+    <p>Your changes have been saved.</p>
+    <ul>
+      <li>Profile updated</li>
+      <li>Settings synchronized</li>
+      <li>Notifications sent</li>
+    </ul>
+  </mt-banner>
+</template>
+```

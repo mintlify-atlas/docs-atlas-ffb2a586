@@ -1,0 +1,238 @@
+---
+title: Text Editor
+description: Rich text WYSIWYG editor with formatting options
+---
+
+The `MtTextEditor` component provides a full-featured rich text editor with WYSIWYG editing, code mode, and extensive formatting options.
+
+## Import
+
+```vue
+import { MtTextEditor } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string" required>
+  The HTML content of the editor.
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for your text editor field.
+</ParamField>
+
+<ParamField path="isInlineEdit" type="boolean" default="false">
+  Enable inline edit mode with bubble menu.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Add disabled state to the editor.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Add placeholder text to the editor.
+</ParamField>
+
+<ParamField path="showToolbar" type="boolean" default="true">
+  Control toolbar visibility. Set to false to hide the toolbar completely.
+</ParamField>
+
+<ParamField path="codeMode" type="boolean" default="false">
+  Control code editor mode. Set to true to show the code editor instead of WYSIWYG.
+</ParamField>
+
+<ParamField path="customButtons" type="Array<CustomButton>" default="[]">
+  Custom buttons to be added to the toolbar.
+</ParamField>
+
+<ParamField path="excludedButtons" type="string[]" default="[]">
+  Excluded buttons from the toolbar.
+</ParamField>
+
+<ParamField path="tipTapConfig" type="object" default="{}">
+  Add custom configuration for the TipTap editor.
+</ParamField>
+
+<ParamField path="error" type="object">
+  An error in your business logic related to this field.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string) => void">
+  Emitted when the content changes.
+</ParamField>
+
+<ParamField path="update:codeMode" type="(value: boolean) => void">
+  Emitted when switching between code and visual mode.
+</ParamField>
+
+## Slots
+
+<ParamField path="contextual-buttons" type="slot">
+  Custom contextual buttons in the footer. Receives `editor` and `buttons` props.
+</ParamField>
+
+<ParamField path="footer-left" type="slot">
+  Content in the left side of the footer. Receives `editor` prop.
+</ParamField>
+
+<ParamField path="footer-right" type="slot">
+  Content in the right side of the footer. Receives `editor` prop. Defaults to character count.
+</ParamField>
+
+## Usage
+
+### Basic Editor
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const content = ref('<p>Hello world!</p>');
+</script>
+
+<template>
+  <mt-text-editor 
+    v-model="content"
+    label="Content"
+  />
+</template>
+```
+
+### With Placeholder
+
+```vue
+<template>
+  <mt-text-editor 
+    v-model="content"
+    label="Description"
+    placeholder="Enter your description here..."
+  />
+</template>
+```
+
+### Inline Edit Mode
+
+```vue
+<template>
+  <mt-text-editor 
+    v-model="content"
+    is-inline-edit
+  />
+</template>
+```
+
+### Code Mode
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const content = ref('<p>Edit HTML directly</p>');
+const isCodeMode = ref(true);
+</script>
+
+<template>
+  <mt-text-editor 
+    v-model="content"
+    :code-mode="isCodeMode"
+    @update:code-mode="isCodeMode = $event"
+  />
+</template>
+```
+
+### Custom Toolbar Buttons
+
+```vue
+<script setup>
+const customButtons = [
+  {
+    name: 'custom-action',
+    label: 'Custom Action',
+    icon: 'regular-star-xs',
+    action: (editor) => {
+      console.log('Custom action triggered');
+    },
+  },
+];
+</script>
+
+<template>
+  <mt-text-editor 
+    v-model="content"
+    :custom-buttons="customButtons"
+  />
+</template>
+```
+
+### Exclude Toolbar Buttons
+
+```vue
+<template>
+  <mt-text-editor 
+    v-model="content"
+    :excluded-buttons="['bold', 'italic', 'table']"
+  />
+</template>
+```
+
+### Custom Footer Content
+
+```vue
+<template>
+  <mt-text-editor v-model="content">
+    <template #footer-left="{ editor }">
+      <mt-button size="small" @click="saveContent">
+        Save Draft
+      </mt-button>
+    </template>
+    <template #footer-right="{ editor }">
+      Last saved: {{ lastSavedTime }}
+    </template>
+  </mt-text-editor>
+</template>
+```
+
+### Without Toolbar
+
+```vue
+<template>
+  <mt-text-editor 
+    v-model="content"
+    :show-toolbar="false"
+  />
+</template>
+```
+
+## Features
+
+### Formatting Options
+
+- **Text**: Bold, Italic, Underline, Strikethrough
+- **Headings**: H1-H6
+- **Lists**: Bullet lists, Numbered lists
+- **Alignment**: Left, Center, Right, Justify
+- **Text Style**: Superscript, Subscript, Code
+- **Colors**: Text color picker
+- **Links**: Insert and edit links
+- **Tables**: Create and edit tables
+- **Images**: Insert images
+- **Code blocks**: Syntax highlighting
+- **Blockquotes**: Quote formatting
+- **Horizontal rules**: Visual separators
+
+### Editor Modes
+
+- **WYSIWYG Mode**: Visual editing with toolbar
+- **Code Mode**: Direct HTML editing with syntax highlighting
+- **Inline Mode**: Bubble menu that appears on selection
+- **Fullscreen Mode**: Expand editor to full screen
+
+## Accessibility
+
+- Keyboard shortcuts for common formatting
+- Screen reader support
+- Focus management within editor
+- ARIA labels for toolbar buttons
+- Semantic HTML output
+- Table navigation with arrow keys
+- Link editing accessible via keyboard

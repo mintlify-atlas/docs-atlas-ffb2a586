@@ -1,0 +1,419 @@
+---
+title: Composables
+description: Vue composables for reactive data access and state management in the Admin SDK
+---
+
+The Admin SDK provides Vue 3 composables for reactive data access and shared state management.
+
+## useRepository()
+
+Reactive wrapper around repository access that updates when dependencies change.
+
+<ParamField path="entityNameRef" type="MaybeRef<EntityName>" required>
+  Entity name or ref to entity name (e.g., 'product', 'category')
+</ParamField>
+
+<ParamField path="repositoryFactoryRef" type="MaybeRef<RepositoryFactory>">
+  Optional repository factory or ref to factory. Falls back to injected factory if not provided.
+</ParamField>
+
+<ResponseField name="repository" type="ComputedRef<SDKRepository<EntityName>>">
+  Returns a computed ref that updates when entity name or factory changes
+</ResponseField>
+
+### Example
+
+```vue
+<script setup>
+import { ref, watch } from 'vue';
+import { useRepository } from '@shopware-ag/admin-sdk';
+
+const entityName = ref('product');
+const repository = useRepository(entityName);
+
+// Repository automatically updates when entityName changes
+watch(entityName, async () => {
+  const criteria = new Criteria(1, 25);
+  const results = await repository.value.search(criteria);
+  console.log('Results:', results);
+});
+
+// Change entity name - repository updates automatically
+const switchToCategories = () => {
+  entityName.value = 'category';
+};
+</script>
+```
+
+### Static Entity Name
+
+```vue
+<script setup>
+import { useRepository } from '@shopware-ag/admin-sdk';
+import { Criteria } from '@shopware-ag/admin-sdk';
+
+const productRepository = useRepository('product');
+
+async function loadProducts() {
+  const criteria = new Criteria(1, 25);
+  criteria.addFilter(Criteria.equals('active', true));
+  
+  const products = await productRepository.value.search(criteria);
+  return products;
+}
+</script>
+```
+
+### With Custom Factory
+
+```vue
+<script setup>
+import { useRepository } from '@shopware-ag/admin-sdk';
+import { inject } from 'vue';
+
+const customFactory = inject('customRepositoryFactory');
+const repository = useRepository('product', customFactory);
+</script>
+```
+
+---
+
+## getRepository()
+
+Get a repository instance with automatic factory injection.
+
+<ParamField path="entityName" type="EntityName" required>
+  The entity name (e.g., 'product', 'category', 'customer')
+</ParamField>
+
+<ParamField path="repositoryFactory" type="RepositoryFactory">
+  Optional repository factory. Falls back to injected factory if not provided.
+</ParamField>
+
+<ResponseField name="repository" type="SDKRepository<EntityName>">
+  Returns a repository instance for the specified entity
+</ResponseField>
+
+### Example
+
+```typescript
+import { getRepository } from '@shopware-ag/admin-sdk';
+import { Criteria } from '@shopware-ag/admin-sdk';
+
+// Get repository
+const productRepository = getRepository('product');
+
+// Use repository
+async function loadProduct(productId: string) {
+  const product = await productRepository.get(productId);
+  return product;
+}
+
+async function searchProducts() {
+  const criteria = new Criteria(1, 25);
+  criteria.addFilter(Criteria.equals('active', true));
+  criteria.addSorting(Criteria.sort('name', 'ASC'));
+  
+  const results = await productRepository.search(criteria);
+  return results;
+}
+```
+
+### Lazy Loading
+
+The repository is lazily loaded when the first method is called:
+
+```typescript
+import { getRepository } from '@shopware-ag/admin-sdk';
+
+// Repository is not loaded yet
+const productRepository = getRepository('product');
+
+// Repository loads when first method is called
+const product = await productRepository.get('product-id');
+```
+
+### Factory Injection
+
+```vue
+<script setup>
+import { provide } from 'vue';
+
+// Provide factory at app level
+provide('repositoryFactory', {
+  create: (entityName) => {
+    // Return custom repository instance
+    return customRepositoryFactory(entityName);
+  }
+});
+</script>
+```
+
+---
+
+## useSharedState()
+
+Create persistent shared state across browser tabs and windows using IndexedDB and BroadcastChannel.
+
+<ParamField path="key" type="string" required>
+  Unique key for the shared state
+</ParamField>
+
+<ParamField path="initialValue" type="T" required>
+  Initial value for the state
+</ParamField>
+
+<ResponseField name="state" type="{ value: UnwrapRef<T> }">
+  Returns a reactive state object that syncs across tabs
+</ResponseField>
+
+### Example
+
+```vue
+<script setup>
+import { useSharedState } from '@shopware-ag/admin-sdk';
+
+// Create shared state
+const settings = useSharedState('app-settings', {
+  theme: 'light',
+  language: 'en',
+  sidebarCollapsed: false
+});
+
+// Update state - syncs to all tabs
+const toggleTheme = () => {
+  settings.value.theme = settings.value.theme === 'light' ? 'dark' : 'light';
+};
+
+const toggleSidebar = () => {
+  settings.value.sidebarCollapsed = !settings.value.sidebarCollapsed;
+};
+</script>
+
+<template>
+  <div :class="settings.value.theme">
+    <button @click="toggleTheme">Toggle Theme</button>
+    <button @click="toggleSidebar">Toggle Sidebar</button>
+  </div>
+</template>
+```
+
+### Counter Example
+
+```vue
+<script setup>
+import { useSharedState } from '@shopware-ag/admin-sdk';
+
+const counter = useSharedState('counter', 0);
+
+const increment = () => {
+  counter.value++;
+};
+
+const decrement = () => {
+  counter.value--;
+};
+</script>
+
+<template>
+  <div>
+    <h2>Counter: {{ counter.value }}</h2>
+    <button @click="increment">+</button>
+    <button @click="decrement">-</button>
+    <p>Open this page in multiple tabs - the counter syncs!</p>
+  </div>
+</template>
+```
+
+### Complex State
+
+```typescript
+import { useSharedState } from '@shopware-ag/admin-sdk';
+
+interface UserPreferences {
+  notifications: boolean;
+  autoSave: boolean;
+  itemsPerPage: number;
+  favoriteCategories: string[];
+}
+
+const preferences = useSharedState<UserPreferences>('user-preferences', {
+  notifications: true,
+  autoSave: true,
+  itemsPerPage: 25,
+  favoriteCategories: []
+});
+
+// Update nested properties
+preferences.value.notifications = false;
+preferences.value.favoriteCategories.push('electronics');
+```
+
+---
+
+## useAsyncSharedState()
+
+Extended version of useSharedState with ready state tracking.
+
+<ParamField path="key" type="string" required>
+  Unique key for the shared state
+</ParamField>
+
+<ParamField path="initialValue" type="T" required>
+  Initial value for the state
+</ParamField>
+
+<ResponseField name="state" type="{ value: UnwrapRef<T> }">
+  Reactive state object
+</ResponseField>
+
+<ResponseField name="isReady" type="Ref<boolean>">
+  Boolean ref indicating if the state has been loaded from storage
+</ResponseField>
+
+<ResponseField name="ready" type="Promise<void>">
+  Promise that resolves when the state is ready
+</ResponseField>
+
+### Example
+
+```vue
+<script setup>
+import { _useSharedState } from '@shopware-ag/admin-sdk';
+import { watch } from 'vue';
+
+const { state, isReady, ready } = _useSharedState('settings', {
+  theme: 'light'
+});
+
+// Wait for state to be ready
+await ready;
+console.log('State loaded:', state.value);
+
+// Or watch isReady
+watch(isReady, (ready) => {
+  if (ready) {
+    console.log('State is ready:', state.value);
+  }
+});
+</script>
+
+<template>
+  <div v-if="isReady">
+    <p>Theme: {{ state.value.theme }}</p>
+  </div>
+  <div v-else>
+    <p>Loading settings...</p>
+  </div>
+</template>
+```
+
+---
+
+## useDataset()
+
+Subscribe to dataset changes reactively.
+
+<ParamField path="id" type="string" required>
+  Dataset identifier to subscribe to
+</ParamField>
+
+<ParamField path="options" type="object">
+  Optional subscription options
+  
+  <ParamField path="options.selectors" type="string[]">
+    Field selectors to filter updates
+  </ParamField>
+</ParamField>
+
+<ResponseField name="data" type="Ref<unknown>">
+  Reactive ref containing the current dataset value
+</ResponseField>
+
+### Example
+
+```vue
+<script setup>
+import { useDataset } from '@shopware-ag/admin-sdk';
+import { watch } from 'vue';
+
+const productData = useDataset('product-detail', {
+  selectors: ['name', 'price', 'stock']
+});
+
+watch(productData, (newData) => {
+  console.log('Product updated:', newData);
+});
+</script>
+
+<template>
+  <div v-if="productData">
+    <h2>{{ productData.name }}</h2>
+    <p>Price: {{ productData.price }}</p>
+    <p>Stock: {{ productData.stock }}</p>
+  </div>
+</template>
+```
+
+---
+
+## Type Definitions
+
+### MaybeRef
+
+```typescript
+type MaybeRef<T> = T | Ref<T>;
+```
+
+### SDKRepository
+
+```typescript
+type SDKRepository<EntityName extends keyof Entities> = {
+  search: (criteria: Criteria, context?: ApiContext) => Promise<EntityCollection<EntityName> | null>;
+  get: (id: string, context?: ApiContext, criteria?: Criteria) => Promise<Entity<EntityName> | null>;
+  save: (entity: Entity<EntityName>, context?: ApiContext) => Promise<void | null>;
+  create: (context?: ApiContext, entityId?: string) => Promise<Entity<EntityName> | null>;
+  delete: (entityId: string, context?: ApiContext) => Promise<void | null>;
+  clone: (entityId: string, context?: ApiContext, behavior?: any) => Promise<unknown | null>;
+  hasChanges: (entity: Entity<EntityName>) => Promise<boolean | null>;
+  saveAll: (entities: EntityCollection<EntityName>, context?: ApiContext) => Promise<unknown | null>;
+};
+```
+
+### RepositoryFactory
+
+```typescript
+type RepositoryFactory = {
+  create: <EntityName extends keyof Entities>(
+    entityName: EntityName
+  ) => RepositorySource<EntityName>;
+};
+```
+
+## Best Practices
+
+<Tip>
+  Use `useRepository` when the entity name might change reactively, and `getRepository` for static entity access.
+</Tip>
+
+<Warning>
+  Always clean up subscriptions in `onBeforeUnmount` when using dataset composables to prevent memory leaks.
+</Warning>
+
+<Note>
+  Shared state uses IndexedDB and BroadcastChannel for cross-tab synchronization. Changes are automatically persisted and synced.
+</Note>
+
+## Cleanup
+
+```vue
+<script setup>
+import { useDataset } from '@shopware-ag/admin-sdk';
+import { onBeforeUnmount } from 'vue';
+
+const data = useDataset('my-dataset');
+
+// Cleanup is automatic with composables
+// BroadcastChannel is closed on unmount
+</script>
+```

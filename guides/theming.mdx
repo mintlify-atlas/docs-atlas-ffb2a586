@@ -1,0 +1,246 @@
+---
+title: Theming
+description: Customize the Meteor Design System theme to match your brand
+---
+
+The Meteor Design System uses a comprehensive token-based theming system that allows you to customize colors, typography, spacing, and other design properties across all components.
+
+## Design Tokens
+
+Meteor uses design tokens organized in a hierarchical structure:
+
+- **Primitives**: Base color palettes and scale values
+- **Semantic tokens**: Context-specific tokens that reference primitives
+- **Component tokens**: Component-specific styling tokens
+
+### Token Structure
+
+Tokens are defined in JSON format and compiled to CSS custom properties. Here's how the token system is organized:
+
+```json
+{
+  "color": {
+    "brand": {
+      "500": {
+        "$value": "#0870ff",
+        "$type": "color",
+        "$description": "Primary brand color"
+      }
+    }
+  }
+}
+```
+
+This compiles to:
+
+```css
+:root {
+  --color-brand-500: #0870ff;
+}
+```
+
+## Using CSS Custom Properties
+
+All design tokens are available as CSS custom properties (CSS variables) that you can use in your stylesheets.
+
+### Color Tokens
+
+Meteor provides comprehensive color tokens for different use cases:
+
+```css
+/* Interactive elements */
+.my-button {
+  background: var(--color-interaction-primary-default);
+  color: var(--color-static-white);
+}
+
+.my-button:hover {
+  background: var(--color-interaction-primary-hover);
+}
+
+/* Text colors */
+.heading {
+  color: var(--color-text-primary-default);
+}
+
+.description {
+  color: var(--color-text-secondary-default);
+}
+
+/* Border colors */
+.card {
+  border: 1px solid var(--color-border-primary-default);
+}
+```
+
+### Available Color Categories
+
+- **Interaction**: `primary`, `secondary`, `critical`
+- **Elevation**: `surface`, `backdrop`, `floating`, `shadow`
+- **Background**: `primary`, `secondary`, `tertiary`, `brand`, `critical`, `attention`, `positive`, `accent`
+- **Text**: `primary`, `secondary`, `brand`, `critical`, `accent`
+- **Border**: `primary`, `secondary`, `brand`, `critical`, `attention`, `positive`
+- **Icon**: `primary`, `secondary`, `brand`, `critical`, `attention`, `positive`
+
+### Typography Tokens
+
+Customize typography using font-related tokens:
+
+```css
+.heading {
+  font-family: var(--font-family-headings);
+  font-size: var(--font-size-l);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--font-line-height-l);
+}
+
+.body-text {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--font-line-height-xs);
+}
+```
+
+### Spacing Tokens
+
+Use the scale system for consistent spacing:
+
+```css
+.card {
+  padding: var(--scale-size-16);
+  margin-bottom: var(--scale-size-24);
+  gap: var(--scale-size-8);
+}
+```
+
+Available scale sizes: `0`, `1`, `2`, `4`, `6`, `8`, `10`, `12`, `14`, `16`, `18`, `20`, `22`, `24`, `26`, `28`, `30`, `32`, `36`, `40`, `48`, `56`, `64`, `72`, `80`, `96`, `128`, `160`, `192`, `224`, `256`
+
+### Border Radius Tokens
+
+```css
+.card {
+  border-radius: var(--border-radius-card);
+}
+
+.button {
+  border-radius: var(--border-radius-button);
+}
+
+.pill {
+  border-radius: var(--border-radius-round);
+}
+```
+
+Available border radius values: `none`, `2xs`, `xs`, `s`, `m`, `l`, `xl`, `2xl`, `3xl`, `4xl`, `round`, `card`, `button`, `checkbox`
+
+## Importing Token Files
+
+Meteor provides pre-compiled CSS files for different themes:
+
+```javascript
+// Import primitive tokens (color palettes, base scales)
+import '@shopware-ag/meteor-tokens/primitives.css';
+
+// Import semantic tokens for light theme
+import '@shopware-ag/meteor-tokens/administration/light.css';
+
+// Or import dark theme
+import '@shopware-ag/meteor-tokens/administration/dark.css';
+```
+
+## Customizing Tokens
+
+You can override any token by redefining the CSS custom property:
+
+```css
+:root {
+  /* Override brand colors */
+  --color-brand-500: #ff6b00;
+  --color-brand-600: #e55f00;
+  
+  /* Customize spacing */
+  --scale-size-16: 1.25rem;
+  
+  /* Adjust typography */
+  --font-family-body: 'Roboto', sans-serif;
+}
+```
+
+### Theme Switching
+
+Implement theme switching by conditionally applying token files:
+
+```javascript
+// Example: Dynamic theme switching
+const theme = isDarkMode ? 'dark' : 'light';
+import(`@shopware-ag/meteor-tokens/administration/${theme}.css`);
+```
+
+Or use CSS classes:
+
+```css
+/* Light theme (default) */
+:root {
+  --color-background: var(--color-zinc-0);
+  --color-text: var(--color-zinc-900);
+}
+
+/* Dark theme */
+.dark-theme {
+  --color-background: var(--color-zinc-900);
+  --color-text: var(--color-zinc-50);
+}
+```
+
+## Token Reference
+
+For a complete list of available tokens, you can:
+
+1. Browse the token JSON files in the `@shopware-ag/meteor-tokens` package
+2. Inspect the compiled CSS files in `node_modules/@shopware-ag/meteor-tokens/deliverables/`
+3. Use browser DevTools to explore available CSS custom properties
+
+## Best Practices
+
+1. **Use semantic tokens**: Prefer semantic tokens (e.g., `--color-text-primary-default`) over primitive tokens (e.g., `--color-zinc-900`) for better theme support
+
+2. **Maintain consistency**: Use the provided scale system for spacing instead of arbitrary values
+
+3. **Test both themes**: If implementing custom overrides, test in both light and dark themes
+
+4. **Don't hardcode values**: Always use tokens instead of hardcoding colors, sizes, or other design values
+
+5. **Follow naming conventions**: When creating custom tokens, follow the existing naming patterns for clarity
+
+## Example: Custom Theme
+
+Here's a complete example of customizing Meteor for your brand:
+
+```css
+/* custom-theme.css */
+@import '@shopware-ag/meteor-tokens/primitives.css';
+@import '@shopware-ag/meteor-tokens/administration/light.css';
+
+:root {
+  /* Custom brand colors */
+  --color-brand-500: #7c3aed;
+  --color-brand-600: #6d28d9;
+  --color-brand-700: #5b21b6;
+  
+  /* Update interaction colors to use custom brand */
+  --color-interaction-primary-default: var(--color-brand-500);
+  --color-interaction-primary-hover: var(--color-brand-600);
+  --color-interaction-primary-pressed: var(--color-brand-700);
+  
+  /* Custom typography */
+  --font-family-body: 'Inter', -apple-system, sans-serif;
+  --font-family-headings: 'Inter', -apple-system, sans-serif;
+}
+```
+
+## Next Steps
+
+- Explore the [Component Library](/components/overview) to see tokens in action
+- Check [Accessibility Guidelines](/guides/accessibility) for color contrast requirements
+- Learn how to [Contribute](/guides/contributing) custom tokens back to Meteor

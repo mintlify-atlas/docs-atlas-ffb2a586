@@ -1,0 +1,181 @@
+---
+title: "Installation"
+description: "Install and configure Meteor Design Tokens in your project"
+---
+
+## Package Installation
+
+Install the Meteor tokens package using your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install @shopware-ag/meteor-tokens
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-tokens
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-tokens
+```
+
+</CodeGroup>
+
+## Import CSS Tokens
+
+After installation, import the token CSS files into your application. The package provides different files for different use cases.
+
+### Basic Setup (Light Theme Only)
+
+For a basic setup with light theme support:
+
+```js
+import '@shopware-ag/meteor-tokens/primitives.css';
+import '@shopware-ag/meteor-tokens/administration/light.css';
+```
+
+### With Dark Mode Support
+
+To support both light and dark themes:
+
+```js
+import '@shopware-ag/meteor-tokens/primitives.css';
+import '@shopware-ag/meteor-tokens/administration/light.css';
+import '@shopware-ag/meteor-tokens/administration/dark.css';
+```
+
+<Note>
+  The dark theme CSS uses the `[data-theme="dark"]` attribute selector, so both files can be imported without conflicts.
+</Note>
+
+## Available Files
+
+The package exports the following files:
+
+| Export Path | Description |
+|-------------|-------------|
+| `@shopware-ag/meteor-tokens/primitives.css` | Foundation primitive tokens (colors, scales) |
+| `@shopware-ag/meteor-tokens/administration/light.css` | Semantic tokens for light theme |
+| `@shopware-ag/meteor-tokens/administration/dark.css` | Semantic tokens for dark theme |
+| `@shopware-ag/meteor-tokens/foundation/primitives.json` | Raw JSON token dictionary |
+
+## Using with Different Frameworks
+
+### React / Next.js
+
+Import tokens in your root layout or app file:
+
+```jsx
+// app/layout.tsx or pages/_app.tsx
+import '@shopware-ag/meteor-tokens/primitives.css';
+import '@shopware-ag/meteor-tokens/administration/light.css';
+import '@shopware-ag/meteor-tokens/administration/dark.css';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+### Vue / Nuxt
+
+Import in your main entry file:
+
+```js
+// main.js or nuxt.config.ts
+import '@shopware-ag/meteor-tokens/primitives.css';
+import '@shopware-ag/meteor-tokens/administration/light.css';
+import '@shopware-ag/meteor-tokens/administration/dark.css';
+```
+
+### Vanilla JavaScript
+
+Import in your main JavaScript file:
+
+```js
+// index.js
+import '@shopware-ag/meteor-tokens/primitives.css';
+import '@shopware-ag/meteor-tokens/administration/light.css';
+import '@shopware-ag/meteor-tokens/administration/dark.css';
+```
+
+### CSS/SCSS
+
+You can also import directly in CSS if your bundler supports it:
+
+```css
+@import '@shopware-ag/meteor-tokens/primitives.css';
+@import '@shopware-ag/meteor-tokens/administration/light.css';
+@import '@shopware-ag/meteor-tokens/administration/dark.css';
+```
+
+## Webpack Configuration
+
+If you're using Webpack, ensure you have `css-loader` configured:
+
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
+  },
+};
+```
+
+## Vite Configuration
+
+Vite supports CSS imports out of the box, no additional configuration needed:
+
+```js
+// vite.config.js
+export default {
+  // CSS imports work automatically
+};
+```
+
+## Verifying Installation
+
+After installation, verify that tokens are loaded by checking the browser console:
+
+```js
+// Check if a token is available
+const primaryColor = getComputedStyle(document.documentElement)
+  .getPropertyValue('--color-interaction-primary-default');
+
+console.log('Primary color:', primaryColor); // Should output: #0870ff
+```
+
+<Check>
+  If the token value is returned correctly, your installation is complete!
+</Check>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Tokens not applying">
+    Make sure you've imported the CSS files before your component styles. Token CSS should be loaded at the application root level.
+  </Accordion>
+  
+  <Accordion title="Dark mode not working">
+    Ensure you've imported the dark theme CSS and added the `data-theme="dark"` attribute to a parent element.
+  </Accordion>
+  
+  <Accordion title="Build errors with CSS imports">
+    Check that your bundler is configured to handle CSS imports. You may need to install `css-loader` for Webpack or ensure Vite's CSS support is enabled.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Card title="Usage Guide" icon="code" href="/design-tokens/usage">
+  Learn how to use design tokens in your CSS and components
+</Card>

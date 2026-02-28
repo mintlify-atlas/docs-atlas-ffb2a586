@@ -1,0 +1,376 @@
+---
+title: Data Management
+description: Guide to working with Shopware data using the Admin SDK repository and data APIs
+---
+
+This guide covers how to fetch, update, and subscribe to Shopware data using the Admin SDK's data management APIs.
+
+## Overview
+
+The Admin SDK provides two main approaches for data management:
+
+1. **Repository API**: For searching, creating, updating, and deleting entities
+2. **Dataset API**: For subscribing to and updating data in specific locations
+
+## Repository API
+
+The Repository API provides methods to interact with Shopware entities.
+
+### Basic Usage
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+const { repository, Classes: { Criteria } } = data;
+
+// Get a repository for an entity
+const productRepo = repository('product');
+```
+
+### Searching Entities
+
+Use the `search()` method with criteria to find entities:
+
+```typescript
+// Create a criteria object
+const criteria = new Criteria();
+criteria.setPage(1);
+criteria.setLimit(25);
+
+// Search for products
+const products = await productRepo.search(criteria);
+
+if (products) {
+    console.log(`Found ${products.total} products`);
+    products.forEach(product => {
+        console.log(product.name);
+    });
+}
+```
+
+### Adding Filters
+
+Filter your search results using various filter types:
+
+```typescript
+const criteria = new Criteria();
+
+// Equals filter
+criteria.addFilter(
+    Criteria.equals('active', true)
+);
+
+// Contains filter
+criteria.addFilter(
+    Criteria.contains('name', 'Awesome')
+);
+
+// Range filter
+criteria.addFilter(
+    Criteria.range('stock', { gte: 10, lte: 100 })
+);
+
+// Multiple filters with AND/OR
+criteria.addFilter(
+    Criteria.multi('AND', [
+        Criteria.equals('active', true),
+        Criteria.range('price', { gte: 10 })
+    ])
+);
+
+const results = await repository('product').search(criteria);
+```
+
+### Available Filter Types
+
+```typescript
+// Exact match
+Criteria.equals('field', value)
+
+// Multiple values
+Criteria.equalsAny('field', [value1, value2])
+
+// Text search
+Criteria.contains('field', 'searchTerm')
+Criteria.prefix('field', 'start')
+Criteria.suffix('field', 'end')
+
+// Range queries
+Criteria.range('field', { gte: 10, lte: 100 })
+
+// Complex queries
+Criteria.multi('AND', [filter1, filter2])
+Criteria.not('OR', [filter1, filter2])
+```
+
+### Sorting Results
+
+Add sorting to your criteria:
+
+```typescript
+const criteria = new Criteria();
+
+// Sort by field
+criteria.addSorting(
+    Criteria.sort('name', 'ASC')
+);
+
+// Natural sorting (for version numbers, etc.)
+criteria.addSorting(
+    Criteria.naturalSorting('version', 'DESC')
+);
+
+// Count sorting (sort by association count)
+criteria.addSorting(
+    Criteria.countSorting('products', 'DESC')
+);
+```
+
+### Loading Associations
+
+Load related entities using associations:
+
+```typescript
+const criteria = new Criteria();
+
+// Add single association
+criteria.addAssociation('manufacturer');
+
+// Add nested association
+criteria.addAssociation('cover.media');
+
+// Configure association criteria
+const manufacturerCriteria = criteria.getAssociation('manufacturer');
+manufacturerCriteria.addFilter(
+    Criteria.equals('active', true)
+);
+
+const products = await repository('product').search(criteria);
+```
+
+### Pagination
+
+Implement pagination with page and limit:
+
+```typescript
+const criteria = new Criteria();
+criteria.setPage(1);
+criteria.setLimit(25);
+
+const results = await repository('product').search(criteria);
+
+if (results) {
+    console.log(`Page: ${results.currentPage}`);
+    console.log(`Total: ${results.total}`);
+    console.log(`Pages: ${Math.ceil(results.total / 25)}`);
+}
+```
+
+### Getting a Single Entity
+
+Fetch a single entity by ID:
+
+```typescript
+const product = await repository('product').get('product-id-here');
+
+if (product) {
+    console.log(product.name);
+}
+
+// With criteria for associations
+const criteria = new Criteria();
+criteria.addAssociation('manufacturer');
+
+const productWithManufacturer = await repository('product').get(
+    'product-id-here',
+    undefined,
+    criteria
+);
+```
+
+### Creating Entities
+
+Create new entities:
+
+```typescript
+// Create a new entity
+const newProduct = await repository('product').create();
+
+if (newProduct) {
+    // Set properties
+    newProduct.name = 'New Product';
+    newProduct.productNumber = 'PROD-001';
+    newProduct.stock = 100;
+    newProduct.taxId = 'tax-id-here';
+    newProduct.price = [{
+        currencyId: 'currency-id-here',
+        gross: 19.99,
+        net: 16.80,
+        linked: true
+    }];
+
+    // Save the entity
+    await repository('product').save(newProduct);
+}
+```
+
+### Updating Entities
+
+Modify and save existing entities:
+
+```typescript
+// Fetch the entity
+const product = await repository('product').get('product-id');
+
+if (product) {
+    // Modify properties
+    product.name = 'Updated Name';
+    product.stock = 50;
+
+    // Save changes
+    await repository('product').save(product);
+}
+```
+
+### Deleting Entities
+
+Delete entities by ID:
+
+```typescript
+await repository('product').delete('product-id');
+```
+
+## Dataset API
+
+The Dataset API allows you to access and modify data in specific admin locations.
+
+### Getting Dataset Data
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+// Get data from a specific dataset
+const result = await data.get({
+    id: 'sw-sales-channel-detail__salesChannel',
+    selectors: ['name', 'active']
+});
+
+console.log(result.name);
+console.log(result.active);
+```
+
+### Subscribing to Dataset Changes
+
+Listen for changes to dataset data:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+data.subscribe(
+    'sw-sales-channel-detail__salesChannel',
+    (response) => {
+        console.log('Data changed:', response.data);
+        // Update your UI
+    },
+    {
+        selectors: ['name', 'active']
+    }
+);
+```
+
+### Updating Dataset Data
+
+Update data in the parent dataset:
+
+```typescript
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+await data.update({
+    id: 'sw-sales-channel-detail__salesChannel',
+    data: {
+        name: 'Updated Sales Channel Name'
+    }
+});
+```
+
+## Complete Example
+
+Here's a complete example combining repository and dataset APIs:
+
+```typescript
+import { defineComponent } from 'vue';
+import { data, notification } from '@shopware-ag/meteor-admin-sdk';
+import { SwButton, SwTextField } from '@shopware-ag/meteor-component-library';
+
+const { repository, Classes: { Criteria } } = data;
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+        'sw-text-field': SwTextField,
+    },
+    data() {
+        return {
+            language: null,
+            languages: [],
+        };
+    },
+    methods: {
+        async loadLanguages() {
+            const criteria = new Criteria();
+            criteria.setLimit(10);
+            criteria.addSorting(Criteria.sort('name', 'ASC'));
+
+            const results = await repository('language').search(criteria);
+
+            if (results) {
+                this.languages = results;
+            }
+        },
+
+        async loadLanguage(id: string) {
+            const criteria = new Criteria();
+            criteria.addAssociation('locale');
+
+            this.language = await repository('language').get(id, undefined, criteria);
+        },
+
+        async saveLanguage() {
+            if (!this.language) return;
+
+            try {
+                await repository('language').save(this.language);
+
+                notification.dispatch({
+                    title: 'Success',
+                    message: 'Language saved successfully',
+                    variant: 'success'
+                });
+            } catch (error) {
+                notification.dispatch({
+                    title: 'Error',
+                    message: 'Failed to save language',
+                    variant: 'error'
+                });
+            }
+        }
+    },
+    mounted() {
+        this.loadLanguages();
+    }
+});
+```
+
+## Best Practices
+
+1. **Use Criteria efficiently**: Only fetch the data you need with appropriate filters and limits
+2. **Load associations selectively**: Only load related entities when necessary
+3. **Handle errors**: Always wrap repository calls in try-catch blocks
+4. **Use selectors in datasets**: Specify only the fields you need
+5. **Optimize pagination**: Use appropriate total count modes for better performance
+
+## Next Steps
+
+- See the [Data Subscription Example](/admin-sdk/examples/data-subscription) for a working implementation
+- Learn about [Building Apps](/admin-sdk/guides/building-apps) for app structure
+- Check the [API Reference](/admin-sdk/api/data) for all available methods

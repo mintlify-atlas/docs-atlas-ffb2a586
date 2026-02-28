@@ -1,0 +1,200 @@
+---
+title: Data Module
+description: Core data access methods for subscribing to and managing datasets in the Admin SDK
+---
+
+The data module provides methods for extensions to access and manage data in the Shopware Administration.
+
+## Methods
+
+### subscribe()
+
+Subscribe to dataset changes and receive updates when data changes.
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the dataset to subscribe to
+</ParamField>
+
+<ParamField path="callback" type="function" required>
+  Callback function that receives data updates
+  
+  ```typescript
+  (data: {id: string, data: unknown}) => void | Promise<unknown>
+  ```
+</ParamField>
+
+<ParamField path="options" type="object">
+  Optional configuration for the subscription
+  
+  <ParamField path="options.selectors" type="string[]">
+    Array of field selectors to filter which data fields trigger updates
+  </ParamField>
+</ParamField>
+
+<ResponseField name="unsubscribe" type="function">
+  Returns an unsubscribe function to stop receiving updates
+</ResponseField>
+
+#### Example
+
+```typescript
+import { data } from '@shopware-ag/admin-sdk';
+
+// Subscribe to product data changes
+const unsubscribe = data.subscribe(
+  'product-detail',
+  (response) => {
+    console.log('Product updated:', response.data);
+  },
+  {
+    selectors: ['name', 'price', 'stock']
+  }
+);
+
+// Unsubscribe when done
+unsubscribe();
+```
+
+---
+
+### get()
+
+Request data from a registered dataset.
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the dataset to retrieve
+</ParamField>
+
+<ParamField path="data" type="unknown">
+  Optional data to pass with the request
+</ParamField>
+
+<ParamField path="selectors" type="string[]">
+  Array of field selectors to specify which fields to retrieve
+</ParamField>
+
+<ResponseField name="response" type="Promise<unknown>">
+  Returns a promise that resolves with the requested data
+</ResponseField>
+
+#### Example
+
+```typescript
+import { data } from '@shopware-ag/admin-sdk';
+
+// Get current product data
+const productData = await data.get('product-detail', {
+  selectors: ['name', 'description', 'price']
+});
+
+console.log('Product:', productData);
+```
+
+---
+
+### update()
+
+Update data in a registered dataset.
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the dataset to update
+</ParamField>
+
+<ParamField path="data" type="unknown" required>
+  The new data to update the dataset with
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the update is complete
+</ResponseField>
+
+#### Example
+
+```typescript
+import { data } from '@shopware-ag/admin-sdk';
+
+// Update product data
+await data.update('product-detail', {
+  name: 'Updated Product Name',
+  price: 29.99
+});
+```
+
+---
+
+## Classes
+
+The data module exports utility classes for data manipulation:
+
+### Criteria
+
+Build search criteria for querying entities. See [Repository](/admin-sdk/api/repository) for usage.
+
+### Entity
+
+Represents a single entity with change tracking and state management.
+
+### EntityCollection
+
+Represents a collection of entities returned from search operations.
+
+## Type Definitions
+
+### datasetSubscribe
+
+```typescript
+type datasetSubscribe = {
+  responseType: unknown,
+  id: string,
+  data: unknown,
+  selectors?: string[],
+}
+```
+
+### datasetGet
+
+```typescript
+type datasetGet = {
+  responseType: unknown,
+  id: string,
+  data?: unknown,
+  selectors?: string[],
+}
+```
+
+### datasetUpdate
+
+```typescript
+type datasetUpdate = {
+  responseType: unknown,
+  id: string,
+  data: unknown,
+}
+```
+
+## Best Practices
+
+<Tip>
+  Always unsubscribe from datasets when your component unmounts to prevent memory leaks.
+</Tip>
+
+<Warning>
+  The `subscribe` method automatically sends a registration message to the admin. Make sure the dataset ID exists before subscribing.
+</Warning>
+
+## Error Handling
+
+```typescript
+import { data } from '@shopware-ag/admin-sdk';
+
+data.subscribe('my-dataset', (response) => {
+  // Check for privilege errors
+  if (response.data instanceof MissingPrivilegesError) {
+    console.error('Missing privileges:', response.data);
+    return;
+  }
+  
+  // Handle data normally
+  console.log('Data:', response.data);
+});
+```

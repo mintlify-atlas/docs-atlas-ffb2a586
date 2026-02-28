@@ -1,0 +1,452 @@
+---
+title: "Usage"
+description: "Learn how to use Meteor Design Tokens in your CSS and components"
+---
+
+## Basic Usage
+
+Once you've installed and imported the design tokens, you can use them in your CSS through CSS custom properties (variables).
+
+### Using Tokens in CSS
+
+Reference tokens using the `var()` function:
+
+```css
+.button {
+  background-color: var(--color-interaction-primary-default);
+  color: var(--color-static-white);
+  padding: var(--scale-size-12) var(--scale-size-16);
+  border-radius: var(--border-radius-button);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+}
+```
+
+### Using Tokens in SCSS/Sass
+
+Tokens work seamlessly with SCSS:
+
+```scss
+.card {
+  background-color: var(--color-elevation-surface-raised);
+  border: 1px solid var(--color-border-secondary-default);
+  border-radius: var(--border-radius-card);
+  padding: var(--scale-size-16);
+  
+  &:hover {
+    border-color: var(--color-border-primary-default);
+  }
+}
+```
+
+## Color Tokens
+
+### Interaction Colors
+
+Use interaction tokens for buttons, links, and interactive elements:
+
+```css
+/* Primary button */
+.button-primary {
+  background-color: var(--color-interaction-primary-default);
+}
+
+.button-primary:hover {
+  background-color: var(--color-interaction-primary-hover);
+}
+
+.button-primary:active {
+  background-color: var(--color-interaction-primary-pressed);
+}
+
+.button-primary:disabled {
+  background-color: var(--color-interaction-primary-disabled);
+}
+```
+
+### Background Colors
+
+Use background tokens for surfaces and containers:
+
+```css
+.page {
+  background-color: var(--color-elevation-surface-default);
+}
+
+.card {
+  background-color: var(--color-elevation-surface-raised);
+}
+
+.input {
+  background-color: var(--color-background-primary-default);
+}
+
+.section-highlight {
+  background-color: var(--color-elevation-surface-sunken);
+}
+```
+
+### Text Colors
+
+Use text tokens for typography:
+
+```css
+.heading {
+  color: var(--color-text-primary-default);
+}
+
+.description {
+  color: var(--color-text-secondary-default);
+}
+
+.link {
+  color: var(--color-text-brand-default);
+}
+
+.link:hover {
+  color: var(--color-text-brand-hover);
+}
+
+.error-message {
+  color: var(--color-text-critical-default);
+}
+```
+
+### Border Colors
+
+Use border tokens for dividers and outlines:
+
+```css
+.input {
+  border: 1px solid var(--color-border-primary-default);
+}
+
+.input:focus {
+  border-color: var(--color-border-brand-default);
+}
+
+.input.error {
+  border-color: var(--color-border-critical-default);
+}
+
+.divider {
+  border-bottom: 1px solid var(--color-border-secondary-default);
+}
+```
+
+### Icon Colors
+
+Use icon tokens for icon elements:
+
+```css
+.icon {
+  color: var(--color-icon-primary-default);
+}
+
+.icon-secondary {
+  color: var(--color-icon-secondary-default);
+}
+
+.icon-disabled {
+  color: var(--color-icon-primary-disabled);
+}
+
+.icon-error {
+  color: var(--color-icon-critical-default);
+}
+```
+
+## Typography Tokens
+
+### Font Family
+
+```css
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-headings);
+}
+
+body, p {
+  font-family: var(--font-family-body);
+}
+```
+
+### Font Size
+
+```css
+.text-xs {
+  font-size: var(--font-size-xs);
+  line-height: var(--font-line-height-xs);
+}
+
+.text-s {
+  font-size: var(--font-size-s);
+  line-height: var(--font-line-height-s);
+}
+
+.text-m {
+  font-size: var(--font-size-m);
+  line-height: var(--font-line-height-m);
+}
+
+.heading-xl {
+  font-size: var(--font-size-xl);
+  line-height: var(--font-line-height-xl);
+  font-weight: var(--font-weight-semibold);
+}
+```
+
+### Font Weight
+
+```css
+.regular {
+  font-weight: var(--font-weight-regular);
+}
+
+.medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.bold {
+  font-weight: var(--font-weight-bold);
+}
+```
+
+## Spacing Tokens
+
+Use scale tokens for consistent spacing:
+
+```css
+.container {
+  padding: var(--scale-size-16);
+  gap: var(--scale-size-8);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scale-size-12);
+}
+
+.grid {
+  display: grid;
+  gap: var(--scale-size-16) var(--scale-size-24);
+}
+```
+
+## Border Radius Tokens
+
+```css
+.button {
+  border-radius: var(--border-radius-button);
+}
+
+.card {
+  border-radius: var(--border-radius-card);
+}
+
+.checkbox {
+  border-radius: var(--border-radius-checkbox);
+}
+
+.pill {
+  border-radius: var(--border-radius-round);
+}
+```
+
+## Real-World Examples
+
+### Complete Button Component
+
+```css
+.sw-button {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--scale-size-8);
+  padding: var(--scale-size-8) var(--scale-size-16);
+  
+  /* Typography */
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  
+  /* Colors */
+  background-color: var(--color-interaction-primary-default);
+  color: var(--color-static-white);
+  
+  /* Border */
+  border: none;
+  border-radius: var(--border-radius-button);
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sw-button:hover {
+  background-color: var(--color-interaction-primary-hover);
+}
+
+.sw-button:active {
+  background-color: var(--color-interaction-primary-pressed);
+}
+
+.sw-button:disabled {
+  background-color: var(--color-interaction-primary-disabled);
+  cursor: not-allowed;
+}
+```
+
+### Complete Card Component
+
+```css
+.sw-card {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  gap: var(--scale-size-16);
+  padding: var(--scale-size-20);
+  
+  /* Surface */
+  background-color: var(--color-elevation-surface-raised);
+  border: 1px solid var(--color-border-secondary-default);
+  border-radius: var(--border-radius-card);
+  
+  /* Shadow */
+  box-shadow: 0 1px 3px var(--color-elevation-shadow-default);
+}
+
+.sw-card__title {
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary-default);
+}
+
+.sw-card__description {
+  font-size: var(--font-size-s);
+  color: var(--color-text-secondary-default);
+  line-height: var(--font-line-height-s);
+}
+```
+
+### Form Input Component
+
+```css
+.sw-input {
+  /* Layout */
+  padding: var(--scale-size-8) var(--scale-size-12);
+  
+  /* Typography */
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-s);
+  color: var(--color-text-primary-default);
+  
+  /* Surface */
+  background-color: var(--color-background-primary-default);
+  border: 1px solid var(--color-border-primary-default);
+  border-radius: var(--border-radius-xs);
+  
+  /* Interaction */
+  transition: border-color 0.2s;
+}
+
+.sw-input:focus {
+  outline: none;
+  border-color: var(--color-border-brand-default);
+}
+
+.sw-input.error {
+  border-color: var(--color-border-critical-default);
+  background-color: var(--color-background-critical-default);
+}
+
+.sw-input:disabled {
+  background-color: var(--color-background-tertiary-default);
+  color: var(--color-text-primary-disabled);
+  cursor: not-allowed;
+}
+```
+
+## Using with CSS-in-JS
+
+### Styled Components
+
+```jsx
+import styled from 'styled-components';
+
+const Button = styled.button`
+  background-color: var(--color-interaction-primary-default);
+  color: var(--color-static-white);
+  padding: var(--scale-size-8) var(--scale-size-16);
+  border-radius: var(--border-radius-button);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-medium);
+  
+  &:hover {
+    background-color: var(--color-interaction-primary-hover);
+  }
+`;
+```
+
+### Emotion
+
+```jsx
+import { css } from '@emotion/react';
+
+const buttonStyles = css`
+  background-color: var(--color-interaction-primary-default);
+  color: var(--color-static-white);
+  padding: var(--scale-size-8) var(--scale-size-16);
+  border-radius: var(--border-radius-button);
+`;
+```
+
+## Fallback Values
+
+Provide fallback values for browsers that don't support CSS custom properties:
+
+```css
+.button {
+  background-color: #0870ff; /* Fallback */
+  background-color: var(--color-interaction-primary-default);
+}
+```
+
+<Note>
+  Modern browsers have excellent support for CSS custom properties. Fallbacks are typically only needed for legacy browser support.
+</Note>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use semantic tokens over primitives">
+    Always prefer semantic tokens (e.g., `--color-interaction-primary-default`) over primitive tokens (e.g., `--color-brand-500`) in your application code. Semantic tokens provide context and adapt to theme changes.
+  </Accordion>
+  
+  <Accordion title="Use spacing scale consistently">
+    Stick to the spacing scale tokens for all margins, padding, and gaps. This ensures consistent spacing throughout your application.
+  </Accordion>
+  
+  <Accordion title="Respect token purposes">
+    Use tokens according to their descriptions. For example, use `--color-text-primary-default` for body text, not for backgrounds.
+  </Accordion>
+  
+  <Accordion title="Don't hardcode values">
+    Avoid hardcoding colors, sizes, or other design values. Always use the appropriate token to maintain consistency and enable theming.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Primitives Reference" icon="palette" href="/design-tokens/primitives">
+    Explore all available primitive tokens
+  </Card>
+  <Card title="Theme Customization" icon="paintbrush" href="/design-tokens/theme-customization">
+    Learn how to customize themes
+  </Card>
+</CardGroup>

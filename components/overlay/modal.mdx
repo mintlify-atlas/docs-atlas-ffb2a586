@@ -1,0 +1,260 @@
+---
+title: Modal
+description: A dialog overlay component that displays content in a centered modal window with backdrop.
+---
+
+## Overview
+
+The `MtModal` component creates an accessible modal dialog that appears above the main content with a backdrop. It supports various sizes, customizable headers and footers, and automatic focus management with keyboard navigation.
+
+## Import
+
+```javascript
+import MtModal from '@/components/overlay/mt-modal/mt-modal.vue';
+import MtModalRoot from '@/components/overlay/mt-modal/sub-components/mt-modal-root.vue';
+import MtModalTrigger from '@/components/overlay/mt-modal/sub-components/mt-modal-trigger.vue';
+import MtModalAction from '@/components/overlay/mt-modal/sub-components/mt-modal-action.vue';
+```
+
+## Props
+
+<ParamField path="title" type="string" default="undefined">
+  The title displayed in the modal header.
+</ParamField>
+
+<ParamField path="subtitle" type="string" default="undefined">
+  An optional subtitle displayed below the title in the modal header.
+</ParamField>
+
+<ParamField path="width" type="'s' | 'm' | 'l' | 'xl' | 'full'" default="'m'">
+  The width of the modal:
+  - `s`: 27.5rem (440px)
+  - `m`: 45rem (720px)
+  - `l`: 64rem (1024px)
+  - `xl`: 90rem (1440px)
+  - `full`: 100% of viewport width
+</ParamField>
+
+<ParamField path="inset" type="boolean" default="false">
+  When true, removes padding from the modal content area. Useful for full-width content like tables or images.
+</ParamField>
+
+<ParamField path="hideHeader" type="boolean" default="false">
+  When true, hides the entire modal header including title and close button.
+</ParamField>
+
+## Usage
+
+### Basic Modal
+
+```vue
+<template>
+  <mt-modal-root :isOpen="isModalOpen" :closable="true">
+    <mt-modal-trigger :as="MtButton">
+      <mt-button variant="primary">Open Modal</mt-button>
+    </mt-modal-trigger>
+
+    <mt-modal title="Welcome" subtitle="Get started with your setup">
+      <template #default>
+        <mt-text>This is the modal content area.</mt-text>
+      </template>
+
+      <template #footer>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <mt-modal-close :as="MtButton">
+            <mt-button variant="secondary">Cancel</mt-button>
+          </mt-modal-close>
+          <mt-button variant="primary">Continue</mt-button>
+        </div>
+      </template>
+    </mt-modal>
+  </mt-modal-root>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const isModalOpen = ref(false);
+</script>
+```
+
+### Large Modal with Custom Header
+
+```vue
+<template>
+  <mt-modal-root :isOpen="isOpen">
+    <mt-modal title="Settings" width="l">
+      <template #header-left>
+        <mt-icon name="solid-cog" />
+      </template>
+
+      <template #title-after>
+        <mt-badge variant="info">Beta</mt-badge>
+      </template>
+
+      <template #default>
+        <!-- Modal content -->
+      </template>
+
+      <template #footer>
+        <mt-button variant="primary">Save Changes</mt-button>
+      </template>
+    </mt-modal>
+  </mt-modal-root>
+</template>
+```
+
+### Full-Width Content (Inset)
+
+```vue
+<template>
+  <mt-modal-root :isOpen="isOpen">
+    <mt-modal title="Product Gallery" width="xl" :inset="true">
+      <template #default>
+        <img src="/product-image.jpg" style="width: 100%; height: auto;" />
+      </template>
+    </mt-modal>
+  </mt-modal-root>
+</template>
+```
+
+### Programmatic Control
+
+```vue
+<template>
+  <mt-modal-root :isOpen="isOpen" :closable="isClosable" @change="handleModalChange">
+    <mt-modal title="Processing...">
+      <template #default>
+        <mt-text>Please wait while we process your request.</mt-text>
+        <mt-progress :value="progress" />
+      </template>
+    </mt-modal>
+  </mt-modal-root>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const isOpen = ref(false);
+const isClosable = ref(false);
+const progress = ref(0);
+
+function handleModalChange(state) {
+  console.log('Modal state changed:', state);
+}
+
+function startProcess() {
+  isOpen.value = true;
+  isClosable.value = false;
+  // Simulate progress
+  const interval = setInterval(() => {
+    progress.value += 10;
+    if (progress.value >= 100) {
+      clearInterval(interval);
+      isClosable.value = true;
+    }
+  }, 500);
+}
+</script>
+```
+
+## Slots
+
+<ParamField path="default" type="slot">
+  The main content area of the modal.
+</ParamField>
+
+<ParamField path="header-left" type="slot">
+  Content displayed on the left side of the header before the title.
+</ParamField>
+
+<ParamField path="title-after" type="slot">
+  Content displayed immediately after the title.
+</ParamField>
+
+<ParamField path="header-right" type="slot">
+  Content displayed on the right side of the header before the close button.
+</ParamField>
+
+<ParamField path="footer" type="slot">
+  The footer area, typically used for action buttons.
+</ParamField>
+
+## Sub-Components
+
+### MtModalRoot
+
+The root wrapper component that provides context and renders the backdrop.
+
+**Props:**
+- `isOpen` (boolean): Controls the modal's open/close state
+- `closable` (boolean, default: true): Whether the modal can be closed by clicking the backdrop or pressing Escape
+
+**Events:**
+- `change`: Emitted when the modal state changes, passes the new state as argument
+
+### MtModalTrigger
+
+A wrapper component that opens the modal when clicked.
+
+**Props:**
+- `as` (Component): The component to render (e.g., MtButton)
+
+### MtModalClose
+
+A wrapper component that closes the modal when clicked.
+
+**Props:**
+- `as` (Component): The component to render (e.g., MtButton)
+
+### MtModalAction
+
+A wrapper component that provides a close function to the click event handler.
+
+**Props:**
+- `as` (Component): The component to render
+
+**Events:**
+- `click`: Emitted when clicked, passes a closeModal function as argument
+
+## Events
+
+The modal state is managed through the `MtModalRoot` component via the `isOpen` prop and `change` event.
+
+## Accessibility Features
+
+- **Focus Management**: Automatically traps focus within the modal when open using `focus-trap`
+- **Keyboard Navigation**: 
+  - Press `Escape` to close the modal (when closable)
+  - Tab navigation is confined to modal content
+- **ARIA Attributes**:
+  - `role="dialog"` on modal container
+  - `aria-modal="true"` indicates modal behavior
+  - `aria-labelledby` links to the modal title for screen readers
+- **Teleport**: Modal is rendered at the document body level to avoid z-index issues
+- **Backdrop**: Click outside to close (when closable)
+
+## Additional Features
+
+### Scroll Shadows
+
+The modal automatically displays subtle shadows at the top or bottom of the content area when scrollable content exists, providing a visual indicator that more content is available.
+
+### Animations
+
+Smooth enter/exit animations with reduced motion support:
+- Fade and scale effects on open/close
+- Respects `prefers-reduced-motion` user preference
+
+### Stacking Warning
+
+The component logs a warning when multiple modals are stacked, as this is not recommended for UX reasons.
+
+## Best Practices
+
+1. **Use appropriate widths**: Choose a width that fits your content without being too large or cramped
+2. **Provide clear actions**: Always include clear primary and secondary actions in the footer
+3. **Make it closable**: Allow users to close modals unless performing a critical operation
+4. **Avoid nesting**: Don't stack multiple modals on top of each other
+5. **Use descriptive titles**: Provide clear, concise titles that explain the modal's purpose
+6. **Consider mobile**: Test modals on smaller screens to ensure they remain usable

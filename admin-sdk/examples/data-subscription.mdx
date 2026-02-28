@@ -1,0 +1,599 @@
+---
+title: Data Subscription Example
+description: Working example showing how to subscribe to and update Shopware data in real-time
+---
+
+This example demonstrates real-time data subscription and updates using the Admin SDK's dataset API.
+
+## Overview
+
+This example shows:
+- Getting data from a dataset
+- Subscribing to data changes
+- Updating data in real-time
+- Handling data with selectors
+
+## Use Case
+
+We'll create a component that subscribes to sales channel data on the detail page, displays it, and allows updates.
+
+## Complete Implementation
+
+### Register the Component Section
+
+```typescript title="init-app.ts"
+import { ui } from '@shopware-ag/meteor-admin-sdk';
+
+// Add card to sales channel detail page
+ui.componentSection.add({
+    component: 'card',
+    positionId: 'sw-sales-channel-detail-base-options-delete__after',
+    props: {
+        title: 'Dataset Testing',
+        locationId: 'data-dataset',
+    },
+});
+```
+
+### Create the Component
+
+```vue title="views/DatasetExample.vue"
+<template>
+    <div class="dataset-example">
+        <div class="button-group">
+            <sw-button @click="getDataset">
+                Get Dataset
+            </sw-button>
+            <sw-button @click="subscribeData" variant="primary">
+                Subscribe Dataset
+            </sw-button>
+        </div>
+
+        <div class="status">
+            <p><strong>Clicked on:</strong> {{ clicked }}</p>
+            <p><strong>Return Value:</strong></p>
+            <pre>{{ JSON.stringify(returnValue, null, 2) }}</pre>
+        </div>
+
+        <div class="data-display">
+            <p><strong>Returned name:</strong> {{ salesChannel.name }}</p>
+            <p><strong>Returned active state:</strong> {{ salesChannel.active }}</p>
+        </div>
+
+        <div class="update-section">
+            <sw-text-field 
+                label="Name" 
+                v-model="salesChannel.name"
+            />
+            <sw-button @click="updateDataset">
+                Update to Main
+            </sw-button>
+        </div>
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { data } from '@shopware-ag/meteor-admin-sdk';
+import { SwButton, SwTextField } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+        'sw-text-field': SwTextField,
+    },
+    data() {
+        return {
+            salesChannel: {
+                name: '',
+                active: false,
+            },
+            clicked: '',
+            returnValue: null,
+            retryCounter: 0,
+        };
+    },
+    methods: {
+        getDataset() {
+            if (this.retryCounter >= 10) {
+                this.returnValue = 'Retry limit reached';
+                return;
+            }
+
+            this.clicked = 'getDataset';
+            this.retryCounter++;
+
+            data.get({
+                id: 'sw-sales-channel-detail__salesChannel',
+                selectors: ['name', 'active'],
+            }).then((data) => {
+                this.retryCounter = 0;
+                this.returnValue = data;
+                
+                const { name, active } = data;
+                this.salesChannel = { name, active };
+            }).catch((error) => {
+                this.returnValue = error;
+
+                // Retry after delay if not ready
+                window.setTimeout(() => {
+                    this.getDataset();
+                }, 500);
+            });
+        },
+        
+        async updateDataset() {
+            this.clicked = 'updateDataset';
+
+            await data.update({
+                id: 'sw-sales-channel-detail__salesChannel',
+                data: this.salesChannel,
+            });
+        },
+        
+        subscribeData() {
+            this.clicked = 'subscribeData';
+
+            data.subscribe(
+                'sw-sales-channel-detail__salesChannel',
+                (response) => {
+                    this.returnValue = response.data;
+
+                    this.salesChannel = {
+                        name: response.data.name,
+                        active: response.data.active,
+                    };
+                },
+                {
+                    selectors: ['name', 'active'],
+                }
+            );
+        }
+    }
+});
+</script>
+
+<style scoped>
+.dataset-example {
+    padding: 20px;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.status {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f7fafc;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.status p {
+    margin-bottom: 8px;
+}
+
+pre {
+    margin: 8px 0 0 0;
+    padding: 12px;
+    background: #2d3748;
+    color: #f7fafc;
+    border-radius: 4px;
+    font-size: 12px;
+    overflow-x: auto;
+}
+
+.data-display {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #edf2f7;
+    border-radius: 4px;
+}
+
+.data-display p {
+    margin-bottom: 8px;
+}
+
+.update-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    background: #fff;
+    border: 2px dashed #cbd5e0;
+    border-radius: 4px;
+}
+</style>
+```
+
+## Step-by-Step Explanation
+
+<Steps>
+
+### Step 1: Get Dataset
+
+The `getDataset()` method fetches the current data:
+
+```typescript
+data.get({
+    id: 'sw-sales-channel-detail__salesChannel',
+    selectors: ['name', 'active'],
+})
+```
+
+- **id**: Dataset identifier from the admin
+- **selectors**: Array of fields to retrieve
+- Returns a promise with the selected data
+
+### Step 2: Subscribe to Changes
+
+The `subscribeData()` method sets up real-time updates:
+
+```typescript
+data.subscribe(
+    'sw-sales-channel-detail__salesChannel',
+    (response) => {
+        // Handle data changes
+        this.salesChannel = response.data;
+    },
+    {
+        selectors: ['name', 'active'],
+    }
+);
+```
+
+The callback fires whenever the data changes in the admin.
+
+### Step 3: Update Dataset
+
+The `updateDataset()` method pushes changes back to the admin:
+
+```typescript
+await data.update({
+    id: 'sw-sales-channel-detail__salesChannel',
+    data: {
+        name: 'Updated Name'
+    }
+});
+```
+
+This updates the data in the parent admin page.
+
+</Steps>
+
+## Dataset IDs
+
+Common dataset IDs in the admin:
+
+```typescript
+// Product detail page
+'sw-product-detail__product'
+
+// Sales channel detail page
+'sw-sales-channel-detail__salesChannel'
+
+// Customer detail page
+'sw-customer-detail__customer'
+
+// Order detail page
+'sw-order-detail__order'
+```
+
+## Using Selectors
+
+Selectors allow you to specify which fields to retrieve:
+
+```typescript
+// Get specific fields
+selectors: ['name', 'active', 'type']
+
+// Get nested fields
+selectors: ['name', 'configuration.email']
+
+// Get associations
+selectors: ['name', 'products.name']
+```
+
+## Complete Working Example
+
+Here's a more advanced example with error handling and loading states:
+
+```vue
+<template>
+    <div class="advanced-dataset">
+        <div v-if="loading" class="loading">
+            Loading data...
+        </div>
+
+        <div v-else>
+            <div class="actions">
+                <sw-button @click="loadData" :disabled="isSubscribed">
+                    Load Once
+                </sw-button>
+                <sw-button 
+                    @click="toggleSubscription" 
+                    :variant="isSubscribed ? 'danger' : 'primary'"
+                >
+                    {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+                </sw-button>
+            </div>
+
+            <div v-if="error" class="error">
+                <p>Error: {{ error }}</p>
+            </div>
+
+            <div v-if="salesChannel.name" class="data">
+                <h4>Sales Channel Data</h4>
+                
+                <div class="field">
+                    <label>Name:</label>
+                    <sw-text-field v-model="salesChannel.name" />
+                </div>
+
+                <div class="field">
+                    <label>Active:</label>
+                    <sw-switch-field v-model="salesChannel.active" />
+                </div>
+
+                <div class="field">
+                    <label>Type:</label>
+                    <span>{{ salesChannel.type }}</span>
+                </div>
+
+                <sw-button @click="saveChanges" variant="primary">
+                    Save Changes
+                </sw-button>
+            </div>
+
+            <div v-if="isSubscribed" class="subscription-info">
+                <p>Live updates active - data will update automatically</p>
+                <p>Last update: {{ lastUpdate }}</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { data, notification } from '@shopware-ag/meteor-admin-sdk';
+import { SwButton, SwTextField, SwSwitchField } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-button': SwButton,
+        'sw-text-field': SwTextField,
+        'sw-switch-field': SwSwitchField,
+    },
+    data() {
+        return {
+            salesChannel: {},
+            loading: false,
+            error: null,
+            isSubscribed: false,
+            lastUpdate: null,
+            unsubscribe: null,
+        };
+    },
+    methods: {
+        async loadData() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const result = await data.get({
+                    id: 'sw-sales-channel-detail__salesChannel',
+                    selectors: ['name', 'active', 'type'],
+                });
+
+                this.salesChannel = result;
+                this.lastUpdate = new Date().toLocaleTimeString();
+                
+                notification.dispatch({
+                    title: 'Data Loaded',
+                    message: 'Sales channel data retrieved',
+                    variant: 'success'
+                });
+            } catch (err) {
+                this.error = err.message || 'Failed to load data';
+                
+                notification.dispatch({
+                    title: 'Error',
+                    message: this.error,
+                    variant: 'error'
+                });
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        toggleSubscription() {
+            if (this.isSubscribed) {
+                if (this.unsubscribe) {
+                    this.unsubscribe();
+                }
+                this.isSubscribed = false;
+                
+                notification.dispatch({
+                    title: 'Unsubscribed',
+                    message: 'No longer listening for changes',
+                    variant: 'info'
+                });
+            } else {
+                this.unsubscribe = data.subscribe(
+                    'sw-sales-channel-detail__salesChannel',
+                    (response) => {
+                        this.salesChannel = response.data;
+                        this.lastUpdate = new Date().toLocaleTimeString();
+                    },
+                    {
+                        selectors: ['name', 'active', 'type'],
+                    }
+                );
+                
+                this.isSubscribed = true;
+                
+                notification.dispatch({
+                    title: 'Subscribed',
+                    message: 'Now listening for live updates',
+                    variant: 'success'
+                });
+            }
+        },
+
+        async saveChanges() {
+            try {
+                await data.update({
+                    id: 'sw-sales-channel-detail__salesChannel',
+                    data: this.salesChannel,
+                });
+
+                notification.dispatch({
+                    title: 'Saved',
+                    message: 'Changes saved successfully',
+                    variant: 'success'
+                });
+            } catch (err) {
+                notification.dispatch({
+                    title: 'Error',
+                    message: 'Failed to save changes',
+                    variant: 'error'
+                });
+            }
+        }
+    },
+    beforeUnmount() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+        }
+    }
+});
+</script>
+
+<style scoped>
+.advanced-dataset {
+    padding: 20px;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: #718096;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.error {
+    padding: 16px;
+    background: #fff5f5;
+    border: 1px solid #fc8181;
+    border-radius: 4px;
+    color: #c53030;
+    margin-bottom: 24px;
+}
+
+.data {
+    padding: 20px;
+    background: #f7fafc;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.data h4 {
+    margin-bottom: 20px;
+    color: #2d3748;
+}
+
+.field {
+    margin-bottom: 16px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.subscription-info {
+    padding: 16px;
+    background: #c6f6d5;
+    border: 1px solid #68d391;
+    border-radius: 4px;
+    color: #22543d;
+}
+
+.subscription-info p {
+    margin-bottom: 4px;
+}
+</style>
+```
+
+## Expected Behavior
+
+### Get Dataset
+
+1. Click "Get Dataset" button
+2. Data is fetched once
+3. Fields populate with current values
+
+### Subscribe Dataset
+
+1. Click "Subscribe Dataset" button
+2. Data updates automatically when changed in admin
+3. No manual refresh needed
+
+### Update Dataset
+
+1. Modify the name field
+2. Click "Update to Main"
+3. Parent admin page updates with new value
+
+## Best Practices
+
+1. **Use selectors**: Only request fields you need
+2. **Handle errors**: Wrap calls in try-catch blocks
+3. **Unsubscribe**: Clean up subscriptions on component unmount
+4. **Retry logic**: Implement retries for initial data load
+5. **User feedback**: Show loading states and notifications
+
+## Common Issues
+
+### Data Not Available
+
+If `data.get()` fails, the dataset might not be ready yet:
+
+```typescript
+const loadWithRetry = async (retries = 5) => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await data.get({ id: 'dataset-id' });
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            await new Promise(r => setTimeout(r, 500));
+        }
+    }
+};
+```
+
+### Subscription Not Firing
+
+Ensure selectors match between subscribe and the data source:
+
+```typescript
+// Both must use same selectors
+data.subscribe('id', callback, { selectors: ['name'] });
+data.get({ id: 'id', selectors: ['name'] });
+```
+
+## Learn More
+
+- [Data Management Guide](/admin-sdk/guides/data-management)
+- [Building Apps Guide](/admin-sdk/guides/building-apps)
+- [GitHub Example](https://github.com/shopware/meteor/tree/main/examples/admin-sdk-plugin)

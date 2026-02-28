@@ -1,0 +1,190 @@
+---
+title: Switch
+description: Toggle switch for binary states
+---
+
+The `MtSwitch` component provides a toggle switch for on/off states, similar to a checkbox but with a different visual representation.
+
+## Import
+
+```vue
+import { MtSwitch } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="boolean">
+  v-model binding for the switch state.
+</ParamField>
+
+<ParamField path="label" type="string">
+  Label text for the switch.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables the switch.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Marks the field as required.
+</ParamField>
+
+<ParamField path="checked" type="boolean">
+  Alternative to modelValue for controlled state.
+</ParamField>
+
+<ParamField path="bordered" type="boolean" default="false">
+  Adds a border around the switch.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object with a detail property.
+</ParamField>
+
+<ParamField path="removeTopMargin" type="boolean" default="false">
+  Removes the default top margin.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for the input.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Indicates if the value is inherited.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Enables inheritance functionality.
+</ParamField>
+
+<ParamField path="inheritedValue" type="boolean">
+  The inherited value when isInherited is true.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: boolean) => void">
+  Emitted when the switch state changes.
+</ParamField>
+
+<ParamField path="change" type="(value: boolean) => void">
+  Emitted when the switch is toggled.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="() => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="() => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+## Usage
+
+### Basic Switch
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const enabled = ref(false);
+</script>
+
+<template>
+  <mt-switch 
+    v-model="enabled"
+    label="Enable notifications"
+  />
+</template>
+```
+
+### Bordered Switch
+
+```vue
+<template>
+  <mt-switch 
+    v-model="darkMode"
+    label="Dark mode"
+    bordered
+  />
+</template>
+```
+
+### With Help Text
+
+```vue
+<template>
+  <mt-switch 
+    v-model="autoSave"
+    label="Auto-save"
+    help-text="Automatically save changes every 5 minutes"
+  />
+</template>
+```
+
+### Disabled Switch
+
+```vue
+<template>
+  <mt-switch 
+    v-model="premium"
+    label="Premium features"
+    disabled
+  />
+</template>
+```
+
+### With Error State
+
+```vue
+<script setup>
+import { ref, computed } from 'vue';
+const termsAccepted = ref(false);
+const error = computed(() => 
+  !termsAccepted.value ? { detail: 'You must accept the terms' } : null
+);
+</script>
+
+<template>
+  <mt-switch 
+    v-model="termsAccepted"
+    label="I accept the terms and conditions"
+    :error="error"
+    required
+  />
+</template>
+```
+
+### Multiple Switches
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const settings = ref({
+  notifications: true,
+  marketing: false,
+  analytics: true,
+});
+</script>
+
+<template>
+  <div>
+    <mt-switch v-model="settings.notifications" label="Notifications" />
+    <mt-switch v-model="settings.marketing" label="Marketing emails" />
+    <mt-switch v-model="settings.analytics" label="Analytics" />
+  </div>
+</template>
+```
+
+## Accessibility
+
+- Uses native checkbox input with custom styling
+- Label is clickable and properly associated
+- Keyboard accessible (Space to toggle)
+- Focus visible outline for keyboard navigation
+- Disabled state prevents interaction
+- ARIA attributes for screen readers
+- Required state marked with asterisk

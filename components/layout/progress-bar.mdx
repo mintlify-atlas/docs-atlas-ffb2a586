@@ -1,0 +1,278 @@
+---
+title: Progress Bar
+description: A visual indicator component for showing progress or completion status with customizable labels and error states
+---
+
+## Overview
+
+The Progress Bar component (mt-progress-bar) displays progress as a visual bar with an optional label and customizable progress text. It supports error states and different label formats (percentage or custom units).
+
+## Import
+
+```vue
+import MtProgressBar from '@/components/feedback-indicator/mt-progress-bar/mt-progress-bar.vue';
+```
+
+## Props
+
+<ParamField path="modelValue" type="number" required>
+  The current progress value (v-model support)
+</ParamField>
+
+<ParamField path="label" type="string" required>
+  Label text displayed above the progress bar
+</ParamField>
+
+<ParamField path="maxValue" type="number" required>
+  The maximum value representing 100% completion
+</ParamField>
+
+<ParamField path="error" type="{ detail: string; code: number } | null" default="null">
+  Error object to display below the progress bar. When set, the progress bar turns red
+</ParamField>
+
+<ParamField path="progressLabelType" type="string" default="'percent'">
+  Format for the progress label. Use 'percent' for percentage display, or provide a custom unit string (e.g., 'KB', 'items', 'files')
+</ParamField>
+
+## Usage Examples
+
+### Basic Progress Bar (Percentage)
+
+```vue
+<template>
+  <mt-progress-bar
+    v-model="uploadProgress"
+    label="Upload Progress"
+    :max-value="100"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import MtProgressBar from '@/components/feedback-indicator/mt-progress-bar/mt-progress-bar.vue';
+
+const uploadProgress = ref(45);
+</script>
+```
+
+### Progress Bar with Custom Units
+
+```vue
+<template>
+  <mt-progress-bar
+    v-model="filesProcessed"
+    label="Processing Files"
+    :max-value="totalFiles"
+    progress-label-type="files"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const filesProcessed = ref(27);
+const totalFiles = ref(100);
+</script>
+```
+
+### Progress Bar with File Size Units
+
+```vue
+<template>
+  <mt-progress-bar
+    v-model="downloadedKb"
+    label="Downloading Update"
+    :max-value="totalKb"
+    progress-label-type="KB"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const downloadedKb = ref(277);
+const totalKb = ref(356);
+</script>
+```
+
+### Progress Bar with Error State
+
+```vue
+<template>
+  <mt-progress-bar
+    v-model="progress"
+    label="Upload Failed"
+    :max-value="100"
+    :error="uploadError"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const progress = ref(67);
+const uploadError = ref({
+  code: 500,
+  detail: 'Network error: Unable to complete upload'
+});
+</script>
+```
+
+### Dynamic Progress Bar
+
+```vue
+<template>
+  <div>
+    <mt-progress-bar
+      v-model="progress"
+      label="Processing Data"
+      :max-value="100"
+    />
+    
+    <button @click="startProgress">Start</button>
+    <button @click="resetProgress">Reset</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const progress = ref(0);
+let intervalId = null;
+
+const startProgress = () => {
+  if (intervalId) return;
+  
+  intervalId = setInterval(() => {
+    if (progress.value >= 100) {
+      clearInterval(intervalId);
+      intervalId = null;
+      return;
+    }
+    progress.value += 5;
+  }, 200);
+};
+
+const resetProgress = () => {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+  progress.value = 0;
+};
+</script>
+```
+
+### Multiple Progress Bars
+
+```vue
+<template>
+  <div style="display: flex; flex-direction: column; gap: 1rem;">
+    <mt-progress-bar
+      v-model="imageProgress"
+      label="Images"
+      :max-value="100"
+    />
+    
+    <mt-progress-bar
+      v-model="videoProgress"
+      label="Videos"
+      :max-value="100"
+    />
+    
+    <mt-progress-bar
+      v-model="documentProgress"
+      label="Documents"
+      :max-value="100"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const imageProgress = ref(75);
+const videoProgress = ref(40);
+const documentProgress = ref(90);
+</script>
+```
+
+### Progress Bar with Computed Value
+
+```vue
+<template>
+  <mt-progress-bar
+    v-model="completedTasks"
+    label="Task Completion"
+    :max-value="totalTasks"
+    progress-label-type="tasks"
+  />
+  
+  <p>{{ completionPercentage }}% complete</p>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+
+const completedTasks = ref(12);
+const totalTasks = ref(20);
+
+const completionPercentage = computed(() => {
+  return Math.round((completedTasks.value / totalTasks.value) * 100);
+});
+</script>
+```
+
+### Progress Bar with Validation
+
+```vue
+<template>
+  <mt-progress-bar
+    v-model="currentValue"
+    label="Resource Usage"
+    :max-value="maxValue"
+    :error="validationError"
+  />
+</template>
+
+<script setup>
+import { ref, watch } from 'vue';
+
+const currentValue = ref(85);
+const maxValue = ref(100);
+const validationError = ref(null);
+
+watch(currentValue, (newValue) => {
+  if (newValue > maxValue.value * 0.9) {
+    validationError.value = {
+      code: 400,
+      detail: 'Warning: Approaching maximum capacity'
+    };
+  } else {
+    validationError.value = null;
+  }
+});
+</script>
+```
+
+## Accessibility
+
+The progress bar component includes proper ARIA attributes:
+- `role="progressbar"`
+- `aria-valuenow`: Current progress value
+- `aria-valuemin`: Minimum value (always 0)
+- `aria-valuemax`: Maximum value
+- `aria-labelledby`: Links to the label text
+
+## Visual Behavior
+
+- Progress is clamped between 0% and 100%
+- Values above `maxValue` display as 100%
+- Negative values display as 0%
+- Error state changes the progress bar color to red
+- Percentage is calculated as `Math.floor((value / maxValue) * 100)`
+
+## Source
+
+View the component source at `/home/daytona/workspace/source/packages/component-library/src/components/feedback-indicator/mt-progress-bar/mt-progress-bar.vue:1`

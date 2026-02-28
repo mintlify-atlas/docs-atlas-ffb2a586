@@ -1,0 +1,183 @@
+---
+title: Datepicker
+description: Date and time selection component
+---
+
+The `MtDatepicker` component allows users to select dates, times, or datetime values with an interactive calendar interface.
+
+## Import
+
+```vue
+import { MtDatepicker } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string | string[] | Date | Date[]">
+  The value of the date picker. Can be a single value or an array for ranges.
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for your date picker field.
+</ParamField>
+
+<ParamField path="dateType" type="'date' | 'datetime' | 'time'" default="'datetime'">
+  Defines the type of the date picker.
+</ParamField>
+
+<ParamField path="locale" type="string" default="'de'">
+  Sets the locale for the date picker. Affects language used for month names and weekdays.
+</ParamField>
+
+<ParamField path="format" type="string | Function">
+  The format of the date picker. Defaults to 'yyyy/MM/dd' for date, 'HH:mm' for time, 'yyyy/MM/dd, HH:mm' for datetime.
+</ParamField>
+
+<ParamField path="timeZone" type="string" default="'UTC'">
+  Defines the time zone for the date picker.
+</ParamField>
+
+<ParamField path="placeholder" type="string" default="'Y-m-d ...'">
+  Placeholder text to show when no date is selected.
+</ParamField>
+
+<ParamField path="is24" type="boolean" default="true">
+  Determines if the timepicker is in 24 or 12 hour format.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Determines if the date picker field is required.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Determines if the date picker field is disabled.
+</ParamField>
+
+<ParamField path="range" type="boolean" default="false">
+  Enables the date range selection feature.
+</ParamField>
+
+<ParamField path="size" type="'small' | 'default'" default="'default'">
+  Sets the size of the datepicker.
+</ParamField>
+
+<ParamField path="minDate" type="Date | string">
+  The minimum selectable date. Dates before this will be disabled.
+</ParamField>
+
+<ParamField path="hourIncrement" type="number" default="1">
+  The increment for hours in the time picker grid.
+</ParamField>
+
+<ParamField path="minuteIncrement" type="number" default="1">
+  The increment for minutes in the time picker grid.
+</ParamField>
+
+<ParamField path="textInput" type="boolean" default="false">
+  Enables typing directly into the input field.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text for the date picker.
+</ParamField>
+
+<ParamField path="error" type="object">
+  An error in your business logic related to this field.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string | string[] | null) => void">
+  Emitted when the date value changes.
+</ParamField>
+
+## Usage
+
+### Basic Date Picker
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const date = ref(null);
+</script>
+
+<template>
+  <mt-datepicker 
+    v-model="date"
+    label="Select date"
+    date-type="date"
+  />
+</template>
+```
+
+### DateTime Picker
+
+```vue
+<template>
+  <mt-datepicker 
+    v-model="datetime"
+    label="Appointment"
+    date-type="datetime"
+    time-zone="Europe/Berlin"
+  />
+</template>
+```
+
+### Time Picker
+
+```vue
+<template>
+  <mt-datepicker 
+    v-model="time"
+    label="Start time"
+    date-type="time"
+  />
+</template>
+```
+
+### Date Range
+
+```vue
+<template>
+  <mt-datepicker 
+    v-model="dateRange"
+    label="Date range"
+    date-type="date"
+    range
+  />
+</template>
+```
+
+### With Minimum Date
+
+```vue
+<template>
+  <mt-datepicker 
+    v-model="futureDate"
+    label="Future date"
+    date-type="date"
+    min-date="today"
+  />
+</template>
+```
+
+### Small Size
+
+```vue
+<template>
+  <mt-datepicker 
+    v-model="date"
+    label="Compact date"
+    size="small"
+  />
+</template>
+```
+
+## Accessibility
+
+- Keyboard navigation through calendar (arrow keys)
+- Escape key closes the picker
+- Tab navigation through all interactive elements
+- Screen reader support with ARIA labels
+- Clear button accessible via keyboard
+- Error states communicated via aria-invalid and aria-describedby

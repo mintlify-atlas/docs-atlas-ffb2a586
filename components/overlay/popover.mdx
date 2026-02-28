@@ -1,0 +1,329 @@
+---
+title: Popover
+description: A floating UI component that displays contextual content in a dismissible overlay, with support for nested views and rich interactions.
+---
+
+## Overview
+
+The `MtPopover` component creates a floating panel that displays contextual actions, settings, or information. It supports nested navigation views, custom positioning, and can be used with or without floating-ui positioning.
+
+## Import
+
+```javascript
+import MtPopover from '@/components/overlay/mt-popover/mt-popover.vue';
+import MtPopoverItem from '@/components/overlay/mt-popover-item/mt-popover-item.vue';
+import MtPopoverItemResult from '@/components/overlay/mt-popover-item-result/mt-popover-item-result.vue';
+```
+
+## Props
+
+<ParamField path="title" type="string" default="''">
+  The title displayed in the popover header.
+</ParamField>
+
+<ParamField path="childViews" type="View[]" default="[]">
+  An array of child view configurations for nested navigation. Each view can have:
+  - `name` (string): Unique identifier for the view
+  - `title` (string, optional): Title displayed when navigating to this view
+  - `childViews` (View[], optional): Nested child views
+</ParamField>
+
+<ParamField path="disableFloat" type="boolean" default="false">
+  When true, disables floating-ui positioning and renders as a static container.
+</ParamField>
+
+<ParamField path="width" type="'dynamic' | 'large' | 'medium' | 'small'" default="'dynamic'">
+  The width of the popover:
+  - `dynamic`: 220px - 440px (adjusts to content)
+  - `large`: 340px fixed
+  - `medium`: 280px fixed
+  - `small`: 220px fixed
+</ParamField>
+
+## Usage
+
+### Basic Popover
+
+```vue
+<template>
+  <mt-popover title="Options">
+    <template #trigger="{ toggleFloatingUi }">
+      <mt-button @click="toggleFloatingUi" variant="secondary">
+        <mt-icon name="solid-ellipsis-h" />
+      </mt-button>
+    </template>
+
+    <template #popover-items__base>
+      <mt-popover-item
+        label="Edit"
+        icon="solid-pen"
+        @click="handleEdit"
+      />
+      <mt-popover-item
+        label="Duplicate"
+        icon="solid-copy"
+        @click="handleDuplicate"
+      />
+      <mt-popover-item
+        label="Delete"
+        icon="solid-trash"
+        type="critical"
+        border-top
+        @click="handleDelete"
+      />
+    </template>
+  </mt-popover>
+</template>
+
+<script setup>
+function handleEdit() {
+  console.log('Edit clicked');
+}
+
+function handleDuplicate() {
+  console.log('Duplicate clicked');
+}
+
+function handleDelete() {
+  console.log('Delete clicked');
+}
+</script>
+```
+
+### Nested Views
+
+```vue
+<template>
+  <mt-popover 
+    title="Table Settings"
+    :childViews="[
+      { name: 'columns', title: 'Column Settings' },
+      { name: 'filters', title: 'Filter Options' }
+    ]"
+  >
+    <template #trigger="{ toggleFloatingUi }">
+      <mt-button @click="toggleFloatingUi" variant="secondary">
+        Settings
+      </mt-button>
+    </template>
+
+    <template #popover-items__base="{ changeView }">
+      <mt-popover-item
+        label="Columns"
+        showOptions
+        @click-options="() => changeView('columns')"
+      />
+      <mt-popover-item
+        label="Filters"
+        showOptions
+        @click-options="() => changeView('filters')"
+      />
+    </template>
+
+    <template #popover-items__columns="{ changeView }">
+      <mt-popover-item
+        label="Name"
+        showCheckbox
+        :checked="true"
+      />
+      <mt-popover-item
+        label="Date"
+        showCheckbox
+        :checked="false"
+      />
+    </template>
+
+    <template #popover-items__filters>
+      <mt-popover-item
+        label="Show archived"
+        showSwitch
+        :switchValue="showArchived"
+        @change-switch="(value) => showArchived = value"
+      />
+    </template>
+  </mt-popover>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const showArchived = ref(false);
+</script>
+```
+
+### With Switches and Toggles
+
+```vue
+<template>
+  <mt-popover title="Display Options">
+    <template #trigger="{ toggleFloatingUi }">
+      <mt-button @click="toggleFloatingUi" variant="secondary">
+        View
+      </mt-button>
+    </template>
+
+    <template #popover-items__base>
+      <mt-popover-item
+        label="Show stripes"
+        icon="solid-bars"
+        showSwitch
+        :switchValue="showStripes"
+        @change-switch="(value) => showStripes = value"
+      />
+      <mt-popover-item
+        label="Show outlines"
+        icon="solid-grip-lines"
+        showSwitch
+        :switchValue="showOutlines"
+        @change-switch="(value) => showOutlines = value"
+      />
+      <mt-popover-item
+        label="Compact mode"
+        icon="solid-compress"
+        showSwitch
+        metaCopy="Reduce spacing for a denser view"
+        :switchValue="compactMode"
+        @change-switch="(value) => compactMode = value"
+      />
+    </template>
+  </mt-popover>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const showStripes = ref(false);
+const showOutlines = ref(true);
+const compactMode = ref(false);
+</script>
+```
+
+### Static Popover (No Floating)
+
+```vue
+<template>
+  <mt-popover title="Actions" :disableFloat="true">
+    <template #trigger="{ toggleFloatingUi, isOpened }">
+      <mt-button @click="toggleFloatingUi" variant="secondary">
+        {{ isOpened ? 'Close' : 'Open' }} Menu
+      </mt-button>
+    </template>
+
+    <template #popover-items__base>
+      <mt-popover-item label="Action 1" icon="solid-check" />
+      <mt-popover-item label="Action 2" icon="solid-star" />
+    </template>
+  </mt-popover>
+</template>
+```
+
+## Slots
+
+<ParamField path="trigger" type="scoped slot">
+  The trigger element that opens/closes the popover.
+  
+  **Slot Props:**
+  - `isOpened` (boolean): Current open state
+  - `toggleFloatingUi` (function): Function to toggle the popover
+</ParamField>
+
+<ParamField path="popover-items__base" type="scoped slot">
+  The main content area for the popover when in the base view.
+  
+  **Slot Props:**
+  - `changeView` (function): Function to navigate to a child view
+  - `toggleFloatingUi` (function): Function to close the popover
+</ParamField>
+
+<ParamField path="popover-items__[viewName]" type="scoped slot">
+  Content for a specific child view. Replace `[viewName]` with the view's name.
+  
+  **Slot Props:**
+  - `changeView` (function): Function to navigate to another view
+  - `toggleFloatingUi` (function): Function to close the popover
+</ParamField>
+
+## Events
+
+<ParamField path="update:isOpened" type="event">
+  Emitted when the popover opens or closes. Passes the new state (boolean).
+</ParamField>
+
+## View Navigation
+
+The popover supports nested view navigation:
+
+1. Define child views using the `childViews` prop
+2. Use `changeView(viewName)` to navigate to a specific view
+3. A back button automatically appears in child views
+4. Each view can have its own title and nested children
+
+```javascript
+const childViews = [
+  {
+    name: 'settings',
+    title: 'Settings',
+    childViews: [
+      {
+        name: 'advanced',
+        title: 'Advanced Settings'
+      }
+    ]
+  }
+];
+```
+
+## Working with MtPopoverItem
+
+The `MtPopoverItem` component is used within popover slots to create interactive list items. Common props include:
+
+- `label`: The item text
+- `icon`: Icon name to display
+- `showCheckbox`: Display a checkbox
+- `showSwitch`: Display a toggle switch
+- `showOptions`: Display an options/chevron button
+- `showVisibility`: Display a visibility toggle
+- `metaCopy`: Descriptive text below the label
+- `contextualDetail`: Right-aligned detail text
+- `shortcut`: Keyboard shortcut display
+- `borderTop` / `borderBottom`: Add border separators
+- `type`: Set to 'critical' for destructive actions
+
+## Working with MtPopoverItemResult
+
+The `MtPopoverItemResult` component is specialized for displaying grouped, draggable lists with visibility controls (commonly used for column management).
+
+**Props:**
+- `groups`: Array of group configurations
+- `options`: Array of items to display
+- `draggable`: Enable drag-and-drop reordering
+- `hidable`: Enable visibility toggles
+
+**Events:**
+- `change-visibility`: Emitted when an item's visibility changes
+- `change-order`: Emitted when items are reordered
+- `click-group-action`: Emitted when a group action is clicked
+
+## Accessibility Features
+
+- **Keyboard Navigation**: Full keyboard support within popover items
+- **ARIA Attributes**: `role="dialog"` for proper screen reader support
+- **Focus Management**: Focus returns to trigger when closed
+- **Escape Key**: Press Escape to close the popover
+- **Click Outside**: Clicking outside closes the popover (when using floating-ui)
+
+## Animations
+
+The popover includes smooth slide animations when navigating between views:
+- Slide-in animation when navigating forward
+- Slide-out animation when navigating back
+- Smooth height transitions using `mt-smooth-reflow`
+
+## Best Practices
+
+1. **Use descriptive titles**: Provide clear titles for each view
+2. **Limit nesting depth**: Avoid more than 2-3 levels of nested views
+3. **Group related items**: Use border separators to group related actions
+4. **Mark destructive actions**: Use `type="critical"` for delete or destructive operations
+5. **Provide context**: Use `metaCopy` to explain non-obvious actions
+6. **Choose appropriate width**: Use fixed widths for consistent layouts, dynamic for varying content

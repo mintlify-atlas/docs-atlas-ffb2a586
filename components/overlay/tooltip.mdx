@@ -1,0 +1,316 @@
+---
+title: Tooltip
+description: A floating hint component that displays helpful information when users hover over or focus on an element.
+---
+
+## Overview
+
+The `MtTooltip` component provides contextual information in a small floating overlay. It appears on hover or focus and automatically positions itself to remain visible within the viewport.
+
+## Import
+
+```javascript
+import MtTooltip from '@/components/overlay/mt-tooltip/mt-tooltip.vue';
+```
+
+## Props
+
+<ParamField path="content" type="string" required>
+  The HTML content to display in the tooltip. Content is automatically sanitized for security.
+</ParamField>
+
+<ParamField path="delayDurationInMs" type="number" default="300">
+  Delay in milliseconds before showing the tooltip on hover.
+</ParamField>
+
+<ParamField path="hideDelayDurationInMs" type="number" default="300">
+  Delay in milliseconds before hiding the tooltip after mouse leaves.
+</ParamField>
+
+<ParamField path="placement" type="Placement" default="'top'">
+  Initial placement of the tooltip. Options include:
+  - `top`, `top-start`, `top-end`
+  - `bottom`, `bottom-start`, `bottom-end`
+  - `left`, `left-start`, `left-end`
+  - `right`, `right-start`, `right-end`
+  
+  Note: The tooltip will automatically flip to stay in viewport.
+</ParamField>
+
+<ParamField path="maxWidth" type="number" default="240">
+  Maximum width of the tooltip in pixels.
+</ParamField>
+
+## Usage
+
+### Basic Tooltip
+
+```vue
+<template>
+  <mt-tooltip content="This is helpful information">
+    <template #default="params">
+      <mt-button variant="secondary" v-bind="params">
+        Hover me
+      </mt-button>
+    </template>
+  </mt-tooltip>
+</template>
+```
+
+### With Icon Trigger
+
+```vue
+<template>
+  <mt-tooltip content="Additional details about this feature">
+    <template #default="params">
+      <mt-icon name="solid-question-circle" v-bind="params" />
+    </template>
+  </mt-tooltip>
+</template>
+```
+
+### HTML Content
+
+```vue
+<template>
+  <mt-tooltip 
+    content="<strong>Important:</strong> This action cannot be undone.<br>Please confirm before proceeding."
+  >
+    <template #default="params">
+      <mt-button variant="critical" v-bind="params">
+        Delete
+      </mt-button>
+    </template>
+  </mt-tooltip>
+</template>
+```
+
+### Custom Placement
+
+```vue
+<template>
+  <div style="display: flex; gap: 16px;">
+    <mt-tooltip content="Appears on top" placement="top">
+      <template #default="params">
+        <mt-button variant="secondary" v-bind="params">Top</mt-button>
+      </template>
+    </mt-tooltip>
+
+    <mt-tooltip content="Appears on right" placement="right">
+      <template #default="params">
+        <mt-button variant="secondary" v-bind="params">Right</mt-button>
+      </template>
+    </mt-tooltip>
+
+    <mt-tooltip content="Appears on bottom" placement="bottom">
+      <template #default="params">
+        <mt-button variant="secondary" v-bind="params">Bottom</mt-button>
+      </template>
+    </mt-tooltip>
+
+    <mt-tooltip content="Appears on left" placement="left">
+      <template #default="params">
+        <mt-button variant="secondary" v-bind="params">Left</mt-button>
+      </template>
+    </mt-tooltip>
+  </div>
+</template>
+```
+
+### With Custom Delays
+
+```vue
+<template>
+  <mt-tooltip 
+    content="Quick tooltip (no delay)"
+    :delayDurationInMs="0"
+    :hideDelayDurationInMs="0"
+  >
+    <template #default="params">
+      <mt-button variant="secondary" v-bind="params">
+        Instant tooltip
+      </mt-button>
+    </template>
+  </mt-tooltip>
+
+  <mt-tooltip 
+    content="Slow tooltip (1 second delay)"
+    :delayDurationInMs="1000"
+  >
+    <template #default="params">
+      <mt-button variant="secondary" v-bind="params">
+        Delayed tooltip
+      </mt-button>
+    </template>
+  </mt-tooltip>
+</template>
+```
+
+### List in Tooltip
+
+```vue
+<template>
+  <mt-tooltip 
+    content="
+      <strong>Keyboard Shortcuts:</strong>
+      <ul>
+        <li>Ctrl+S - Save</li>
+        <li>Ctrl+Z - Undo</li>
+        <li>Ctrl+Y - Redo</li>
+      </ul>
+    "
+    :maxWidth="300"
+  >
+    <template #default="params">
+      <mt-button variant="secondary" v-bind="params">
+        <mt-icon name="solid-keyboard" />
+        Shortcuts
+      </mt-button>
+    </template>
+  </mt-tooltip>
+</template>
+```
+
+### Disabled Element with Tooltip
+
+```vue
+<template>
+  <!-- Wrap disabled elements in a span for tooltips to work -->
+  <mt-tooltip content="You don't have permission to perform this action">
+    <template #default="params">
+      <span v-bind="params" style="display: inline-block;">
+        <mt-button variant="primary" disabled>
+          Save Changes
+        </mt-button>
+      </span>
+    </template>
+  </mt-tooltip>
+</template>
+```
+
+## Slot
+
+<ParamField path="default" type="scoped slot" required>
+  The trigger element that displays the tooltip on hover/focus.
+  
+  **Slot Props:**
+  You must bind all slot props to your trigger element using `v-bind="params"`:
+  - `id`: Unique identifier for the trigger
+  - `onFocus`: Focus event handler
+  - `onBlur`: Blur event handler
+  - `onKeydown`: Keydown event handler
+  - `onMouseover`: Mouseover event handler
+  - `onMouseleave`: Mouseleave event handler
+  - `onMousedown`: Mousedown event handler
+  - `onMouseup`: Mouseup event handler
+  - `aria-describedby`: ARIA attribute linking to tooltip
+</ParamField>
+
+## Behavior
+
+### Show Triggers
+The tooltip appears when:
+- Mouse hovers over the trigger element (after delay)
+- Trigger element receives keyboard focus
+
+### Hide Triggers
+The tooltip disappears when:
+- Mouse leaves both trigger and tooltip (after delay)
+- Trigger element loses focus
+- User presses Escape, Space, or Enter keys
+- Trigger element is clicked (mousedown)
+
+### Hover Persistence
+The tooltip remains visible when hovering over the tooltip itself, allowing users to interact with tooltip content or select text.
+
+## Content Sanitization
+
+Tooltip content is automatically sanitized using DOMPurify to prevent XSS attacks. The following HTML tags are allowed:
+- Text formatting: `<b>`, `<strong>`, `<i>`, `<em>`, `<u>`, `<s>`
+- Structure: `<br>`, `<ul>`, `<li>`
+- Media: `<img>`, `<svg>`
+- Links: `<a>`
+
+All other tags and potentially dangerous attributes are stripped.
+
+## Positioning
+
+The tooltip uses Floating UI for intelligent positioning:
+
+1. **Initial Placement**: Tooltip attempts to position according to the `placement` prop
+2. **Flip**: Automatically flips to opposite side if there isn't enough space
+3. **Shift**: Shifts along the axis to stay within viewport bounds
+4. **Offset**: Maintains 8px distance from the trigger element
+5. **Arrow**: Includes a directional arrow pointing to the trigger
+
+## Accessibility Features
+
+- **ARIA Attributes**: 
+  - `role="tooltip"` on tooltip element
+  - `aria-describedby` links trigger to tooltip content
+- **Keyboard Support**:
+  - Tooltip appears on focus for keyboard navigation
+  - Escape, Space, or Enter keys dismiss the tooltip
+- **Focus Management**: Focus remains on trigger element when tooltip is visible
+- **Screen Readers**: Tooltip content is properly announced via `aria-describedby`
+
+## Styling
+
+The tooltip uses a dark theme by default with:
+- Dark background (`--color-elevation-floating-default`)
+- White text (`--color-text-primary-inverse`)
+- Small font size (`--font-size-2xs`)
+- 12px padding
+- Rounded corners (`--border-radius-xs`)
+- Directional arrow indicator
+
+## Animations
+
+Smooth fade and slide animations:
+- 150ms transition duration
+- Cubic bezier easing for natural motion
+- Direction-aware slide based on placement
+- Opacity fade for smooth appearance
+
+## Best Practices
+
+1. **Keep it concise**: Tooltips should provide brief, helpful information
+2. **Don't replace labels**: Tooltips supplement, not replace, visible labels
+3. **Avoid complex interactions**: Tooltips should be informational, not interactive
+4. **Use appropriate delays**: Default 300ms works well for most cases
+5. **Consider mobile**: Tooltips don't work well on touch devices; provide alternative access to information
+6. **Don't hide critical information**: Essential information should be visible without hovering
+7. **Wrap disabled elements**: Disabled elements don't trigger events, so wrap them in a container
+8. **Mind the width**: Use `maxWidth` to prevent overly wide tooltips
+
+## Common Patterns
+
+### Icon with Tooltip
+```vue
+<mt-tooltip content="Help information">
+  <template #default="params">
+    <mt-icon name="solid-question-circle" v-bind="params" />
+  </template>
+</mt-tooltip>
+```
+
+### Form Field Help
+```vue
+<div style="display: flex; align-items: center; gap: 8px;">
+  <mt-text>Password</mt-text>
+  <mt-tooltip content="Must be at least 8 characters with numbers and symbols">
+    <template #default="params">
+      <mt-icon name="solid-info-circle" v-bind="params" />
+    </template>
+  </mt-tooltip>
+</div>
+```
+
+### Status Indicator
+```vue
+<mt-tooltip content="Last updated: 2 minutes ago">
+  <template #default="params">
+    <mt-badge variant="success" v-bind="params">Active</mt-badge>
+  </template>
+</mt-tooltip>
+```

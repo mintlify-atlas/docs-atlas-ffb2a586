@@ -1,0 +1,297 @@
+---
+title: Breadcrumbs (Link)
+description: Navigation component for creating breadcrumb trails using the Link component
+---
+
+## Overview
+
+While the Meteor component library doesn't include a dedicated Breadcrumbs component, breadcrumb navigation can be effectively implemented using the Link component (mt-link). This page demonstrates best practices for creating accessible breadcrumb navigation.
+
+## Import
+
+```vue
+import MtLink from '@/components/navigation/mt-link/mt-link.vue';
+```
+
+## Creating Breadcrumbs
+
+### Basic Breadcrumb Trail
+
+```vue
+<template>
+  <nav aria-label="Breadcrumb">
+    <ol class="breadcrumb">
+      <li>
+        <mt-link to="/">Home</mt-link>
+      </li>
+      <li aria-hidden="true" class="separator">/</li>
+      <li>
+        <mt-link to="/products">Products</mt-link>
+      </li>
+      <li aria-hidden="true" class="separator">/</li>
+      <li>
+        <mt-link to="/products/electronics">Electronics</mt-link>
+      </li>
+      <li aria-hidden="true" class="separator">/</li>
+      <li aria-current="page">
+        <span>Laptops</span>
+      </li>
+    </ol>
+  </nav>
+</template>
+
+<script setup>
+import MtLink from '@/components/navigation/mt-link/mt-link.vue';
+</script>
+
+<style scoped>
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.separator {
+  color: var(--color-text-secondary-default);
+}
+
+.breadcrumb li[aria-current="page"] span {
+  color: var(--color-text-primary-default);
+}
+</style>
+```
+
+### Dynamic Breadcrumbs from Route
+
+```vue
+<template>
+  <nav aria-label="Breadcrumb">
+    <ol class="breadcrumb">
+      <li v-for="(crumb, index) in breadcrumbs" :key="crumb.path">
+        <template v-if="index < breadcrumbs.length - 1">
+          <mt-link :to="crumb.path">{{ crumb.label }}</mt-link>
+          <span aria-hidden="true" class="separator">/</span>
+        </template>
+        <span v-else aria-current="page">{{ crumb.label }}</span>
+      </li>
+    </ol>
+  </nav>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import MtLink from '@/components/navigation/mt-link/mt-link.vue';
+
+const route = useRoute();
+
+const breadcrumbs = computed(() => {
+  const pathSegments = route.path.split('/').filter(Boolean);
+  const crumbs = [{ path: '/', label: 'Home' }];
+  
+  let currentPath = '';
+  pathSegments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    crumbs.push({
+      path: currentPath,
+      label: segment.charAt(0).toUpperCase() + segment.slice(1)
+    });
+  });
+  
+  return crumbs;
+});
+</script>
+
+<style scoped>
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.separator {
+  margin: 0 0.25rem;
+  color: var(--color-text-secondary-default);
+}
+</style>
+```
+
+### Breadcrumbs with Icons
+
+```vue
+<template>
+  <nav aria-label="Breadcrumb">
+    <ol class="breadcrumb">
+      <li>
+        <mt-link to="/" class="home-link">
+          <mt-icon name="regular-home" size="1rem" />
+          <span>Home</span>
+        </mt-link>
+      </li>
+      <li>
+        <mt-icon name="regular-chevron-right" size="0.75rem" class="separator" aria-hidden="true" />
+      </li>
+      <li>
+        <mt-link to="/dashboard">
+          <mt-icon name="regular-chart-line" size="0.875rem" />
+          <span>Dashboard</span>
+        </mt-link>
+      </li>
+      <li>
+        <mt-icon name="regular-chevron-right" size="0.75rem" class="separator" aria-hidden="true" />
+      </li>
+      <li aria-current="page">
+        <span class="current-page">
+          <mt-icon name="regular-cog" size="0.875rem" />
+          <span>Settings</span>
+        </span>
+      </li>
+    </ol>
+  </nav>
+</template>
+
+<script setup>
+import MtLink from '@/components/navigation/mt-link/mt-link.vue';
+import MtIcon from '@/components/icons-media/mt-icon/mt-icon.vue';
+</script>
+
+<style scoped>
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.home-link,
+.current-page {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.separator {
+  color: var(--color-icon-secondary-default);
+}
+
+.current-page {
+  color: var(--color-text-primary-default);
+}
+</style>
+```
+
+### Reusable Breadcrumb Component
+
+```vue
+<!-- Breadcrumbs.vue -->
+<template>
+  <nav aria-label="Breadcrumb">
+    <ol class="breadcrumb">
+      <template v-for="(item, index) in items" :key="item.path || index">
+        <li>
+          <mt-link v-if="index < items.length - 1" :to="item.path">
+            {{ item.label }}
+          </mt-link>
+          <span v-else aria-current="page">{{ item.label }}</span>
+        </li>
+        <li v-if="index < items.length - 1" aria-hidden="true" class="separator">
+          {{ separator }}
+        </li>
+      </template>
+    </ol>
+  </nav>
+</template>
+
+<script setup>
+import MtLink from '@/components/navigation/mt-link/mt-link.vue';
+
+withDefaults(
+  defineProps<{
+    items: Array<{ path?: string; label: string }>;
+    separator?: string;
+  }>(),
+  {
+    separator: '/'
+  }
+);
+</script>
+
+<style scoped>
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.separator {
+  color: var(--color-text-secondary-default);
+}
+</style>
+
+<!-- Usage -->
+<template>
+  <Breadcrumbs :items="breadcrumbItems" />
+</template>
+
+<script setup>
+const breadcrumbItems = [
+  { path: '/', label: 'Home' },
+  { path: '/products', label: 'Products' },
+  { path: '/products/electronics', label: 'Electronics' },
+  { label: 'Laptops' } // Current page (no path)
+];
+</script>
+```
+
+## Link Component Props
+
+<ParamField path="to" type="string">
+  The target route path
+</ParamField>
+
+<ParamField path="as" type="string" default="'router-link'">
+  The HTML element or component to render as
+</ParamField>
+
+<ParamField path="variant" type="'primary' | 'critical'" default="'primary'">
+  Visual style variant
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables the link
+</ParamField>
+
+<ParamField path="type" type="'external' | 'internal'">
+  Shows an icon indicating link type
+</ParamField>
+
+## Accessibility Best Practices
+
+1. **Use semantic HTML**: Wrap breadcrumbs in `<nav>` with `aria-label="Breadcrumb"`
+2. **Use ordered list**: Breadcrumbs should use `<ol>` to convey hierarchy
+3. **Mark current page**: Use `aria-current="page"` on the last item
+4. **Hide decorative elements**: Add `aria-hidden="true"` to separators
+5. **Ensure contrast**: Make sure link colors meet WCAG standards
+
+## Styling Guidelines
+
+- Keep breadcrumbs compact and horizontal
+- Use subtle separators (/, >, or chevron icons)
+- The current page should not be a clickable link
+- Consider truncating very long breadcrumb trails on mobile
+- Maintain consistent spacing between items
+
+## Source
+
+View the Link component source at `/home/daytona/workspace/source/packages/component-library/src/components/navigation/mt-link/mt-link.vue:1`

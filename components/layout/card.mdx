@@ -1,0 +1,213 @@
+---
+title: Card
+description: A flexible container component for grouping related content with header, toolbar, and footer sections
+---
+
+## Overview
+
+The Card component (mt-card) provides a structured container for organizing content with optional header, toolbar, tabs, and footer sections. It supports various slots for customization and includes features like loading states, context menus, and inheritance toggles.
+
+## Import
+
+```vue
+import MtCard from '@/components/layout/mt-card/mt-card.vue';
+```
+
+## Props
+
+<ParamField path="title" type="string" default="undefined">
+  The main title displayed in the card header
+</ParamField>
+
+<ParamField path="subtitle" type="string" default="undefined">
+  The subtitle displayed below the title in the card header
+</ParamField>
+
+<ParamField path="isLoading" type="boolean" default="false">
+  When true, displays a loading indicator over the card content
+</ParamField>
+
+<ParamField path="large" type="boolean" default="false">
+  **Deprecated in v4.0.0** - Makes the card wider (max-width: 83.125rem)
+</ParamField>
+
+<ParamField path="inheritance" type="boolean" default="undefined">
+  Controls the inheritance toggle button visibility. When defined, shows a link icon that can be toggled
+</ParamField>
+
+## Events
+
+<ParamField path="update:inheritance" type="(value: boolean) => void">
+  Emitted when the inheritance toggle button is clicked. Returns the new inheritance state
+</ParamField>
+
+## Slots
+
+<ParamField path="default" type="slot">
+  The main content area of the card
+</ParamField>
+
+<ParamField path="title" type="slot">
+  Alternative slot to the title property for custom title rendering
+</ParamField>
+
+<ParamField path="subtitle" type="slot">
+  Alternative slot to the subtitle property for custom subtitle rendering
+</ParamField>
+
+<ParamField path="avatar" type="slot">
+  Slot for displaying an avatar or logo in the card header
+</ParamField>
+
+<ParamField path="headerRight" type="slot">
+  Slot for adding content to the right side of the card header
+</ParamField>
+
+<ParamField path="toolbar" type="slot">
+  Slot for adding toolbar functionality like search bars, buttons, etc.
+</ParamField>
+
+<ParamField path="tabs" type="slot">
+  Slot for adding a tab bar (typically used with mt-tabs component)
+</ParamField>
+
+<ParamField path="footer" type="slot">
+  Slot for adding footer content at the bottom of the card
+</ParamField>
+
+<ParamField path="context-actions" type="slot">
+  Slot for adding mt-context-menu-item components to render a context menu
+</ParamField>
+
+<ParamField path="grid" type="slot">
+  Slot for rendering a data grid within the card
+</ParamField>
+
+## Usage Examples
+
+### Basic Card
+
+```vue
+<template>
+  <mt-card title="Basic Card" subtitle="This is a subtitle">
+    <p>Card content goes here</p>
+  </mt-card>
+</template>
+
+<script setup>
+import MtCard from '@/components/layout/mt-card/mt-card.vue';
+</script>
+```
+
+### Card with Toolbar and Footer
+
+```vue
+<template>
+  <mt-card title="Products" subtitle="Manage your products">
+    <template #toolbar>
+      <mt-button variant="primary">Add Product</mt-button>
+      <mt-button variant="secondary">Import</mt-button>
+    </template>
+
+    <p>Product list content...</p>
+
+    <template #footer>
+      <span>Total: 42 products</span>
+    </template>
+  </mt-card>
+</template>
+```
+
+### Card with Context Menu
+
+```vue
+<template>
+  <mt-card title="Settings">
+    <template #context-actions>
+      <mt-context-menu-item label="Edit" />
+      <mt-context-menu-item label="Duplicate" />
+      <mt-context-menu-item label="Delete" type="critical" />
+    </template>
+
+    <p>Settings content...</p>
+  </mt-card>
+</template>
+```
+
+### Card with Tabs
+
+```vue
+<template>
+  <mt-card title="Configuration">
+    <template #tabs>
+      <mt-tabs
+        :items="tabItems"
+        :default-item="activeTab"
+        @new-item-active="handleTabChange"
+      />
+    </template>
+
+    <p>Content for: {{ activeTab }}</p>
+  </mt-card>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const activeTab = ref('general');
+const tabItems = [
+  { name: 'general', label: 'General' },
+  { name: 'advanced', label: 'Advanced' },
+  { name: 'permissions', label: 'Permissions' }
+];
+
+const handleTabChange = (tabName) => {
+  activeTab.value = tabName;
+};
+</script>
+```
+
+### Card with Inheritance Toggle
+
+```vue
+<template>
+  <mt-card
+    title="Inherited Settings"
+    :inheritance="isInherited"
+    @update:inheritance="isInherited = $event"
+  >
+    <p>These settings are {{ isInherited ? 'inherited' : 'custom' }}</p>
+  </mt-card>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const isInherited = ref(true);
+</script>
+```
+
+### Loading State
+
+```vue
+<template>
+  <mt-card title="Loading Data" :is-loading="isLoading">
+    <p v-if="!isLoading">Data loaded successfully</p>
+  </mt-card>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+
+const isLoading = ref(true);
+
+onMounted(async () => {
+  await fetchData();
+  isLoading.value = false;
+});
+</script>
+```
+
+## Source
+
+View the component source at `/home/daytona/workspace/source/packages/component-library/src/components/layout/mt-card/mt-card.vue:1`

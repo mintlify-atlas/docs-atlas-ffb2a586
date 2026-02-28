@@ -1,0 +1,175 @@
+---
+title: Radio Group
+description: Group of radio buttons for single selection
+---
+
+The `MtRadioGroup` component provides a set of radio buttons allowing users to select a single option from multiple choices.
+
+## Import
+
+```vue
+import { MtRadioGroupRoot, MtRadioGroupList, MtRadioGroupItem } from '@meteroid/component-library';
+```
+
+## Props (MtRadioGroupRoot)
+
+<ParamField path="modelValue" type="string | number | boolean | null">
+  The currently selected value.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables all radio buttons in the group.
+</ParamField>
+
+<ParamField path="label" type="string">
+  Label for the radio group.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for all radio inputs in the group.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object with a detail property.
+</ParamField>
+
+<ParamField path="ariaDescribedBy" type="string">
+  ID of element that describes the radio group.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string | number | boolean | null) => void">
+  Emitted when the selected value changes.
+</ParamField>
+
+## Slots
+
+<ParamField path="default" type="slot">
+  Radio group items. Receives `disabled` and `identification` props.
+</ParamField>
+
+<ParamField path="hint" type="slot">
+  Additional hint content.
+</ParamField>
+
+## Usage
+
+### Basic Radio Group
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const selected = ref('option1');
+</script>
+
+<template>
+  <mt-radio-group-root v-model="selected" label="Choose an option">
+    <mt-radio-group-list>
+      <mt-radio-group-item value="option1" label="Option 1" />
+      <mt-radio-group-item value="option2" label="Option 2" />
+      <mt-radio-group-item value="option3" label="Option 3" />
+    </mt-radio-group-list>
+  </mt-radio-group-root>
+</template>
+```
+
+### With Descriptions
+
+```vue
+<template>
+  <mt-radio-group-root v-model="plan" label="Select a plan">
+    <mt-radio-group-list>
+      <mt-radio-group-item value="free" label="Free Plan">
+        <template #description>
+          Perfect for getting started
+        </template>
+      </mt-radio-group-item>
+      <mt-radio-group-item value="pro" label="Pro Plan">
+        <template #description>
+          For growing teams
+        </template>
+      </mt-radio-group-item>
+    </mt-radio-group-list>
+  </mt-radio-group-root>
+</template>
+```
+
+### Disabled Options
+
+```vue
+<template>
+  <mt-radio-group-root v-model="selected" label="Options">
+    <mt-radio-group-list>
+      <mt-radio-group-item value="available" label="Available" />
+      <mt-radio-group-item value="unavailable" label="Unavailable" disabled />
+    </mt-radio-group-list>
+  </mt-radio-group-root>
+</template>
+```
+
+### With Error
+
+```vue
+<script setup>
+import { ref, computed } from 'vue';
+const selected = ref(null);
+const error = computed(() => 
+  !selected.value ? { detail: 'Please select an option' } : null
+);
+</script>
+
+<template>
+  <mt-radio-group-root 
+    v-model="selected" 
+    label="Required choice"
+    :error="error"
+  >
+    <mt-radio-group-list>
+      <mt-radio-group-item value="yes" label="Yes" />
+      <mt-radio-group-item value="no" label="No" />
+    </mt-radio-group-list>
+  </mt-radio-group-root>
+</template>
+```
+
+### Custom Radio Items
+
+```vue
+<template>
+  <mt-radio-group-root v-model="selected" label="Choose layout">
+    <mt-radio-group-list>
+      <mt-radio-group-custom-item value="grid">
+        <template #default="{ checked }">
+          <div :class="{ 'selected': checked }">
+            <mt-icon name="regular-grid" />
+            <span>Grid View</span>
+          </div>
+        </template>
+      </mt-radio-group-custom-item>
+      <mt-radio-group-custom-item value="list">
+        <template #default="{ checked }">
+          <div :class="{ 'selected': checked }">
+            <mt-icon name="regular-list" />
+            <span>List View</span>
+          </div>
+        </template>
+      </mt-radio-group-custom-item>
+    </mt-radio-group-list>
+  </mt-radio-group-root>
+</template>
+```
+
+## Accessibility
+
+- Uses proper radiogroup role and ARIA attributes
+- Keyboard navigation (arrow keys to move between options)
+- Space key to select an option
+- Radio buttons properly labeled
+- Disabled state communicated via aria-disabled
+- Error messages linked via aria-describedby
+- Single tab stop for the entire group

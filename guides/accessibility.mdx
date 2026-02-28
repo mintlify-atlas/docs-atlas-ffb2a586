@@ -1,0 +1,418 @@
+---
+title: Accessibility
+description: Learn about accessibility features and best practices in Meteor Design System
+---
+
+The Meteor Design System is built with accessibility as a core principle. All components follow WCAG 2.1 Level AA guidelines and include comprehensive ARIA support.
+
+## Core Accessibility Features
+
+Meteor components include built-in accessibility features:
+
+- **ARIA attributes**: Proper roles, labels, and states
+- **Keyboard navigation**: Full keyboard support for all interactive elements
+- **Focus management**: Visible focus indicators and logical focus order
+- **Screen reader support**: Semantic HTML and descriptive labels
+- **Color contrast**: WCAG AA compliant color combinations
+
+## ARIA Support in Components
+
+All Meteor components implement appropriate ARIA attributes automatically.
+
+### Form Components
+
+Form fields include comprehensive ARIA support:
+
+```vue
+<!-- Text Field with ARIA labels -->
+<mt-text-field
+  v-model="username"
+  label="Username"
+  :aria-label="label"
+  :aria-invalid="!!error"
+  :aria-describedby="error ? errorId : undefined"
+/>
+```
+
+The component automatically manages:
+- `aria-label` for screen readers
+- `aria-invalid` for validation states  
+- `aria-describedby` linking to error messages
+- `aria-disabled` for disabled states
+
+### Interactive Elements
+
+#### Buttons
+
+```vue
+<mt-button
+  variant="primary"
+  :disabled="isDisabled"
+  :aria-disabled="isDisabled && isInsideTooltip"
+>
+  Save Changes
+</mt-button>
+```
+
+Buttons include:
+- Proper `type` attributes
+- `aria-disabled` for disabled states in tooltips
+- `tabindex` management
+- Focus-visible states
+
+#### Modals
+
+```vue
+<mt-modal
+  :open="isOpen"
+  aria-modal="true"
+  :aria-labelledby="modalId"
+>
+  <template #title>Confirm Action</template>
+  <!-- Modal content -->
+</mt-modal>
+```
+
+Modal accessibility features:
+- `aria-modal="true"` to indicate modal context
+- `aria-labelledby` linking to modal title
+- `aria-hidden` on background content
+- Focus trap within modal
+- Keyboard support (ESC to close)
+
+#### Pagination
+
+```vue
+<mt-pagination
+  :current-page="currentPage"
+  :total="totalPages"
+  :aria-label="`Page ${currentPage}`"
+/>
+```
+
+Pagination includes:
+- Descriptive `aria-label` for each page
+- `aria-hidden="true"` on decorative icons
+- Keyboard navigation support
+
+### Navigation Components
+
+#### Tabs
+
+```vue
+<mt-tabs v-model="activeTab">
+  <mt-tab
+    name="overview"
+    :aria-selected="activeTab === 'overview'"
+  >
+    Overview
+  </mt-tab>
+</mt-tabs>
+```
+
+Tabs implement:
+- `aria-selected` for active tab state
+- Proper role attributes
+- Arrow key navigation
+- Focus management
+
+#### Links
+
+```vue
+<mt-link
+  href="/settings"
+  :disabled="isDisabled"
+  :aria-disabled="isDisabled"
+>
+  Settings
+</mt-link>
+```
+
+### Overlay Components
+
+#### Tooltips
+
+```vue
+<mt-tooltip content="Help text">
+  <mt-button>Info</mt-button>
+</mt-tooltip>
+```
+
+Tooltips use:
+- `aria-describedby` to associate tooltip with trigger
+- Unique IDs for proper relationships
+- `aria-hidden="true"` on decorative elements
+
+#### Popovers
+
+```vue
+<mt-popover>
+  <button
+    aria-controls="popover-content"
+    :aria-expanded="isOpen"
+    aria-haspopup="true"
+  >
+    Options
+  </button>
+</mt-popover>
+```
+
+### Data Display Components
+
+#### Icons
+
+Decorative icons are hidden from screen readers:
+
+```vue
+<mt-icon
+  name="solid-check"
+  :decorative="true"
+  aria-hidden="true"
+/>
+```
+
+For meaningful icons, provide labels:
+
+```vue
+<mt-icon
+  name="solid-info"
+  aria-label="Information"
+/>
+```
+
+#### Progress Indicators
+
+```vue
+<mt-progress-bar
+  :model="progress"
+  :max-value="100"
+  :aria-valuenow="progress"
+  :aria-valuemax="100"
+  :aria-valuemin="0"
+  :aria-labelledby="labelId"
+/>
+```
+
+### Feedback Components
+
+#### Toast Notifications
+
+```vue
+<mt-toast
+  :aria-live="variant === 'critical' ? 'assertive' : 'polite'"
+  variant="success"
+>
+  Changes saved successfully
+</mt-toast>
+```
+
+Toasts use:
+- `aria-live` for screen reader announcements
+- `assertive` for critical messages
+- `polite` for informational messages
+
+## Keyboard Navigation
+
+All interactive components support keyboard navigation:
+
+| Component | Key Bindings |
+|-----------|-------------|
+| Buttons | `Enter`, `Space` to activate |
+| Modals | `Esc` to close, `Tab` to navigate |
+| Tabs | Arrow keys to switch, `Tab` to exit |
+| Select | Arrow keys to navigate, `Enter` to select |
+| Data Table | Arrow keys for cell navigation |
+| Pagination | Arrow keys or number keys |
+
+### Focus Management
+
+Meteor components implement proper focus management:
+
+```css
+/* Visible focus indicators */
+.mt-button:focus-visible {
+  outline: var(--scale-size-2) solid var(--color-border-brand-default);
+  outline-offset: var(--scale-size-2);
+}
+```
+
+All interactive elements have:
+- Clear focus indicators
+- Appropriate focus order
+- Skip to content functionality where needed
+- Focus trapping in modals
+
+## Color Contrast
+
+All color tokens meet WCAG 2.1 Level AA requirements:
+
+- **Normal text**: Minimum 4.5:1 contrast ratio
+- **Large text**: Minimum 3:1 contrast ratio
+- **Interactive elements**: Minimum 3:1 contrast ratio
+
+### Contrast-Safe Color Combinations
+
+```css
+/* ✓ Accessible combinations */
+.text-on-light {
+  background: var(--color-background-primary-default); /* white */
+  color: var(--color-text-primary-default); /* zinc-900 */
+}
+
+.text-on-dark {
+  background: var(--color-zinc-900);
+  color: var(--color-text-primary-inverse); /* zinc-50 */
+}
+
+/* Primary button */
+.button-primary {
+  background: var(--color-interaction-primary-default);
+  color: var(--color-static-white);
+}
+```
+
+### Testing Color Contrast
+
+Always test custom color combinations:
+
+```javascript
+// Use tools like:
+// - Chrome DevTools Lighthouse
+// - axe DevTools
+// - WAVE browser extension
+```
+
+## Best Practices
+
+### 1. Use Semantic HTML
+
+```vue
+<!-- ✓ Good: Semantic structure -->
+<nav>
+  <mt-link href="/home">Home</mt-link>
+</nav>
+
+<main>
+  <h1>Page Title</h1>
+  <article>
+    <!-- Content -->
+  </article>
+</main>
+
+<!-- ✗ Avoid: Generic divs -->
+<div class="navigation">
+  <div onclick="navigate()">Home</div>
+</div>
+```
+
+### 2. Provide Alternative Text
+
+```vue
+<!-- ✓ Good: Descriptive alt text -->
+<img src="chart.png" alt="Sales increased by 25% in Q4" />
+
+<!-- ✓ Good: Decorative images -->
+<mt-icon name="decorative-star" aria-hidden="true" />
+
+<!-- ✗ Avoid: Missing alt text -->
+<img src="chart.png" />
+```
+
+### 3. Label Form Fields Properly
+
+```vue
+<!-- ✓ Good: Explicit labels -->
+<mt-text-field
+  v-model="email"
+  label="Email Address"
+  help-text="We'll never share your email"
+  :error="emailError"
+/>
+
+<!-- ✗ Avoid: Placeholder-only labels -->
+<input type="text" placeholder="Email" />
+```
+
+### 4. Manage Focus States
+
+```vue
+<!-- ✓ Good: Preserve focus management -->
+<mt-modal @close="handleClose">
+  <!-- Modal auto-manages focus -->
+</mt-modal>
+
+<script setup>
+function handleClose() {
+  // Focus returns to trigger element automatically
+}
+</script>
+```
+
+### 5. Provide Sufficient Touch Targets
+
+Ensure interactive elements meet minimum size requirements (44x44px):
+
+```vue
+<!-- ✓ Good: Adequate button size -->
+<mt-button size="default">Click Me</mt-button>
+
+<!-- ✗ Avoid: Too small -->
+<mt-button size="x-small">OK</mt-button>
+```
+
+### 6. Use ARIA Carefully
+
+```vue
+<!-- ✓ Good: ARIA enhances semantics -->
+<div role="status" aria-live="polite">
+  {{ statusMessage }}
+</div>
+
+<!-- ✗ Avoid: Unnecessary ARIA -->
+<button aria-label="Close">Close</button> <!-- Button text already provides label -->
+```
+
+### 7. Test with Assistive Technologies
+
+Regularly test with:
+- **Screen readers**: NVDA (Windows), JAWS (Windows), VoiceOver (macOS/iOS)
+- **Keyboard only**: Navigate without a mouse
+- **Browser tools**: Lighthouse, axe DevTools
+- **Zoom**: Test at 200% zoom level
+
+## Accessibility Testing
+
+Meteor includes automated accessibility testing:
+
+```javascript
+// Storybook includes @storybook/addon-a11y
+// Automatically checks for common issues
+```
+
+### Manual Testing Checklist
+
+- [ ] Can you navigate the entire interface with keyboard only?
+- [ ] Are focus indicators clearly visible?
+- [ ] Do screen readers announce all content correctly?
+- [ ] Are error messages properly associated with form fields?
+- [ ] Do all images have appropriate alt text?
+- [ ] Does the interface work at 200% zoom?
+- [ ] Are color contrasts sufficient?
+- [ ] Do modals trap focus appropriately?
+
+## Additional Resources
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [MDN Accessibility Guide](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
+- [Storybook Accessibility Addon](https://storybook.js.org/addons/@storybook/addon-a11y)
+
+## Reporting Accessibility Issues
+
+If you discover an accessibility issue, please [open an issue on GitHub](https://github.com/shopware/meteor/issues) with:
+
+- Component name
+- Description of the issue
+- Steps to reproduce
+- Assistive technology used
+- Expected vs. actual behavior

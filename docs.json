@@ -1,122 +1,189 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Meteor Design System",
+  "theme": "willow",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#1a7fd4",
+    "light": "#3b9af3",
+    "dark": "#155a9e"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/shopware/meteor"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/shopware/meteor"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "installation"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Design Tokens",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "design-tokens/overview",
+              "design-tokens/installation",
+              "design-tokens/usage",
+              "design-tokens/primitives",
+              "design-tokens/theme-customization"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Icon Kit",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "icon-kit/overview",
+              "icon-kit/installation",
+              "icon-kit/usage",
+              "icon-kit/icon-library"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Guides",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/theming",
+              "guides/accessibility",
+              "guides/contributing"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Component Library",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "components/overview",
+              "components/installation"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Form Components",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "components/form/button",
+              "components/form/checkbox",
+              "components/form/colorpicker",
+              "components/form/datepicker",
+              "components/form/email-field",
+              "components/form/number-field",
+              "components/form/password-field",
+              "components/form/radio-group",
+              "components/form/select",
+              "components/form/slider",
+              "components/form/switch",
+              "components/form/text-editor",
+              "components/form/text-field",
+              "components/form/textarea",
+              "components/form/url-field"
+            ]
+          },
+          {
+            "group": "Layout Components",
+            "pages": [
+              "components/layout/card",
+              "components/layout/tabs",
+              "components/layout/progress-bar"
+            ]
+          },
+          {
+            "group": "Navigation Components",
+            "pages": [
+              "components/navigation/breadcrumbs",
+              "components/navigation/pagination",
+              "components/navigation/menu"
+            ]
+          },
+          {
+            "group": "Feedback Components",
+            "pages": [
+              "components/feedback/badge",
+              "components/feedback/banner",
+              "components/feedback/loader",
+              "components/feedback/notification",
+              "components/feedback/toast"
+            ]
+          },
+          {
+            "group": "Data Display Components",
+            "pages": [
+              "components/data/data-table",
+              "components/data/avatar",
+              "components/data/label"
+            ]
+          },
+          {
+            "group": "Overlay Components",
+            "pages": [
+              "components/overlay/modal",
+              "components/overlay/popover",
+              "components/overlay/tooltip"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Admin SDK",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "admin-sdk/introduction",
+              "admin-sdk/quickstart",
+              "admin-sdk/installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "admin-sdk/concepts/architecture",
+              "admin-sdk/concepts/context",
+              "admin-sdk/concepts/location",
+              "admin-sdk/concepts/data-handling"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "admin-sdk/api/data",
+              "admin-sdk/api/repository",
+              "admin-sdk/api/composables",
+              "admin-sdk/api/cms",
+              "admin-sdk/api/ui",
+              "admin-sdk/api/notification"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "admin-sdk/guides/building-apps",
+              "admin-sdk/guides/data-management",
+              "admin-sdk/guides/custom-modules",
+              "admin-sdk/guides/cms-extensions"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "admin-sdk/examples/basic-app",
+              "admin-sdk/examples/data-subscription",
+              "admin-sdk/examples/custom-cms-block"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

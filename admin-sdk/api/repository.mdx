@@ -1,0 +1,447 @@
+---
+title: Repository
+description: Entity repository for performing CRUD operations on Shopware entities
+---
+
+The Repository class provides a complete API for interacting with Shopware entities, including search, create, update, and delete operations.
+
+## Creating a Repository
+
+```typescript
+import { data } from '@shopware-ag/admin-sdk';
+
+const productRepository = data.repository('product');
+```
+
+## Methods
+
+### search()
+
+Search for entities using criteria.
+
+<ParamField path="criteria" type="Criteria" required>
+  Search criteria object defining filters, sorting, pagination, and associations
+</ParamField>
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request (authentication, language, etc.)
+</ParamField>
+
+<ResponseField name="result" type="Promise<EntityCollection<EntityName> | null>">
+  Returns a promise that resolves to an EntityCollection or null
+</ResponseField>
+
+#### Example
+
+```typescript
+import { data } from '@shopware-ag/admin-sdk';
+
+const productRepository = data.repository('product');
+const criteria = new data.Classes.Criteria(1, 25);
+
+// Add filters
+criteria.addFilter(
+  data.Classes.Criteria.equals('active', true)
+);
+
+// Add sorting
+criteria.addSorting(
+  data.Classes.Criteria.sort('name', 'ASC')
+);
+
+// Add associations
+criteria.addAssociation('manufacturer');
+
+// Execute search
+const products = await productRepository.search(criteria);
+
+console.log(`Found ${products.total} products`);
+products.forEach(product => {
+  console.log(product.name);
+});
+```
+
+---
+
+### get()
+
+Retrieve a single entity by ID.
+
+<ParamField path="id" type="string" required>
+  The entity ID to retrieve
+</ParamField>
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request
+</ParamField>
+
+<ParamField path="criteria" type="Criteria">
+  Optional criteria to load associations or specific fields
+</ParamField>
+
+<ResponseField name="result" type="Promise<Entity<EntityName> | null>">
+  Returns a promise that resolves to an Entity or null if not found
+</ResponseField>
+
+#### Example
+
+```typescript
+const productRepository = data.repository('product');
+
+// Get product with associations
+const criteria = new data.Classes.Criteria();
+criteria.addAssociation('categories');
+criteria.addAssociation('manufacturer');
+
+const product = await productRepository.get(
+  'product-id-here',
+  undefined,
+  criteria
+);
+
+if (product) {
+  console.log('Product:', product.name);
+  console.log('Categories:', product.categories);
+}
+```
+
+---
+
+### save()
+
+Save changes to an entity.
+
+<ParamField path="entity" type="Entity<EntityName>" required>
+  The entity to save (can be new or existing)
+</ParamField>
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request
+</ParamField>
+
+<ResponseField name="result" type="Promise<void | null>">
+  Returns a promise that resolves when the save is complete
+</ResponseField>
+
+#### Example
+
+```typescript
+const productRepository = data.repository('product');
+
+// Get and modify entity
+const product = await productRepository.get('product-id-here');
+product.name = 'Updated Product Name';
+product.price = [{
+  currencyId: 'currency-id',
+  gross: 99.99,
+  net: 84.03,
+  linked: true
+}];
+
+// Save changes
+await productRepository.save(product);
+console.log('Product saved successfully');
+```
+
+---
+
+### create()
+
+Create a new entity.
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request
+</ParamField>
+
+<ParamField path="entityId" type="string">
+  Optional ID for the new entity (auto-generated if not provided)
+</ParamField>
+
+<ResponseField name="result" type="Promise<Entity<EntityName> | null>">
+  Returns a promise that resolves to a new Entity instance
+</ResponseField>
+
+#### Example
+
+```typescript
+const productRepository = data.repository('product');
+
+// Create new product
+const newProduct = await productRepository.create();
+
+// Set properties
+newProduct.name = 'New Product';
+newProduct.productNumber = 'PROD-001';
+newProduct.stock = 100;
+newProduct.taxId = 'tax-id-here';
+newProduct.price = [{
+  currencyId: 'currency-id',
+  gross: 49.99,
+  net: 42.01,
+  linked: true
+}];
+
+// Save the new entity
+await productRepository.save(newProduct);
+console.log('New product created:', newProduct.id);
+```
+
+---
+
+### delete()
+
+Delete an entity by ID.
+
+<ParamField path="entityId" type="string" required>
+  The ID of the entity to delete
+</ParamField>
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request
+</ParamField>
+
+<ResponseField name="result" type="Promise<void | null>">
+  Returns a promise that resolves when the deletion is complete
+</ResponseField>
+
+#### Example
+
+```typescript
+const productRepository = data.repository('product');
+
+// Delete product
+await productRepository.delete('product-id-here');
+console.log('Product deleted');
+```
+
+---
+
+### clone()
+
+Clone an existing entity.
+
+<ParamField path="entityId" type="string" required>
+  The ID of the entity to clone
+</ParamField>
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request
+</ParamField>
+
+<ParamField path="behavior" type="any">
+  Optional behavior configuration for the clone operation
+</ParamField>
+
+<ResponseField name="result" type="Promise<unknown | null>">
+  Returns a promise that resolves to the cloned entity
+</ResponseField>
+
+#### Example
+
+```typescript
+const productRepository = data.repository('product');
+
+// Clone a product
+const clonedProduct = await productRepository.clone('product-id-here');
+console.log('Product cloned:', clonedProduct);
+```
+
+---
+
+### hasChanges()
+
+Check if an entity has unsaved changes.
+
+<ParamField path="entity" type="Entity<EntityName>" required>
+  The entity to check for changes
+</ParamField>
+
+<ResponseField name="result" type="Promise<boolean | null>">
+  Returns true if the entity has been modified
+</ResponseField>
+
+#### Example
+
+```typescript
+const product = await productRepository.get('product-id-here');
+
+product.name = 'Modified Name';
+
+const isDirty = await productRepository.hasChanges(product);
+console.log('Has changes:', isDirty); // true
+```
+
+---
+
+### saveAll()
+
+Save multiple entities at once.
+
+<ParamField path="entities" type="EntityCollection<EntityName>" required>
+  Collection of entities to save
+</ParamField>
+
+<ParamField path="context" type="ApiContext">
+  Optional API context for the request
+</ParamField>
+
+<ResponseField name="result" type="Promise<unknown | null>">
+  Returns a promise that resolves when all entities are saved
+</ResponseField>
+
+#### Example
+
+```typescript
+const productRepository = data.repository('product');
+
+// Search and modify multiple products
+const criteria = new data.Classes.Criteria(1, 10);
+const products = await productRepository.search(criteria);
+
+// Modify all products
+products.forEach(product => {
+  product.active = true;
+});
+
+// Save all changes
+await productRepository.saveAll(products);
+console.log('All products saved');
+```
+
+---
+
+## Criteria Builder
+
+The Criteria class provides a fluent API for building complex queries:
+
+### Filters
+
+```typescript
+const criteria = new data.Classes.Criteria();
+
+// Equals filter
+criteria.addFilter(data.Classes.Criteria.equals('active', true));
+
+// Contains filter
+criteria.addFilter(data.Classes.Criteria.contains('name', 'Product'));
+
+// Range filter
+criteria.addFilter(data.Classes.Criteria.range('stock', { gte: 10, lte: 100 }));
+
+// Multiple filters (AND)
+criteria.addFilter(
+  data.Classes.Criteria.multi('AND', [
+    data.Classes.Criteria.equals('active', true),
+    data.Classes.Criteria.range('price', { gte: 10 })
+  ])
+);
+```
+
+### Sorting
+
+```typescript
+const criteria = new data.Classes.Criteria();
+
+// Simple sorting
+criteria.addSorting(data.Classes.Criteria.sort('name', 'ASC'));
+
+// Natural sorting (for strings with numbers)
+criteria.addSorting(data.Classes.Criteria.naturalSorting('productNumber', 'ASC'));
+
+// Count sorting (sort by association count)
+criteria.addSorting(data.Classes.Criteria.countSorting('categories', 'DESC'));
+```
+
+### Pagination
+
+```typescript
+// Page 1, 25 items per page
+const criteria = new data.Classes.Criteria(1, 25);
+
+// Or set later
+criteria.setPage(2);
+criteria.setLimit(50);
+```
+
+### Associations
+
+```typescript
+const criteria = new data.Classes.Criteria();
+
+// Load simple association
+criteria.addAssociation('manufacturer');
+
+// Load nested associations
+criteria.addAssociation('categories.media');
+
+// Configure association criteria
+const categoryCriteria = criteria.getAssociation('categories');
+categoryCriteria.addFilter(data.Classes.Criteria.equals('active', true));
+categoryCriteria.addSorting(data.Classes.Criteria.sort('name', 'ASC'));
+```
+
+### Aggregations
+
+```typescript
+const criteria = new data.Classes.Criteria();
+
+// Count aggregation
+criteria.addAggregation(data.Classes.Criteria.count('total-count', 'id'));
+
+// Sum aggregation
+criteria.addAggregation(data.Classes.Criteria.sum('total-stock', 'stock'));
+
+// Average aggregation
+criteria.addAggregation(data.Classes.Criteria.avg('avg-price', 'price'));
+
+// Terms aggregation
+criteria.addAggregation(
+  data.Classes.Criteria.terms('manufacturer-ids', 'manufacturerId', 10)
+);
+```
+
+## Type Definitions
+
+### ApiContext
+
+```typescript
+interface ApiContext {
+  apiPath?: string;
+  apiResourcePath?: string;
+  assetsPath?: string;
+  authToken?: string;
+  basePath?: string;
+  pathInfo?: string;
+  inheritance?: boolean;
+  installationPath?: string;
+  languageId?: string;
+  language?: string;
+  apiVersion?: number;
+  liveVersionId?: string;
+  systemLanguageId?: string;
+}
+```
+
+### TotalCountMode
+
+```typescript
+enum TotalCountMode {
+  NO_TOTAL_COUNT = 0,        // Fastest, no total count
+  EXACT_TOTAL_COUNT = 1,     // Slow, exact count
+  PAGINATION_TOTAL_COUNT = 2 // Fast, limit * 5 + 1
+}
+```
+
+## Best Practices
+
+<Tip>
+  Use `TotalCountMode.NO_TOTAL_COUNT` when you don't need pagination for better performance.
+</Tip>
+
+<Warning>
+  Always check if entities exist before operating on them, as repository methods can return null.
+</Warning>
+
+<Note>
+  Use `setTitle()` on criteria to help debug searches in the browser's network tab.
+</Note>

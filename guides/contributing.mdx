@@ -1,0 +1,370 @@
+---
+title: Contributing
+description: Learn how to contribute to the Meteor Design System
+---
+
+Thank you for taking an interest in making Meteor a better project! This guide will help you get started with contributing to the Meteor Design System.
+
+## Getting Started
+
+Meteor is available under the [MIT license](https://github.com/shopware/meteor/blob/main/LICENSE.md). All contributions are made under the same MIT license.
+
+If you've never contributed to an open source project, the [Open Source Guide](https://opensource.guide/how-to-contribute/) is a great place to start.
+
+## Ways to Contribute
+
+There are many ways to contribute to Meteor:
+
+- **Report bugs**: Help us identify and fix issues
+- **Request features**: Suggest new components or improvements
+- **Submit pull requests**: Add features or fix bugs
+- **Improve documentation**: Help make our docs better
+- **Share feedback**: Let us know how we can improve
+
+## Before You Start
+
+Before making larger changes to the codebase:
+
+1. **Check existing issues**: Look through [existing issues](https://github.com/shopware/meteor/issues) to avoid duplicates
+2. **Open a discussion**: For major changes, open an issue first to discuss your approach
+3. **Read the code of conduct**: Familiarize yourself with our [code of conduct](https://github.com/shopware/meteor/blob/main/CONTRIBUTING.md)
+
+## Reporting Bugs
+
+Found a bug? Here's how to report it effectively:
+
+1. **Search first**: Check [existing issues](https://github.com/shopware/meteor/issues) to see if it's already reported
+2. **Use the issue template**: Complete as much information as possible
+3. **Provide reproduction**: Include a link to a reproduction (e.g., [StackBlitz](https://stackblitz.com/edit/vitejs-vite-emem8b?file=index.html&terminal=dev))
+4. **Include details**:
+   - Steps to reproduce
+   - Expected behavior
+   - Actual behavior
+   - Browser and version
+   - Meteor version
+
+## Requesting Features
+
+Have an idea for a new component or feature?
+
+1. **Search existing requests**: Check if someone already requested it
+2. **Upvote existing requests**: If your idea exists, upvote it to show community interest
+3. **Create a new request**: If not, [create a new issue](https://github.com/shopware/meteor/issues/new)
+4. **Provide context**:
+   - Use case and problem it solves
+   - Proposed solution
+   - Examples from other design systems
+   - Mockups or designs (if applicable)
+
+## Development Setup
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- **Node.js**: Version 18 or higher
+- **pnpm**: Package manager used by Meteor
+
+If you don't have pnpm installed:
+
+```bash
+npm install -g pnpm
+```
+
+For other installation methods, check the [pnpm documentation](https://pnpm.io/installation).
+
+### Clone and Install
+
+1. **Fork the repository**: Click the "Fork" button on [GitHub](https://github.com/shopware/meteor)
+
+2. **Clone your fork**:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/meteor.git
+cd meteor
+```
+
+3. **Install dependencies**:
+
+```bash
+pnpm install
+```
+
+## Project Structure
+
+Meteor is organized as a monorepo with multiple packages:
+
+```
+meteor/
+├── packages/
+│   ├── component-library/    # Vue components
+│   ├── tokens/                # Design tokens
+│   ├── icon-kit/              # Icon library
+│   └── admin-sdk/             # Admin SDK
+├── turbo.json                 # Turborepo configuration
+└── package.json               # Root package.json
+```
+
+## Running Scripts
+
+Meteor uses [Turborepo](https://turbo.build/repo/docs) for managing the monorepo. You have three ways to run scripts:
+
+### 1. Using Turbo (Recommended)
+
+```bash
+# Run a task across all packages
+npx turbo run <TASK_NAME>
+
+# Examples
+npx turbo run build
+npx turbo run test:unit
+```
+
+### 2. Using pnpm filter
+
+```bash
+# Run a script in a specific package
+pnpm --filter <PACKAGE_NAME> run <SCRIPT_NAME>
+
+# Examples
+pnpm --filter @shopware-ag/meteor-component-library run test:unit
+pnpm --filter @shopware-ag/meteor-tokens run build
+```
+
+### 3. From Package Directory
+
+```bash
+cd packages/component-library
+pnpm run test:unit
+```
+
+## Development Workflow
+
+### Working on Components
+
+1. **Start Storybook** (for component development):
+
+```bash
+cd packages/component-library
+pnpm run storybook
+```
+
+Storybook will be available at `http://localhost:6006`
+
+2. **Make your changes** to components in `packages/component-library/src/components/`
+
+3. **Write tests** for your changes
+
+### Working on Tokens
+
+1. **Edit token files** in `packages/tokens/dictionaries/`
+
+2. **Generate CSS files**:
+
+```bash
+cd packages/tokens
+pnpm run start
+```
+
+3. **Preview changes** in the component library
+
+## Local Development with Yalc
+
+To test your changes in another project before publishing:
+
+1. **Install yalc**:
+
+```bash
+npm install -g yalc
+```
+
+2. **Publish to local store** from the package directory:
+
+```bash
+cd packages/component-library
+yalc publish --private --workspace --pure
+```
+
+3. **Link in your project**:
+
+```bash
+cd /path/to/your/project
+yalc link @shopware-ag/meteor-component-library@<version>
+```
+
+4. **Remove when done**:
+
+```bash
+yalc remove @shopware-ag/meteor-component-library
+```
+
+## Before Submitting a Pull Request
+
+Run these checks to ensure your code meets our standards:
+
+### 1. Lint your code
+
+```bash
+pnpm run lint:eslint
+```
+
+Fix linting issues automatically:
+
+```bash
+pnpm run lint:eslint --fix
+```
+
+### 2. Check types
+
+```bash
+pnpm run lint:types
+```
+
+### 3. Run tests
+
+```bash
+pnpm run test:unit
+```
+
+### 4. Create a changeset
+
+Meteor uses [changesets](https://github.com/changesets/changesets) for changelog management:
+
+```bash
+npx changeset add
+```
+
+Follow the prompts:
+
+1. **Select packages**: Choose which packages your changes affect
+2. **Choose version bump**: `major`, `minor`, or `patch`
+   - `major`: Breaking changes
+   - `minor`: New features (backwards compatible)
+   - `patch`: Bug fixes
+3. **Write summary**: Describe your changes clearly
+
+This creates a markdown file in `.changeset/` that will be used to generate the changelog.
+
+## Creating a Pull Request
+
+1. **Create a branch**:
+
+```bash
+git checkout -b feature/my-awesome-feature
+```
+
+2. **Make your changes** and commit them:
+
+```bash
+git add .
+git commit -m "feat: add awesome new feature"
+```
+
+3. **Push to your fork**:
+
+```bash
+git push origin feature/my-awesome-feature
+```
+
+4. **Open a pull request** on GitHub:
+   - Provide a clear title and description
+   - Reference any related issues
+   - Include screenshots or videos for UI changes
+   - Ensure all checks pass
+
+### Pull Request Guidelines
+
+- **Keep it focused**: One feature/fix per PR
+- **Write clear commit messages**: Follow [conventional commits](https://www.conventionalcommits.org/)
+- **Update documentation**: Include relevant docs updates
+- **Add tests**: Cover your changes with tests
+- **Include a changeset**: Required for all changes
+
+## Release Process
+
+The release process is automated:
+
+1. **When your PR is merged**: A GitHub Action detects your changeset
+2. **Release PR is created**: Changesets creates a release PR automatically
+3. **Maintainer merges release PR**: This triggers the release
+4. **Automated release**: Changesets updates changelogs, bumps versions, and publishes to npm
+
+You don't need to do anything beyond creating the changeset!
+
+## Visual Tests
+
+Meteor uses visual regression testing. To update visual test snapshots:
+
+1. **Go to the Actions tab** on GitHub
+2. **Click "Visual Tests"** in the left sidebar
+3. **Click "Run workflow"**
+4. **Select your branch** from the dropdown
+5. **Click "Run workflow"** button
+6. **Wait for completion** and check for updated snapshots
+
+## Code Style
+
+Meteor uses:
+
+- **ESLint**: For JavaScript/TypeScript linting
+- **Prettier**: For code formatting
+- **Stylelint**: For CSS/SCSS linting
+
+Run formatting:
+
+```bash
+pnpm run format
+```
+
+## Testing
+
+Write tests for all new features and bug fixes:
+
+```bash
+# Run all tests
+pnpm run test:unit
+
+# Run tests in watch mode
+pnpm run test:unit:watch
+
+# Run tests for specific package
+pnpm --filter @shopware-ag/meteor-component-library run test:unit
+```
+
+## Component Guidelines
+
+When creating new components:
+
+1. **Follow naming conventions**: Use `mt-` prefix (e.g., `mt-button`)
+2. **Write stories**: Add comprehensive Storybook stories
+3. **Add tests**: Include unit tests and interaction tests
+4. **Document props**: Use JSDoc comments for all props
+5. **Support accessibility**: Include ARIA attributes and keyboard navigation
+6. **Use design tokens**: Leverage the token system for styling
+7. **Follow Vue best practices**: Use Composition API and TypeScript
+
+## Getting Help
+
+Need help? Here's where to reach out:
+
+- **GitHub Issues**: For bugs and feature requests
+- **GitHub Discussions**: For questions and general discussion
+- **Pull Request Comments**: For questions about your specific PR
+
+## Recognition
+
+Contributors are recognized in:
+
+- Release notes and changelogs
+- GitHub contributors page
+- Special thanks in documentation
+
+Thank you for contributing to Meteor! Your work helps make the design system better for everyone.
+
+## Additional Resources
+
+- [GitHub Repository](https://github.com/shopware/meteor)
+- [Issue Tracker](https://github.com/shopware/meteor/issues)
+- [Turborepo Documentation](https://turbo.build/repo/docs)
+- [Changesets Documentation](https://github.com/changesets/changesets)
+- [pnpm Documentation](https://pnpm.io/)

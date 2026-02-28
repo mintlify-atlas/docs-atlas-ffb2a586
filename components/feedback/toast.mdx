@@ -1,0 +1,217 @@
+---
+title: Toast
+description: A toast notification system for displaying temporary messages with optional actions and auto-dismiss functionality.
+---
+
+## Import
+
+```vue
+import { MtToast } from '@/components/feedback-indicator/mt-toast/mt-toast.vue';
+```
+
+## Toast Interface
+
+```typescript
+interface Toast {
+  id: number | string;
+  msg: string;                          // Toast message
+  type: 'informal' | 'critical' | 'positive';  // Toast type
+  icon?: string;                        // Optional icon name
+  action?: {                            // Optional action button
+    label: string;                      // Button label
+    callback: () => void;               // Click callback
+  };
+  dismissible?: boolean;                // Allow manual close
+}
+```
+
+## Props
+
+<ParamField path="toasts" type="Toast[]" required>
+  Array of toast notifications to display. The most recent toast should be prepended to the array.
+</ParamField>
+
+## Events
+
+<ParamField path="remove-toast" type="event">
+  Emitted when a toast should be removed. Receives the toast ID as parameter.
+  
+  **Signature:** `(toastId: string | number) => void`
+</ParamField>
+
+## Toast Positioning
+
+Toasts are displayed in two areas:
+
+1. **Bottom Center**: Quick toasts (no action, not critical, not dismissible)
+2. **Bottom Right**: Toasts with actions, critical toasts, or dismissible toasts
+
+## Usage Examples
+
+### Basic Toast Setup
+
+```vue
+<template>
+  <div>
+    <mt-button @click="showToast">Show Toast</mt-button>
+    <mt-toast :toasts="toasts" @remove-toast="removeToast" />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { MtToast } from '@/components/feedback-indicator/mt-toast/mt-toast.vue';
+
+const toasts = ref([]);
+
+const showToast = () => {
+  toasts.value.unshift({
+    id: Date.now(),
+    msg: 'Operation completed successfully!',
+    type: 'positive'
+  });
+};
+
+const removeToast = (toastId) => {
+  toasts.value = toasts.value.filter(t => t.id !== toastId);
+};
+</script>
+```
+
+### Toast with Icon
+
+```vue
+<script setup>
+const showIconToast = () => {
+  toasts.value.unshift({
+    id: Date.now(),
+    msg: 'New message received',
+    type: 'informal',
+    icon: 'solid-envelope'
+  });
+};
+</script>
+```
+
+### Toast with Action Button
+
+```vue
+<script setup>
+const showActionToast = () => {
+  toasts.value.unshift({
+    id: Date.now(),
+    msg: 'File uploaded successfully',
+    type: 'positive',
+    action: {
+      label: 'View',
+      callback: () => {
+        console.log('View file clicked');
+        // Navigate to file or perform action
+      }
+    }
+  });
+};
+</script>
+```
+
+### Dismissible Toast
+
+```vue
+<script setup>
+const showDismissibleToast = () => {
+  toasts.value.unshift({
+    id: Date.now(),
+    msg: 'Your session will expire soon',
+    type: 'informal',
+    dismissible: true
+  });
+};
+</script>
+```
+
+### Critical Toast
+
+```vue
+<script setup>
+const showCriticalToast = () => {
+  toasts.value.unshift({
+    id: Date.now(),
+    msg: 'Failed to save changes',
+    type: 'critical',
+    dismissible: true,
+    action: {
+      label: 'Retry',
+      callback: () => {
+        // Retry the operation
+        console.log('Retrying...');
+      }
+    }
+  });
+};
+</script>
+```
+
+### Multiple Toast Types
+
+```vue
+<script setup>
+const showVariousToasts = () => {
+  // Quick toast (center)
+  toasts.value.unshift({
+    id: 'quick-1',
+    msg: 'Quick notification',
+    type: 'informal'
+  });
+  
+  // Positive with action (right)
+  toasts.value.unshift({
+    id: 'action-1',
+    msg: 'Task completed',
+    type: 'positive',
+    action: {
+      label: 'Details',
+      callback: () => console.log('Show details')
+    }
+  });
+  
+  // Critical dismissible (right)
+  toasts.value.unshift({
+    id: 'critical-1',
+    msg: 'Connection lost',
+    type: 'critical',
+    dismissible: true
+  });
+};
+</script>
+```
+
+## Interaction Behavior
+
+### Hover Expansion
+
+When hovering over the toast area:
+- Collapsed toasts expand to show full content
+- Stacked toasts spread vertically
+- Auto-dismiss timers pause during hover
+
+### Quick Toasts
+
+Quick toasts (bottom-center) automatically:
+- Replace the previous quick toast
+- Display briefly and fade out
+- Don't stack with other quick toasts
+
+### Stacked Toasts
+
+Toasts with actions/dismissible (bottom-right):
+- Stack up to 3 visible at once
+- Additional toasts appear collapsed underneath
+- Expand on hover to reveal all
+
+## Styling Notes
+
+- Fixed positioning at the bottom of the viewport
+- Quick toasts: 51px height, centered
+- Right toasts: 376px width, stacked with 68px spacing when expanded
+- Smooth transitions using cubic-bezier easing
+- Box shadow for elevation effect

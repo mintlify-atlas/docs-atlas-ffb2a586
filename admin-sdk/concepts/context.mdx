@@ -1,0 +1,499 @@
+---
+title: Context API
+description: Access Shopware context information from your app
+---
+
+## Overview
+
+The Context API provides methods to access information about the Shopware environment, user session, language settings, and app configuration. All context methods are exposed through the SDK and use the underlying message passing system.
+
+## Available Context Methods
+
+The Context API is implemented in `context/index.ts` and provides several methods:
+
+```typescript
+import { context } from '@shopware-ag/meteor-admin-sdk';
+
+// Language and locale
+const language = await context.getLanguage();
+const locale = await context.getLocale();
+
+// User information
+const user = await context.getUserInformation();
+const timezone = await context.getUserTimezone();
+
+// Environment
+const env = await context.getEnvironment();
+const version = await context.getShopwareVersion();
+
+// App information
+const appInfo = await context.getAppInformation();
+
+// Currency and shop
+const currency = await context.getCurrency();
+const shopId = await context.getShopId();
+```
+
+## Language and Locale
+
+### Get Language
+
+Retrieve the current content language IDs:
+
+```typescript
+// From context/index.ts:6
+import { context } from '@shopware-ag/meteor-admin-sdk';
+
+const languageInfo = await context.getLanguage();
+
+console.log(languageInfo.languageId);        // Current language ID
+console.log(languageInfo.systemLanguageId);  // System default language ID
+```
+
+**Response type** (context/index.ts:24-29):
+```typescript
+{
+  systemLanguageId: string,
+  languageId: string,
+}
+```
+
+### Subscribe to Language Changes
+
+```typescript
+// From context/index.ts:7
+const unsubscribe = context.subscribeLanguage((languageInfo) => {
+  console.log('Language changed to:', languageInfo.languageId);
+});
+
+// Clean up when done
+unsubscribe();
+```
+
+### Get Locale
+
+Retrieve UI locale information:
+
+```typescript
+// From context/index.ts:9
+const localeInfo = await context.getLocale();
+
+console.log(localeInfo.locale);          // e.g., 'en-GB'
+console.log(localeInfo.fallbackLocale);  // e.g., 'en-GB'
+```
+
+**Response type** (context/index.ts:41-46):
+```typescript
+{
+  locale: string,
+  fallbackLocale: string,
+}
+```
+
+### Subscribe to Locale Changes
+
+```typescript
+// From context/index.ts:10
+const unsubscribe = context.subscribeLocale((localeInfo) => {
+  console.log('Locale changed to:', localeInfo.locale);
+});
+```
+
+## User Information
+
+### Get User Information
+
+Access detailed information about the current admin user:
+
+```typescript
+// From context/index.ts:14
+const user = await context.getUserInformation();
+
+console.log(user.id);                    // User ID
+console.log(user.username);              // Username
+console.log(user.email);                 // Email address
+console.log(user.firstName);             // First name
+console.log(user.lastName);              // Last name
+console.log(user.admin);                 // Is admin user
+console.log(user.active);                // Is active
+console.log(user.aclRoles);              // ACL roles array
+```
+
+**Response type** (context/index.ts:80-100):
+```typescript
+{
+  aclRoles: Array<{
+    name: string,
+    type: string,
+    id: string,
+    privileges: Array<string>,
+  }>,
+  active: boolean,
+  admin: boolean,
+  avatarId: string,
+  email: string,
+  firstName: string,
+  id: string,
+  lastName: string,
+  localeId: string,
+  title: string,
+  type: string,
+  username: string,
+}
+```
+
+### Get User Timezone
+
+```typescript
+// From context/index.ts:15
+const timezone = await context.getUserTimezone();
+console.log(timezone); // e.g., 'Europe/Berlin'
+```
+
+## Environment Information
+
+### Get Environment
+
+Determine the current environment:
+
+```typescript
+// From context/index.ts:8
+const environment = await context.getEnvironment();
+
+if (environment === 'development') {
+  console.log('Running in development mode');
+} else if (environment === 'production') {
+  console.log('Running in production mode');
+}
+```
+
+**Response type** (context/index.ts:34-36):
+```typescript
+type Environment = 'development' | 'production' | 'testing';
+```
+
+### Get Shopware Version
+
+```typescript
+// From context/index.ts:12
+const version = await context.getShopwareVersion();
+console.log(version); // e.g., '6.5.0.0'
+```
+
+### Compare Shopware Version
+
+Check if the current Shopware version meets requirements:
+
+```typescript
+// From context/index.ts:13
+const isCompatible = await context.compareIsShopwareVersion('>=', '6.5.0');
+
+if (!isCompatible) {
+  console.warn('This app requires Shopware 6.5.0 or higher');
+}
+```
+
+Supported operators: `'>'`, `'>='`, `'<'`, `'<='`, `'='`, `'=='`, `'==='`
+
+## App Information
+
+### Get App Information
+
+Access metadata about your app:
+
+```typescript
+// From context/index.ts:16
+const appInfo = await context.getAppInformation();
+
+console.log(appInfo.name);        // App name
+console.log(appInfo.version);     // App version
+console.log(appInfo.type);        // 'app' or 'plugin'
+console.log(appInfo.privileges);  // Granted privileges
+```
+
+**Response type** (context/index.ts:68-75):
+```typescript
+{
+  name: string,
+  version: string,
+  type: 'app' | 'plugin',
+  privileges: privileges,
+}
+```
+
+### Check Privileges
+
+The `can` helper simplifies privilege checking:
+
+```typescript
+// From context/index.ts:17
+const canEditProducts = await context.can('update', 'product');
+
+if (canEditProducts) {
+  // Show edit button
+} else {
+  // Hide edit button
+}
+```
+
+**Usage patterns:**
+
+```typescript
+// Check entity privileges
+await context.can('read', 'product');
+await context.can('create', 'order');
+await context.can('update', 'customer');
+await context.can('delete', 'media');
+
+// Check additional privileges
+await context.can('additional', 'system:clear:cache');
+```
+
+## Module Information
+
+### Get Module Information
+
+Retrieve information about registered modules:
+
+```typescript
+// From context/index.ts:18
+const moduleInfo = await context.getModuleInformation();
+
+moduleInfo.modules.forEach(module => {
+  console.log(module.id);                  // Module ID
+  console.log(module.heading);             // Module heading
+  console.log(module.locationId);          // Location ID
+  console.log(module.displaySearchBar);    // Search bar visibility
+});
+```
+
+**Response type** (context/index.ts:112-121):
+```typescript
+{
+  modules: Array<{
+    displaySearchBar: boolean,
+    heading: string,
+    id: string,
+    locationId: string,
+  }>,
+}
+```
+
+## Currency and Shop
+
+### Get Currency
+
+Retrieve system currency information:
+
+```typescript
+// From context/index.ts:11
+const currencyInfo = await context.getCurrency();
+
+console.log(currencyInfo.systemCurrencyISOCode); // e.g., 'EUR'
+console.log(currencyInfo.systemCurrencyId);      // Currency entity ID
+```
+
+**Response type** (context/index.ts:50-55):
+```typescript
+{
+  systemCurrencyISOCode: string,
+  systemCurrencyId: string,
+}
+```
+
+### Get Shop ID
+
+Retrieve the current shop context ID (useful for multi-shop setups):
+
+```typescript
+// From context/index.ts:19
+const shopId = await context.getShopId();
+
+if (shopId) {
+  console.log('Current shop ID:', shopId);
+} else {
+  console.log('No specific shop context');
+}
+```
+
+**Response type** (context/index.ts:123-125):
+```typescript
+string | null
+```
+
+## Practical Examples
+
+### Initialize App with Context
+
+```typescript
+import { context } from '@shopware-ag/meteor-admin-sdk';
+
+async function initializeApp() {
+  try {
+    // Load essential context
+    const [appInfo, user, language, environment] = await Promise.all([
+      context.getAppInformation(),
+      context.getUserInformation(),
+      context.getLanguage(),
+      context.getEnvironment(),
+    ]);
+
+    console.log(`App: ${appInfo.name} v${appInfo.version}`);
+    console.log(`User: ${user.username}`);
+    console.log(`Language: ${language.languageId}`);
+    console.log(`Environment: ${environment}`);
+
+    // Check required version
+    const isCompatible = await context.compareIsShopwareVersion('>=', '6.5.0');
+    if (!isCompatible) {
+      throw new Error('Shopware 6.5.0 or higher required');
+    }
+
+    // Check required privileges
+    const hasPrivileges = await context.can('read', 'product');
+    if (!hasPrivileges) {
+      console.warn('Missing product read privileges');
+    }
+
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+  }
+}
+
+initializeApp();
+```
+
+### Localized UI
+
+```typescript
+import { context } from '@shopware-ag/meteor-admin-sdk';
+
+let currentLocale = 'en-GB';
+
+// Subscribe to locale changes
+const unsubscribe = context.subscribeLocale(async (localeInfo) => {
+  currentLocale = localeInfo.locale;
+  
+  // Reload translations
+  await loadTranslations(currentLocale);
+  
+  // Update UI
+  updateUILanguage(currentLocale);
+});
+
+// Get initial locale
+const initialLocale = await context.getLocale();
+currentLocale = initialLocale.locale;
+```
+
+### Conditional Features Based on Privileges
+
+```typescript
+import { context } from '@shopware-ag/meteor-admin-sdk';
+
+interface AppFeatures {
+  canManageProducts: boolean;
+  canManageOrders: boolean;
+  canManageCustomers: boolean;
+  canClearCache: boolean;
+}
+
+async function getAvailableFeatures(): Promise<AppFeatures> {
+  const [canManageProducts, canManageOrders, canManageCustomers, canClearCache] = 
+    await Promise.all([
+      context.can('update', 'product'),
+      context.can('update', 'order'),
+      context.can('update', 'customer'),
+      context.can('additional', 'system:clear:cache'),
+    ]);
+
+  return {
+    canManageProducts,
+    canManageOrders,
+    canManageCustomers,
+    canClearCache,
+  };
+}
+
+// Use in your component
+const features = await getAvailableFeatures();
+
+if (features.canManageProducts) {
+  // Show product management UI
+}
+```
+
+## Implementation Details
+
+All context methods use the channel communication system:
+
+```typescript
+// From context/index.ts:1-2
+import { createSender, createSubscriber } from '../channel';
+
+// From context/index.ts:6
+export const getLanguage = createSender('contextLanguage', {});
+
+// From context/index.ts:7
+export const subscribeLanguage = createSubscriber('contextLanguage');
+```
+
+This creates type-safe wrappers around the `send` and `subscribe` functions from the channel module.
+
+## Best Practices
+
+### 1. Cache Context Data
+
+```typescript
+let cachedUser: UserInformation | null = null;
+
+async function getUser() {
+  if (!cachedUser) {
+    cachedUser = await context.getUserInformation();
+  }
+  return cachedUser;
+}
+```
+
+### 2. Handle Context Changes
+
+Subscribe to changes for dynamic data like language:
+
+```typescript
+context.subscribeLanguage((languageInfo) => {
+  // Update your app state
+  store.commit('setLanguage', languageInfo.languageId);
+});
+```
+
+### 3. Validate Version Requirements Early
+
+```typescript
+const minVersion = '6.5.0';
+const isCompatible = await context.compareIsShopwareVersion('>=', minVersion);
+
+if (!isCompatible) {
+  // Show error and prevent app initialization
+  throw new Error(`Requires Shopware ${minVersion} or higher`);
+}
+```
+
+### 4. Check Privileges Before Actions
+
+```typescript
+async function deleteProduct(productId: string) {
+  const canDelete = await context.can('delete', 'product');
+  
+  if (!canDelete) {
+    throw new Error('Insufficient privileges to delete products');
+  }
+  
+  // Proceed with deletion
+}
+```
+
+## Next Steps
+
+- Learn about [Architecture](/admin-sdk/concepts/architecture) for message passing details
+- Explore [Data Handling](/admin-sdk/concepts/data-handling) for working with entities
+- Understand [Location Module](/admin-sdk/concepts/location) for iframe management

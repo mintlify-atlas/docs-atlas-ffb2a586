@@ -1,0 +1,278 @@
+---
+title: Architecture
+description: Understand the iframe-based architecture of the Admin SDK
+---
+
+## Overview
+
+The Shopware Admin SDK uses an iframe-based architecture to enable secure communication between apps and the Shopware Administration. This architecture allows third-party applications to extend the admin interface while maintaining security and isolation.
+
+## Iframe Communication Model
+
+Apps run inside iframes embedded within the Shopware Administration. Communication between the app iframe and the parent admin window occurs through the browser's `postMessage` API, providing a secure cross-origin messaging system.
+
+```typescript
+// From channel.ts:249
+window.parent.postMessage(message, targetOrigin);
+```
+
+### Message Structure
+
+All messages follow a consistent structure with three key properties:
+
+```typescript
+// From channel.ts:60-64
+type ShopwareMessageSendData<MESSAGE_TYPE> = {
+  _type: MESSAGE_TYPE,          // The message type identifier
+  _data: MessageDataType<MESSAGE_TYPE>,  // The actual message data
+  _callbackId: string,          // Unique ID to match responses
+}
+```
+
+When the admin responds, it uses a matching structure:
+
+```typescript
+// From channel.ts:70-74
+type ShopwareMessageResponseData<MESSAGE_TYPE> = {
+  _type: MESSAGE_TYPE,
+  _response: ShopwareMessageTypes[MESSAGE_TYPE]['responseType'] | null,
+  _callbackId: string,
+}
+```
+
+## Message Passing System
+
+### Sending Messages
+
+The `send` function handles all outgoing messages from apps to the admin:
+
+```typescript
+// From channel.ts:107-112
+import { send } from '@shopware-ag/meteor-admin-sdk';
+
+// Request language information from the admin
+const languageInfo = await send('contextLanguage', {});
+console.log(languageInfo.languageId);
+```
+
+**How it works:**
+
+1. Generates a unique callback ID for matching responses (channel.ts:114)
+2. Serializes the message data, converting Entity, EntityCollection, and Criteria objects to JSON (channel.ts:127)
+3. Sends the message via `postMessage` to the parent window (channel.ts:249)
+4. Returns a Promise that resolves when a matching response is received (channel.ts:177-260)
+5. Includes a 7-second timeout to prevent hanging requests (channel.ts:174, 252-259)
+
+### Handling Messages
+
+The `handle` function registers handlers for incoming messages:
+
+```typescript
+// From channel.ts:273-278
+import { handle } from '@shopware-ag/meteor-admin-sdk';
+
+const cancelHandler = handle('datasetGet', async (data, { _event_ }) => {
+  // Process the request
+  return { id: data.id, data: myDataset };
+});
+
+// Later: stop listening
+cancelHandler();
+```
+
+**Handler workflow:**
+
+1. Listens for messages with matching `_type` (channel.ts:286)
+2. Deserializes message data (channel.ts:306)
+3. Executes the handler method (channel.ts:321-347)
+4. Serializes the response (channel.ts:357-385)
+5. Sends the response back to the source window (channel.ts:389-398)
+
+### Window Registration
+
+Apps automatically register with the admin on initialization:
+
+```typescript
+// From channel.ts:570-572
+await send('__registerWindow__', {
+  sdkVersion: packageVersion,
+});
+```
+
+The admin maintains registries of connected sources:
+
+```typescript
+// From channel.ts:81-92
+const sourceRegistry: Set<{
+  source: Window,
+  origin: string,
+  sdkVersion: string|undefined,
+}> = new Set();
+
+const subscriberRegistry: Set<{
+  id: string,
+  selectors: string[] | undefined,
+  source: Window,
+  origin: string,
+}> = new Set();
+```
+
+## Security Model
+
+### Origin Validation
+
+All messages validate the origin to prevent unauthorized access:
+
+```typescript
+// From channel.ts:233-246
+let corsRestriction = true;
+
+try {
+  corsRestriction = !window.parent.origin;
+} catch {
+  // Silent catch to prevent cross origin frame exception
+}
+
+let targetOrigin = corsRestriction ? document.referrer : window.parent.origin;
+```
+
+### Privilege Validation
+
+The SDK validates privileges before processing entity data:
+
+```typescript
+// From channel.ts:130-166
+if (_origin) {
+  const validationErrors = validate({
+    serializedData: serializedData,
+    origin: _origin,
+    privilegesToCheck: ['read'],
+    type: type,
+  });
+
+  if (validationErrors) {
+    // Return validation errors instead of data
+  }
+}
+```
+
+Apps can specify required privileges when sending messages:
+
+```typescript
+export type BaseMessageOptions = { 
+  privileges?: privilegeString[] 
+}
+```
+
+### Serialization Security
+
+The SDK uses a serialization layer to:
+
+- Transform Entity and EntityCollection objects to safe JSON (channel.ts:15-18)
+- Validate data against app privileges
+- Prevent direct access to internal Shopware data structures
+
+```typescript
+// From channel.ts:15-18
+const { serialize, deserialize } = SerializerFactory({
+  handle,
+  send,
+});
+```
+
+## Location-Based Loading
+
+Apps specify their location via URL parameters:
+
+```typescript
+// From _internals/utils.ts:13-17
+export function getLocationId(): string|null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('location-id');
+}
+```
+
+Example iframe URL:
+```
+https://your-app.com/admin-module?location-id=my-custom-module
+```
+
+## Communication Flow Diagram
+
+```
+┌─────────────────────────┐
+│   Shopware Admin        │
+│  (Parent Window)        │
+│                         │
+│  ┌───────────────────┐  │
+│  │   App iframe      │  │
+│  │                   │  │
+│  │   1. send()       │──┼──► postMessage() ────┐
+│  │      ↓            │  │                       │
+│  │   2. Promise      │  │                       ↓
+│  │      waits        │  │    Admin receives message
+│  │      ↓            │  │    validates & processes
+│  │   3. Response     │◄─┼──── postMessage() ◄───┘
+│  │      received     │  │
+│  │      ↓            │  │
+│  │   4. Promise      │  │
+│  │      resolves     │  │
+│  └───────────────────┘  │
+└─────────────────────────┘
+```
+
+## Best Practices
+
+### 1. Always Handle Errors
+
+```typescript
+try {
+  const data = await send('contextLanguage', {});
+  // Use data
+} catch (error) {
+  console.error('Failed to get language:', error);
+}
+```
+
+### 2. Clean Up Handlers
+
+```typescript
+const cancel = handle('myMessageType', async (data) => {
+  // Handle message
+});
+
+// When component unmounts
+onUnmounted(() => {
+  cancel();
+});
+```
+
+### 3. Use Appropriate Timeouts
+
+The default timeout is 7 seconds (channel.ts:174). For long-running operations, consider alternative patterns.
+
+### 4. Validate Message Origins
+
+Always verify the origin in handlers when working with sensitive data:
+
+```typescript
+handle('myMessageType', async (data, { _event_ }) => {
+  if (_event_.origin !== expectedOrigin) {
+    throw new Error('Invalid origin');
+  }
+  // Process data
+});
+```
+
+## Performance Considerations
+
+- Messages are serialized/deserialized on each transmission
+- Large Entity or EntityCollection objects may impact performance
+- Use selectors to limit data transfer when subscribing to datasets
+- The subscriber registry allows efficient targeted messaging (channel.ts:87-92)
+
+## Next Steps
+
+- Learn about [Context API](/admin-sdk/concepts/context) for accessing Shopware context
+- Explore [Location Module](/admin-sdk/concepts/location) for iframe positioning
+- Understand [Data Handling](/admin-sdk/concepts/data-handling) for working with entities

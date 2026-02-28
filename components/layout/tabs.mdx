@@ -1,0 +1,263 @@
+---
+title: Tabs
+description: A horizontal or vertical tab navigation component with support for error states, badges, and priority-plus overflow handling
+---
+
+## Overview
+
+The Tabs component (mt-tabs) provides a flexible tab navigation system that automatically handles overflow with a "More" menu when tabs don't fit in the available space. It supports error indicators, badges, and both horizontal and vertical orientations.
+
+## Import
+
+```vue
+import MtTabs from '@/components/navigation/mt-tabs/mt-tabs.vue';
+```
+
+## Props
+
+<ParamField path="items" type="TabItem[]" required>
+  Array of tab items to display. Each item must have `name` and `label` properties
+</ParamField>
+
+<ParamField path="vertical" type="boolean" default="false">
+  When true, displays tabs in a vertical orientation
+</ParamField>
+
+<ParamField path="small" type="boolean" default="false">
+  **Deprecated in v4.0.0** - Reduces the maximum width of the tab bar
+</ParamField>
+
+<ParamField path="defaultItem" type="string" default="''">
+  The name of the tab that should be active by default
+</ParamField>
+
+## TabItem Interface
+
+```typescript
+interface TabItem {
+  label: string;           // Display text for the tab
+  name: string;            // Unique identifier for the tab
+  hasError?: boolean;      // Show error indicator
+  disabled?: boolean;      // Disable the tab
+  badge?: 'positive' | 'critical' | 'warning' | 'info';  // Badge variant
+  onClick?: (name: string) => void;  // Custom click handler
+}
+```
+
+## Events
+
+<ParamField path="new-item-active" type="(itemName: string) => void">
+  Emitted when a new tab becomes active. Returns the name of the activated tab
+</ParamField>
+
+## Usage Examples
+
+### Basic Tabs
+
+```vue
+<template>
+  <mt-tabs
+    :items="tabItems"
+    :default-item="activeTab"
+    @new-item-active="handleTabChange"
+  />
+  
+  <div>Active content: {{ activeTab }}</div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import MtTabs from '@/components/navigation/mt-tabs/mt-tabs.vue';
+
+const activeTab = ref('dashboard');
+
+const tabItems = [
+  { name: 'dashboard', label: 'Dashboard' },
+  { name: 'products', label: 'Products' },
+  { name: 'orders', label: 'Orders' },
+  { name: 'customers', label: 'Customers' }
+];
+
+const handleTabChange = (tabName) => {
+  activeTab.value = tabName;
+  console.log('Tab changed to:', tabName);
+};
+</script>
+```
+
+### Tabs with Error Indicators
+
+```vue
+<template>
+  <mt-tabs :items="tabItems" default-item="general" />
+</template>
+
+<script setup>
+const tabItems = [
+  { name: 'general', label: 'General' },
+  { name: 'validation', label: 'Validation', hasError: true },
+  { name: 'permissions', label: 'Permissions', hasError: true },
+  { name: 'advanced', label: 'Advanced' }
+];
+</script>
+```
+
+### Tabs with Badges
+
+```vue
+<template>
+  <mt-tabs :items="tabItems" default-item="all" />
+</template>
+
+<script setup>
+const tabItems = [
+  { name: 'all', label: 'All Items' },
+  { name: 'active', label: 'Active', badge: 'positive' },
+  { name: 'errors', label: 'Errors', badge: 'critical' },
+  { name: 'warnings', label: 'Warnings', badge: 'warning' },
+  { name: 'info', label: 'Info', badge: 'info' }
+];
+</script>
+```
+
+### Disabled Tabs
+
+```vue
+<template>
+  <mt-tabs :items="tabItems" default-item="overview" />
+</template>
+
+<script setup>
+const tabItems = [
+  { name: 'overview', label: 'Overview' },
+  { name: 'details', label: 'Details' },
+  { name: 'premium', label: 'Premium Features', disabled: true },
+  { name: 'analytics', label: 'Analytics', disabled: true }
+];
+</script>
+```
+
+### Vertical Tabs
+
+```vue
+<template>
+  <div style="display: flex; gap: 1rem;">
+    <mt-tabs
+      :items="tabItems"
+      vertical
+      default-item="profile"
+      @new-item-active="activeTab = $event"
+    />
+    
+    <div style="flex: 1;">
+      <h2>{{ getTabContent(activeTab) }}</h2>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const activeTab = ref('profile');
+
+const tabItems = [
+  { name: 'profile', label: 'Profile' },
+  { name: 'account', label: 'Account' },
+  { name: 'security', label: 'Security' },
+  { name: 'notifications', label: 'Notifications' },
+  { name: 'billing', label: 'Billing' }
+];
+
+const getTabContent = (tab) => {
+  return `Content for ${tab}`;
+};
+</script>
+```
+
+### Tabs with Custom Click Handlers
+
+```vue
+<template>
+  <mt-tabs :items="tabItems" default-item="home" />
+</template>
+
+<script setup>
+const tabItems = [
+  { 
+    name: 'home', 
+    label: 'Home',
+    onClick: (name) => console.log('Home clicked')
+  },
+  { 
+    name: 'analytics', 
+    label: 'Analytics',
+    onClick: (name) => {
+      // Custom logic before tab change
+      trackEvent('tab_click', { tab: name });
+    }
+  },
+  { 
+    name: 'settings', 
+    label: 'Settings',
+    onClick: (name) => console.log('Settings clicked')
+  }
+];
+</script>
+```
+
+### Using Tabs in a Card
+
+```vue
+<template>
+  <mt-card title="Product Management">
+    <template #tabs>
+      <mt-tabs
+        :items="tabItems"
+        :default-item="activeTab"
+        @new-item-active="activeTab = $event"
+      />
+    </template>
+
+    <div v-if="activeTab === 'list'">
+      <!-- Product list content -->
+    </div>
+    <div v-else-if="activeTab === 'categories'">
+      <!-- Categories content -->
+    </div>
+    <div v-else-if="activeTab === 'settings'">
+      <!-- Settings content -->
+    </div>
+  </mt-card>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import MtCard from '@/components/layout/mt-card/mt-card.vue';
+import MtTabs from '@/components/navigation/mt-tabs/mt-tabs.vue';
+
+const activeTab = ref('list');
+
+const tabItems = [
+  { name: 'list', label: 'Product List' },
+  { name: 'categories', label: 'Categories' },
+  { name: 'settings', label: 'Settings' }
+];
+</script>
+```
+
+## Features
+
+### Priority-Plus Navigation
+
+The tabs component automatically handles overflow situations. When tabs don't fit in the available width, excess tabs are moved into a "More" dropdown menu. This ensures the interface remains usable on all screen sizes.
+
+### Visual States
+
+- **Active**: The currently selected tab is highlighted with a sliding indicator
+- **Error**: Tabs can show an error badge using `hasError: true`
+- **Disabled**: Tabs can be disabled using `disabled: true`
+- **Badges**: Color-coded badges can be added to highlight tab states
+
+## Source
+
+View the component source at `/home/daytona/workspace/source/packages/component-library/src/components/navigation/mt-tabs/mt-tabs.vue:1`

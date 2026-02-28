@@ -1,0 +1,127 @@
+---
+title: Introduction
+description: Learn about the Meteor Admin SDK and how it helps you build powerful apps for Shopware 6 Administration
+---
+
+# Introduction to the Admin SDK
+
+The **Meteor Admin SDK** (`@shopware-ag/meteor-admin-sdk`) is a JavaScript library that enables app and plugin developers to extend and customize the Shopware 6 Administration with ease.
+
+## What is the Admin SDK?
+
+The Admin SDK provides a simple, type-safe API for building extensions that seamlessly integrate with the Shopware 6 Administration. Whether you're creating apps or plugins, the SDK handles the complex communication between your extension and Shopware's admin interface.
+
+## Use Cases
+
+The Admin SDK is perfect for:
+
+- **Building Admin Apps**: Create standalone apps that run in iframes within the Shopware Administration
+- **Extending the UI**: Add custom menu items, tabs, cards, and action buttons to existing admin pages
+- **Data Management**: Read and write data from Shopware's data store using the repository pattern
+- **CMS Extensions**: Register custom CMS elements and blocks for the Shopping Experiences
+- **Notifications & Feedback**: Display notifications and toast messages to users
+- **Context-Aware Apps**: Access and respond to administration context like locale, currency, and user information
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Works with Apps & Plugins" icon="puzzle-piece">
+    Use the SDK for both Shopware 6 Apps and Plugins with an identical API
+  </Card>
+  
+  <Card title="Shallow Learning Curve" icon="graduation-cap">
+    Simple API that hides complexity - no deep knowledge of admin internals required
+  </Card>
+  
+  <Card title="Type Safety" icon="shield-check">
+    Written in TypeScript for excellent autocompletion and type safety
+  </Card>
+  
+  <Card title="Stable & Backwards Compatible" icon="lock">
+    Breaking changes are rare - your extensions stay stable across Shopware updates
+  </Card>
+  
+  <Card title="Lightweight" icon="feather">
+    Tree-shakable and dependency-free - import only what you need
+  </Card>
+  
+  <Card title="Rich Extension Capabilities" icon="puzzle">
+    Extensive API for notifications, data access, UI extensions, and more
+  </Card>
+</CardGroup>
+
+## Core Capabilities
+
+### UI Extensions
+
+Extend the administration interface by adding:
+- Menu items and main modules
+- Tabs to existing pages
+- Component sections and cards
+- Action buttons for entity lists
+- Settings pages
+- Modals and sidebars
+
+### Data Handling
+
+Access Shopware's data layer:
+- Use the repository pattern to read and write entities
+- Build complex queries with the Criteria API
+- Subscribe to data changes
+- Work with entity collections
+
+### CMS Integration
+
+Enhance the Shopping Experiences:
+- Register custom CMS elements
+- Configure element settings
+- Add preview and configuration components
+
+### Context & Communication
+
+Interact with the administration:
+- Access context information (locale, currency, environment)
+- Display notifications and toast messages
+- Navigate between admin locations
+- Handle window events
+
+## Quick Example
+
+Here's a simple example showing how easy it is to use the Admin SDK:
+
+```javascript
+import { notification, ui } from '@shopware-ag/meteor-admin-sdk';
+
+// Add a menu item
+ui.menu.addMenuItem({
+  label: 'My Custom App',
+  locationId: 'my-custom-location',
+  displaySearchBar: true,
+});
+
+// Show a notification
+notification.dispatch({
+  title: 'Welcome!',
+  message: 'Your app is now running in the Shopware Administration'
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Tutorial" icon="rocket" href="/admin-sdk/quickstart">
+    Build your first admin app in minutes
+  </Card>
+  
+  <Card title="Installation Guide" icon="download" href="/admin-sdk/installation">
+    Learn how to install and set up the SDK
+  </Card>
+  
+  <Card title="Core Concepts" icon="book" href="/admin-sdk/concepts/architecture">
+    Understand key concepts like locations and the main hidden iframe
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/admin-sdk/api/data">
+    Explore the complete SDK API documentation
+  </Card>
+</CardGroup>

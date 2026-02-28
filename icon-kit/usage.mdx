@@ -1,0 +1,322 @@
+---
+title: Usage
+description: Learn how to use Meteor Icon Kit icons in your application
+---
+
+# Usage
+
+The Meteor Icon Kit provides flexible ways to use icons in your application, whether you're working with plain HTML, Vue, React, or other frameworks.
+
+## Basic SVG Import
+
+The most common way to use icons is by importing them as SVG modules:
+
+```js
+import WalletIcon from '@shopware-ag/meteor-icon-kit/icons/regular/wallet.svg';
+import ActivityIcon from '@shopware-ag/meteor-icon-kit/icons/solid/activity.svg';
+```
+
+## Framework Examples
+
+### Vue 3 with Vite
+
+For Vue 3 projects using Vite, install `vite-svg-loader` to import SVGs as components:
+
+```bash
+npm install vite-svg-loader
+```
+
+Configure Vite:
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import svgLoader from 'vite-svg-loader';
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    svgLoader(),
+  ],
+});
+```
+
+Use icons as components:
+
+```vue
+<template>
+  <div class="icon-container">
+    <ActivityIcon />
+    <WalletIcon />
+    <ShoppingCartIcon />
+  </div>
+</template>
+
+<script setup>
+import ActivityIcon from '@shopware-ag/meteor-icon-kit/icons/regular/activity.svg';
+import WalletIcon from '@shopware-ag/meteor-icon-kit/icons/regular/wallet.svg';
+import ShoppingCartIcon from '@shopware-ag/meteor-icon-kit/icons/solid/shopping-cart.svg';
+</script>
+```
+
+### React
+
+For React projects, you can use SVGR or similar tools:
+
+```jsx
+import { ReactComponent as ActivityIcon } from '@shopware-ag/meteor-icon-kit/icons/regular/activity.svg';
+
+function App() {
+  return (
+    <div className="icon-container">
+      <ActivityIcon />
+    </div>
+  );
+}
+```
+
+### Plain HTML
+
+For plain HTML projects, you can inline the SVG or use an `<img>` tag:
+
+```html
+<!-- Inline SVG -->
+<span class="icon">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- SVG paths -->
+  </svg>
+</span>
+
+<!-- Image tag -->
+<img src="path/to/icons/regular/wallet.svg" alt="Wallet icon" />
+```
+
+## Dynamic Colors
+
+One of the key features of the Icon Kit is support for dynamic colors using CSS. This allows you to change icon colors based on context, state, or theme.
+
+### Basic Color Styling
+
+```html
+<span class="icon-wrapper">
+  <ActivityIcon />
+</span>
+```
+
+```css
+.icon-wrapper {
+  display: block;
+  color: #0080FF; /* Your desired color */
+
+  svg {
+    fill: currentColor;
+
+    path,
+    use {
+      fill: currentColor;
+    }
+  }
+}
+```
+
+### State-based Colors
+
+```css
+.icon-success {
+  color: #10B981; /* green */
+}
+
+.icon-error {
+  color: #EF4444; /* red */
+}
+
+.icon-warning {
+  color: #F59E0B; /* orange */
+}
+
+.icon-info {
+  color: #3B82F6; /* blue */
+}
+```
+
+### Hover Effects
+
+```css
+.icon-button {
+  color: #6B7280;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #0080FF;
+  }
+}
+```
+
+## Icon Sizing
+
+Control icon size using CSS:
+
+```css
+.icon-small svg {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-medium svg {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-large svg {
+  width: 32px;
+  height: 32px;
+}
+```
+
+## Common Use Cases
+
+### Icon Buttons
+
+```vue
+<template>
+  <button class="icon-btn">
+    <TrashIcon />
+    Delete
+  </button>
+</template>
+
+<script setup>
+import TrashIcon from '@shopware-ag/meteor-icon-kit/icons/regular/trash.svg';
+</script>
+
+<style scoped>
+.icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  background: #EF4444;
+  color: white;
+  cursor: pointer;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+</style>
+```
+
+### Navigation Icons
+
+```vue
+<template>
+  <nav class="nav-menu">
+    <a href="/dashboard" class="nav-item">
+      <ChartLineIcon />
+      Dashboard
+    </a>
+    <a href="/orders" class="nav-item">
+      <ShoppingBagIcon />
+      Orders
+    </a>
+    <a href="/settings" class="nav-item">
+      <SettingsIcon />
+      Settings
+    </a>
+  </nav>
+</template>
+
+<script setup>
+import ChartLineIcon from '@shopware-ag/meteor-icon-kit/icons/regular/chart-line.svg';
+import ShoppingBagIcon from '@shopware-ag/meteor-icon-kit/icons/regular/shopping-bag.svg';
+import SettingsIcon from '@shopware-ag/meteor-icon-kit/icons/regular/settings.svg';
+</script>
+```
+
+### Status Indicators
+
+```vue
+<template>
+  <div class="status-list">
+    <div class="status-item status-success">
+      <CheckCircleIcon />
+      Order completed
+    </div>
+    <div class="status-item status-warning">
+      <WarningIcon />
+      Payment pending
+    </div>
+    <div class="status-item status-error">
+      <ErrorCircleIcon />
+      Order failed
+    </div>
+  </div>
+</template>
+
+<script setup>
+import CheckCircleIcon from '@shopware-ag/meteor-icon-kit/icons/solid/check-circle.svg';
+import WarningIcon from '@shopware-ag/meteor-icon-kit/icons/solid/warning.svg';
+import ErrorCircleIcon from '@shopware-ag/meteor-icon-kit/icons/solid/error-circle.svg';
+</script>
+```
+
+## Icon Path Structure
+
+All icons follow a consistent import pattern:
+
+```
+@shopware-ag/meteor-icon-kit/icons/{style}/{icon-name}.svg
+```
+
+Where:
+- `{style}` is either `regular` or `solid`
+- `{icon-name}` is the kebab-case name of the icon
+
+### Examples
+
+```js
+// Regular icons
+import activity from '@shopware-ag/meteor-icon-kit/icons/regular/activity.svg';
+import shoppingCart from '@shopware-ag/meteor-icon-kit/icons/regular/shopping-cart.svg';
+import arrowRight from '@shopware-ag/meteor-icon-kit/icons/regular/arrow-right.svg';
+
+// Solid icons
+import activity from '@shopware-ag/meteor-icon-kit/icons/solid/activity.svg';
+import shoppingCart from '@shopware-ag/meteor-icon-kit/icons/solid/shopping-cart.svg';
+import arrowRight from '@shopware-ag/meteor-icon-kit/icons/solid/arrow-right.svg';
+```
+
+## Best Practices
+
+1. **Choose the Right Style**: Use regular icons for subtle UI elements and solid icons for emphasis
+2. **Consistent Sizing**: Maintain consistent icon sizes within the same context
+3. **Color Accessibility**: Ensure sufficient contrast between icons and their backgrounds
+4. **Semantic Usage**: Use icons that clearly represent their function
+5. **Performance**: Import only the icons you need to optimize bundle size
+
+## Troubleshooting
+
+### Icons Not Displaying
+
+If icons aren't displaying, ensure:
+
+1. CSS styles are imported
+2. SVG loader is configured for your bundler
+3. Import paths are correct
+
+### Colors Not Applying
+
+If colors aren't changing:
+
+1. Verify `fill: currentColor` is set in your CSS
+2. Check that the parent element has the `color` property set
+3. Ensure no inline `fill` attributes override your CSS
+
+## Next Steps
+
+- [Icon Library](/icon-kit/icon-library) - Browse all available icons
+- [Overview](/icon-kit/overview) - Learn more about the Icon Kit

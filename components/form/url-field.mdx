@@ -1,0 +1,232 @@
+---
+title: URL Field
+description: URL input with protocol toggle and validation
+---
+
+The `MtUrlField` component provides a specialized input for URLs with automatic protocol handling and optional SSL toggle.
+
+## Import
+
+```vue
+import { MtUrlField } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string">
+  v-model binding for the URL value.
+</ParamField>
+
+<ParamField path="label" type="string">
+  Label text for the URL field.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text displayed when empty.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables the URL field.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Marks the field as required.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for the input.
+</ParamField>
+
+<ParamField path="size" type="'small' | 'default'" default="'default'">
+  The size of the field.
+</ParamField>
+
+<ParamField path="copyable" type="boolean" default="false">
+  Adds a copy button to copy the URL to clipboard.
+</ParamField>
+
+<ParamField path="omitUrlHash" type="boolean" default="false">
+  Removes the hash (#) portion from the URL.
+</ParamField>
+
+<ParamField path="omitUrlSearch" type="boolean" default="false">
+  Removes the query string (?) portion from the URL.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object with a detail property.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Indicates if the value is inherited.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Enables inheritance functionality.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string) => void">
+  Emitted when the URL value changes.
+</ParamField>
+
+<ParamField path="change" type="(value: string) => void">
+  Emitted when the input loses focus.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="() => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="() => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+## Slots
+
+<ParamField path="suffix" type="slot">
+  Content displayed after the input.
+</ParamField>
+
+<ParamField path="hint" type="slot">
+  Additional hint content below the field.
+</ParamField>
+
+## Usage
+
+### Basic URL Field
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const website = ref('');
+</script>
+
+<template>
+  <mt-url-field 
+    v-model="website"
+    label="Website URL"
+    placeholder="example.com"
+  />
+</template>
+```
+
+### With SSL Toggle
+
+```vue
+<template>
+  <mt-url-field 
+    v-model="apiUrl"
+    label="API URL"
+    help-text="Toggle the lock icon to switch between HTTP and HTTPS"
+  />
+</template>
+```
+
+### Copyable URL
+
+```vue
+<template>
+  <mt-url-field 
+    v-model="publicUrl"
+    label="Public URL"
+    copyable
+  />
+</template>
+```
+
+### Omit Query Parameters
+
+```vue
+<template>
+  <mt-url-field 
+    v-model="cleanUrl"
+    label="Base URL"
+    omit-url-search
+    omit-url-hash
+  />
+</template>
+```
+
+### Small Size
+
+```vue
+<template>
+  <mt-url-field 
+    v-model="url"
+    label="URL"
+    size="small"
+  />
+</template>
+```
+
+### With Validation
+
+```vue
+<script setup>
+import { ref, computed } from 'vue';
+const url = ref('');
+const error = computed(() => {
+  if (!url.value) return null;
+  try {
+    new URL(url.value.startsWith('http') ? url.value : `https://${url.value}`);
+    return null;
+  } catch {
+    return { detail: 'Please enter a valid URL' };
+  }
+});
+</script>
+
+<template>
+  <mt-url-field 
+    v-model="url"
+    label="Website"
+    :error="error"
+    required
+  />
+</template>
+```
+
+### With Suffix
+
+```vue
+<template>
+  <mt-url-field v-model="subdomain" label="Subdomain">
+    <template #suffix>
+      <span>.example.com</span>
+    </template>
+  </mt-url-field>
+</template>
+```
+
+## Features
+
+### Protocol Toggle
+
+The URL field includes a visual toggle button showing a lock icon:
+- **Locked (HTTPS)**: Green lock icon, uses `https://` protocol
+- **Unlocked (HTTP)**: Gray lock icon, uses `http://` protocol
+
+Click the lock icon to toggle between protocols.
+
+### Automatic Formatting
+
+- Removes multiple slashes from protocol
+- Trims trailing slashes (unless hash or search is present)
+- Decodes URI components for display
+- Validates URL structure
+
+## Accessibility
+
+- Uses native URL input type
+- Protocol toggle button has descriptive aria-label
+- Label properly associated with input
+- Error messages linked via aria-describedby
+- Copy button accessible via keyboard
+- Focus visible outline for keyboard navigation
+- Disabled state prevents interaction

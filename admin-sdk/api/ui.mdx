@@ -1,0 +1,468 @@
+---
+title: UI Module
+description: UI components and interactions for modals, menus, and media selection
+---
+
+The UI module provides methods for controlling UI components in the Shopware Administration.
+
+## Modal
+
+### modal.open()
+
+Open a modal dialog with custom content or a location.
+
+<ParamField path="title" type="string">
+  Modal title displayed in the header
+</ParamField>
+
+<ParamField path="locationId" type="string">
+  If provided, renders the specified location inside the modal
+</ParamField>
+
+<ParamField path="textContent" type="string">
+  If no locationId is provided, displays this text content in the modal. Only simple text is supported.
+</ParamField>
+
+<ParamField path="variant" type="string">
+  Modal size variant: `'default'`, `'small'`, `'large'`, or `'full'`
+  
+  Default: `'default'`
+</ParamField>
+
+<ParamField path="showHeader" type="boolean">
+  Whether to show the modal header
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="showFooter" type="boolean">
+  Whether to show the modal footer
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="closable" type="boolean">
+  Whether the modal can be closed by the user
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="buttons" type="buttonProps[]">
+  Array of button configurations for the modal footer
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the modal opens
+</ResponseField>
+
+#### Example - Simple Modal
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+// Open simple text modal
+await ui.modal.open({
+  title: 'Confirmation',
+  textContent: 'Are you sure you want to continue?',
+  variant: 'small',
+  buttons: [
+    {
+      label: 'Cancel',
+      variant: 'ghost',
+      method: () => {
+        ui.modal.close();
+      }
+    },
+    {
+      label: 'Confirm',
+      variant: 'primary',
+      method: async () => {
+        await performAction();
+        ui.modal.close();
+      }
+    }
+  ]
+});
+```
+
+#### Example - Location Modal
+
+```typescript
+import { ui, location } from '@shopware-ag/admin-sdk';
+
+// Register location
+location.startRendering('custom-form', (_, { updateHeight }) => {
+  return `
+    <form id="custom-form">
+      <input type="text" name="name" placeholder="Name" />
+      <textarea name="description" placeholder="Description"></textarea>
+    </form>
+  `;
+});
+
+// Open modal with location
+await ui.modal.open({
+  title: 'Custom Form',
+  locationId: 'custom-form',
+  variant: 'large',
+  buttons: [
+    {
+      label: 'Save',
+      variant: 'primary',
+      method: () => {
+        const form = document.getElementById('custom-form');
+        const formData = new FormData(form);
+        saveFormData(formData);
+        ui.modal.close();
+      }
+    }
+  ]
+});
+```
+
+#### Example - Full Screen Modal
+
+```typescript
+await ui.modal.open({
+  title: 'Preview',
+  locationId: 'product-preview',
+  variant: 'full',
+  showFooter: false,
+  closable: true
+});
+```
+
+---
+
+### modal.close()
+
+Close an open modal.
+
+<ParamField path="locationId" type="string">
+  Optional location ID of the modal to close. If not provided, closes the last opened modal without a locationId.
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the modal closes
+</ResponseField>
+
+#### Example
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+// Close specific modal
+await ui.modal.close({ locationId: 'custom-form' });
+
+// Close last opened modal
+await ui.modal.close();
+```
+
+---
+
+### modal.update()
+
+Update an open modal's properties.
+
+<ParamField path="locationId" type="string" required>
+  Location ID of the modal to update
+</ParamField>
+
+<ParamField path="title" type="string">
+  New modal title
+</ParamField>
+
+<ParamField path="showHeader" type="boolean">
+  Update header visibility
+</ParamField>
+
+<ParamField path="showFooter" type="boolean">
+  Update footer visibility
+</ParamField>
+
+<ParamField path="closable" type="boolean">
+  Update closable state
+</ParamField>
+
+<ParamField path="buttons" type="buttonProps[]">
+  Update button configuration
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the modal updates
+</ResponseField>
+
+#### Example
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+// Update modal title and buttons
+await ui.modal.update({
+  locationId: 'custom-form',
+  title: 'Edit Form (Modified)',
+  buttons: [
+    {
+      label: 'Save Changes',
+      variant: 'primary',
+      method: saveChanges
+    },
+    {
+      label: 'Discard',
+      variant: 'danger',
+      method: discardChanges
+    }
+  ]
+});
+```
+
+---
+
+## Menu
+
+### menu.addMenuItem()
+
+Add a custom menu item to the administration sidebar.
+
+<ParamField path="label" type="string" required>
+  Display label for the menu item
+</ParamField>
+
+<ParamField path="locationId" type="string" required>
+  Location ID to render when the menu item is clicked
+</ParamField>
+
+<ParamField path="displaySearchBar" type="boolean">
+  Show/hide the search bar on the page
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="displaySmartBar" type="boolean">
+  Show/hide the smart bar on the page
+  
+  Default: `true`
+</ParamField>
+
+<ParamField path="parent" type="string">
+  Parent menu entry under which to display the item
+  
+  Default: `'sw-extension'`
+</ParamField>
+
+<ParamField path="position" type="number">
+  Position of the menu item in the parent menu
+  
+  Default: `110`
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the menu item is added
+</ResponseField>
+
+#### Example
+
+```typescript
+import { ui, location } from '@shopware-ag/admin-sdk';
+
+// Register location
+location.startRendering('my-custom-page', () => {
+  return `
+    <div class="custom-page">
+      <h1>My Custom Page</h1>
+      <p>Content goes here...</p>
+    </div>
+  `;
+});
+
+// Add menu item
+await ui.menu.addMenuItem({
+  label: 'My Extension',
+  locationId: 'my-custom-page',
+  displaySearchBar: true,
+  displaySmartBar: true,
+  parent: 'sw-catalogue',
+  position: 50
+});
+```
+
+#### Example - Multiple Menu Items
+
+```typescript
+// Add to different parent menus
+await ui.menu.addMenuItem({
+  label: 'Products Manager',
+  locationId: 'products-manager',
+  parent: 'sw-catalogue',
+  position: 10
+});
+
+await ui.menu.addMenuItem({
+  label: 'Order Analytics',
+  locationId: 'order-analytics',
+  parent: 'sw-order',
+  position: 20
+});
+
+await ui.menu.addMenuItem({
+  label: 'Customer Insights',
+  locationId: 'customer-insights',
+  parent: 'sw-customer',
+  position: 30
+});
+```
+
+---
+
+### menu.collapseMenu()
+
+Collapse the administration sidebar menu.
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the menu collapses
+</ResponseField>
+
+#### Example
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+await ui.menu.collapseMenu();
+```
+
+---
+
+### menu.expandMenu()
+
+Expand the administration sidebar menu.
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when the menu expands
+</ResponseField>
+
+#### Example
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+await ui.menu.expandMenu();
+```
+
+---
+
+## Media Modal
+
+The media modal allows users to select media files from the Shopware media library.
+
+### mediaModal.open()
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+const selectedMedia = await ui.mediaModal.open({
+  allowMultiSelect: false,
+});
+
+if (selectedMedia) {
+  console.log('Selected media:', selectedMedia);
+}
+```
+
+---
+
+## Type Definitions
+
+### buttonProps
+
+```typescript
+type buttonProps = {
+  method: () => void;
+  label: string;
+  variant?: 'primary'|'ghost'|'danger'|'ghost-danger'|'contrast'|'context';
+  size?: 'x-small'|'small'|'large';
+  square?: boolean;
+};
+```
+
+### uiModalOpen
+
+```typescript
+type uiModalOpen = {
+  responseType: void;
+  title?: string;
+  locationId?: string;
+  textContent?: string;
+  variant?: 'default'|'small'|'large'|'full';
+  showHeader?: boolean;
+  showFooter?: boolean;
+  closable?: boolean;
+  buttons?: buttonProps[];
+};
+```
+
+### uiModalClose
+
+```typescript
+type uiModalClose = {
+  responseType: void;
+  locationId?: string;
+};
+```
+
+### uiModalUpdate
+
+```typescript
+type uiModalUpdate = {
+  responseType: void;
+  locationId: string;
+  title?: string;
+  showHeader?: boolean;
+  showFooter?: boolean;
+  closable?: boolean;
+  buttons?: buttonProps[];
+};
+```
+
+### menuItemAdd
+
+```typescript
+type menuItemAdd = {
+  responseType: void;
+  label: string;
+  locationId: string;
+  displaySearchBar?: boolean;
+  displaySmartBar?: boolean;
+  parent?: string;
+  position?: number;
+};
+```
+
+## Best Practices
+
+<Tip>
+  Use appropriate modal variants: `'small'` for confirmations, `'large'` for forms, and `'full'` for previews.
+</Tip>
+
+<Warning>
+  Always provide a way to close modals, either through buttons or by keeping `closable: true`.
+</Warning>
+
+<Note>
+  Menu items are added under `'sw-extension'` by default. Use the `parent` parameter to organize items under relevant sections.
+</Note>
+
+## Button Variants
+
+- `primary` - Primary action button (blue)
+- `ghost` - Secondary button (transparent)
+- `danger` - Destructive action (red)
+- `ghost-danger` - Secondary destructive action
+- `contrast` - High contrast button
+- `context` - Contextual action button
+
+## Modal Variants
+
+- `default` - Standard modal width (~600px)
+- `small` - Compact modal (~400px)
+- `large` - Wide modal (~900px)
+- `full` - Full screen modal

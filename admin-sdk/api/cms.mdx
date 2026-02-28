@@ -1,0 +1,424 @@
+---
+title: CMS Module
+description: Register custom CMS elements and blocks in the Shopware Administration
+---
+
+The CMS module allows you to extend the Shopware Content Management System with custom elements and blocks.
+
+## Methods
+
+### registerCmsElement()
+
+Register a custom CMS element that can be used in the Shopping Experiences editor.
+
+<ParamField path="name" type="string" required>
+  Unique technical name for the element. Should include vendor prefix.
+  
+  Example: `'company-my-image-slider'` generates location IDs:
+  - `company-my-image-slider-element` - Element in the CMS
+  - `company-my-image-slider-preview` - Preview in element selection
+  - `company-my-image-slider-config` - Configuration modal
+</ParamField>
+
+<ParamField path="label" type="string" required>
+  Display label shown when selecting the element. Use snippet keys for translation.
+</ParamField>
+
+<ParamField path="defaultConfig" type="object" required>
+  Default configuration object for the element. Same structure as plugin development.
+  
+  ```typescript
+  {
+    [key: string]: unknown;
+  }
+  ```
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when registration is complete
+</ResponseField>
+
+### Example
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+// Register custom image slider element
+await ui.cms.registerCmsElement({
+  name: 'acme-image-slider',
+  label: 'acme.cms.elements.imageSlider.label',
+  defaultConfig: {
+    images: {
+      source: 'static',
+      value: [],
+    },
+    autoplay: {
+      source: 'static',
+      value: true,
+    },
+    delay: {
+      source: 'static',
+      value: 3000,
+    },
+    effect: {
+      source: 'static',
+      value: 'fade',
+    },
+  },
+});
+```
+
+### Rendering the Element
+
+After registration, implement the rendering locations:
+
+```typescript
+import { location } from '@shopware-ag/admin-sdk';
+
+// Render element preview
+location.startRendering('acme-image-slider-preview', (element) => {
+  return `
+    <div class="cms-element-preview">
+      <img src="/preview-image.jpg" />
+      <span>Image Slider</span>
+    </div>
+  `;
+});
+
+// Render element in CMS
+location.startRendering('acme-image-slider-element', (element) => {
+  const config = element.config;
+  
+  return `
+    <div class="image-slider" data-autoplay="${config.autoplay.value}">
+      ${config.images.value.map(img => 
+        `<img src="${img.url}" alt="${img.alt}" />`
+      ).join('')}
+    </div>
+  `;
+});
+
+// Render configuration modal
+location.startRendering('acme-image-slider-config', (element, context) => {
+  return `
+    <div class="config-form">
+      <label>Autoplay</label>
+      <input type="checkbox" 
+        checked="${element.config.autoplay.value}"
+        onchange="updateConfig('autoplay', this.checked)" />
+      
+      <label>Delay (ms)</label>
+      <input type="number" 
+        value="${element.config.delay.value}"
+        onchange="updateConfig('delay', this.value)" />
+    </div>
+  `;
+});
+```
+
+---
+
+### registerCmsBlock()
+
+Register a custom CMS block containing one or more element slots.
+
+<ParamField path="name" type="string" required>
+  Unique technical name for the block. Recommended to use company prefix (e.g., 'Swag' for Shopware AG).
+</ParamField>
+
+<ParamField path="label" type="string" required>
+  Display label shown in the CMS module
+</ParamField>
+
+<ParamField path="category" type="string">
+  Block category: `'commerce'`, `'form'`, `'image'`, `'sidebar'`, `'text-image'`, `'text'`, `'video'`, or custom category name.
+  
+  Custom categories use snippet key: `apps.sw-cms.detail.label.blockCategory.{categoryName}`
+</ParamField>
+
+<ParamField path="slots" type="Array<{ element: string }>" required>
+  Array of slot definitions. Each slot contains one element.
+  
+  ```typescript
+  [{ element: 'image' }, { element: 'text' }]
+  ```
+</ParamField>
+
+<ParamField path="slotLayout" type="object">
+  Optional CSS grid layout configuration
+  
+  <ParamField path="slotLayout.grid" type="string">
+    CSS grid shorthand property. Examples:
+    - `'auto / auto'` - 1 column
+    - `'auto / auto auto'` - 2 columns
+    - `'auto auto / auto-flow auto'` - 2 rows
+  </ParamField>
+</ParamField>
+
+<ParamField path="previewImage" type="string">
+  Preview image URL (minimum 350px width recommended)
+</ParamField>
+
+<ResponseField name="response" type="Promise<void>">
+  Returns a promise that resolves when registration is complete
+</ResponseField>
+
+### Example
+
+```typescript
+import { ui } from '@shopware-ag/admin-sdk';
+
+// Register hero block with image and text
+await ui.cms.registerCmsBlock({
+  name: 'acme-hero-block',
+  label: 'acme.cms.blocks.hero.label',
+  category: 'text-image',
+  slots: [
+    { element: 'image' },
+    { element: 'text' },
+  ],
+  slotLayout: {
+    grid: 'auto / 1fr 1fr', // Two equal columns
+  },
+  previewImage: 'https://example.com/preview.jpg',
+});
+```
+
+### Two Column Block
+
+```typescript
+await ui.cms.registerCmsBlock({
+  name: 'acme-two-column',
+  label: 'acme.cms.blocks.twoColumn.label',
+  category: 'text',
+  slots: [
+    { element: 'text' },
+    { element: 'text' },
+  ],
+  slotLayout: {
+    grid: 'auto / auto auto',
+  },
+});
+```
+
+### Three Row Block
+
+```typescript
+await ui.cms.registerCmsBlock({
+  name: 'acme-three-row',
+  label: 'acme.cms.blocks.threeRow.label',
+  category: 'image',
+  slots: [
+    { element: 'image' },
+    { element: 'image' },
+    { element: 'image' },
+  ],
+  slotLayout: {
+    grid: 'auto auto auto / auto',
+  },
+});
+```
+
+### Custom Category
+
+```typescript
+// Register block with custom category
+await ui.cms.registerCmsBlock({
+  name: 'acme-feature-block',
+  label: 'acme.cms.blocks.feature.label',
+  category: 'features', // Custom category
+  slots: [
+    { element: 'acme-feature-card' },
+    { element: 'acme-feature-card' },
+    { element: 'acme-feature-card' },
+  ],
+  slotLayout: {
+    grid: 'auto / repeat(3, 1fr)',
+  },
+});
+
+// Add translation for custom category
+// Snippet key: apps.sw-cms.detail.label.blockCategory.features
+```
+
+---
+
+## Complete Example
+
+Here's a complete example registering both a custom element and block:
+
+```typescript
+import { ui, location } from '@shopware-ag/admin-sdk';
+
+// 1. Register custom element
+await ui.cms.registerCmsElement({
+  name: 'acme-testimonial',
+  label: 'acme.cms.elements.testimonial.label',
+  defaultConfig: {
+    authorName: {
+      source: 'static',
+      value: '',
+    },
+    authorTitle: {
+      source: 'static',
+      value: '',
+    },
+    quote: {
+      source: 'static',
+      value: '',
+    },
+    avatar: {
+      source: 'static',
+      value: null,
+    },
+  },
+});
+
+// 2. Register block using the element
+await ui.cms.registerCmsBlock({
+  name: 'acme-testimonials',
+  label: 'acme.cms.blocks.testimonials.label',
+  category: 'text',
+  slots: [
+    { element: 'acme-testimonial' },
+    { element: 'acme-testimonial' },
+    { element: 'acme-testimonial' },
+  ],
+  slotLayout: {
+    grid: 'auto / repeat(3, 1fr)',
+  },
+  previewImage: '/assets/testimonials-preview.jpg',
+});
+
+// 3. Render element preview
+location.startRendering('acme-testimonial-preview', () => {
+  return `
+    <div class="testimonial-preview">
+      <div class="quote-icon">"</div>
+      <p>Testimonial preview</p>
+    </div>
+  `;
+});
+
+// 4. Render element
+location.startRendering('acme-testimonial-element', (element) => {
+  const config = element.config;
+  
+  return `
+    <div class="testimonial">
+      <blockquote>${config.quote.value}</blockquote>
+      <div class="author">
+        ${config.avatar.value ? 
+          `<img src="${config.avatar.value}" alt="${config.authorName.value}" />` 
+          : ''}
+        <div>
+          <strong>${config.authorName.value}</strong>
+          <span>${config.authorTitle.value}</span>
+        </div>
+      </div>
+    </div>
+  `;
+});
+
+// 5. Render config form
+location.startRendering('acme-testimonial-config', (element, context) => {
+  return `
+    <form class="cms-element-config">
+      <div class="form-group">
+        <label>Author Name</label>
+        <input type="text" value="${element.config.authorName.value}" 
+          onchange="updateConfig('authorName', this.value)" />
+      </div>
+      
+      <div class="form-group">
+        <label>Author Title</label>
+        <input type="text" value="${element.config.authorTitle.value}"
+          onchange="updateConfig('authorTitle', this.value)" />
+      </div>
+      
+      <div class="form-group">
+        <label>Quote</label>
+        <textarea onchange="updateConfig('quote', this.value)">
+          ${element.config.quote.value}
+        </textarea>
+      </div>
+      
+      <div class="form-group">
+        <label>Avatar</label>
+        <button onclick="openMediaModal()">Select Image</button>
+      </div>
+    </form>
+  `;
+});
+```
+
+---
+
+## Type Definitions
+
+### cmsRegisterElement
+
+```typescript
+type cmsRegisterElement = {
+  responseType: void;
+  name: string;
+  label: string;
+  defaultConfig: {
+    [key: string]: unknown;
+  };
+};
+```
+
+### cmsRegisterBlock
+
+```typescript
+type cmsRegisterBlock = {
+  responseType: void;
+  name: string;
+  label: string;
+  category?: ('commerce'|'form'|'image'|'sidebar'|'text-image'|'text'|'video') | string;
+  slots: Array<{ element: string }>;
+  slotLayout?: {
+    grid?: string;
+  };
+  previewImage?: string;
+};
+```
+
+## Best Practices
+
+<Tip>
+  Always use vendor prefixes in element and block names to avoid conflicts (e.g., `'acme-slider'` instead of `'slider'`).
+</Tip>
+
+<Warning>
+  Element configuration values must follow the `{ source: string, value: any }` structure for CMS data binding.
+</Warning>
+
+<Note>
+  Use CSS Grid's shorthand property for `slotLayout.grid`. This provides flexible layout control. See [MDN Grid Documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/grid).
+</Note>
+
+## Grid Layout Examples
+
+```typescript
+// Single column
+slotLayout: { grid: 'auto / auto' }
+
+// Two equal columns
+slotLayout: { grid: 'auto / 1fr 1fr' }
+
+// Three columns
+slotLayout: { grid: 'auto / repeat(3, 1fr)' }
+
+// Two rows
+slotLayout: { grid: 'auto auto / auto' }
+
+// Sidebar layout (1:2 ratio)
+slotLayout: { grid: 'auto / 1fr 2fr' }
+
+// Complex grid
+slotLayout: { 
+  grid: 'repeat(2, auto) / repeat(3, 1fr)' 
+}
+```

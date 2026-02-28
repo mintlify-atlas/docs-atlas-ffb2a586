@@ -1,0 +1,309 @@
+---
+title: Installation
+description: Learn how to install and set up the Meteor Admin SDK in your Shopware 6 project
+---
+
+# Installation
+
+The Meteor Admin SDK (`@shopware-ag/meteor-admin-sdk`) can be installed and used in multiple ways depending on your project setup. This guide covers all installation methods and module formats.
+
+## NPM Installation
+
+For projects using a build tool (webpack, Vite, Rollup, etc.), install the SDK via npm:
+
+```bash
+npm install @shopware-ag/meteor-admin-sdk
+```
+
+Or using other package managers:
+
+<CodeGroup>
+```bash yarn
+yarn add @shopware-ag/meteor-admin-sdk
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-admin-sdk
+```
+</CodeGroup>
+
+### Package Information
+
+<Info>
+  **Package name**: `@shopware-ag/meteor-admin-sdk`  
+  **Current version**: 6.5.1  
+  **License**: MIT  
+  **Repository**: [github.com/shopware/meteor](https://github.com/shopware/meteor)
+</Info>
+
+## Module Formats
+
+The Admin SDK is distributed in multiple module formats to support different use cases:
+
+### ES Modules (Recommended)
+
+ES modules are the recommended format for modern JavaScript projects. They provide the best tree-shaking support, keeping your bundle size minimal.
+
+```javascript
+// Import everything
+import * as sw from '@shopware-ag/meteor-admin-sdk';
+
+// Import specific modules (recommended for smaller bundles)
+import { notification, ui, data } from '@shopware-ag/meteor-admin-sdk';
+
+// Import only what you need
+import { notification } from '@shopware-ag/meteor-admin-sdk';
+```
+
+**Module entry point**: `es/index.js`
+
+### UMD Modules
+
+UMD (Universal Module Definition) modules work in both Node.js and browser environments.
+
+```javascript
+const sw = require('@shopware-ag/meteor-admin-sdk');
+
+sw.notification.dispatch({
+  title: 'Hello',
+  message: 'UMD module loaded'
+});
+```
+
+**Module entry point**: `umd/index.js`
+
+### CDN Usage
+
+For quick prototyping or simple projects without a build step, use the CDN version:
+
+```html
+<!-- Latest version -->
+<script src="https://unpkg.com/@shopware-ag/meteor-admin-sdk/cdn"></script>
+
+<!-- Specific version (recommended for production) -->
+<script src="https://unpkg.com/@shopware-ag/meteor-admin-sdk@6.5.1/cdn"></script>
+```
+
+After loading the script, the SDK is available via the global `sw` variable:
+
+```javascript
+sw.notification.dispatch({
+  title: 'Hello from CDN',
+  message: 'This is using the CDN version'
+});
+```
+
+## Setup in Different Environments
+
+### Vanilla JavaScript
+
+For a simple HTML/JavaScript setup:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Admin App</title>
+  <script src="https://unpkg.com/@shopware-ag/meteor-admin-sdk/cdn"></script>
+</head>
+<body>
+  <div id="app"></div>
+  
+  <script>
+    // SDK is available as global 'sw' variable
+    sw.notification.dispatch({
+      title: 'App Loaded',
+      message: 'Your app is ready!'
+    });
+
+    sw.ui.menu.addMenuItem({
+      label: 'My App',
+      locationId: 'my-app-location'
+    });
+  </script>
+</body>
+</html>
+```
+
+### Modern JavaScript with Modules
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Admin App</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { notification, ui } from 'https://unpkg.com/@shopware-ag/meteor-admin-sdk/es/index.js';
+    
+    notification.dispatch({
+      title: 'Module Loaded',
+      message: 'Using ES modules!'
+    });
+  </script>
+</body>
+</html>
+```
+
+### TypeScript Projects
+
+The SDK includes full TypeScript definitions:
+
+```typescript
+import { notification, ui, data } from '@shopware-ag/meteor-admin-sdk';
+import type { NotificationOptions } from '@shopware-ag/meteor-admin-sdk';
+
+const notifyUser = (options: NotificationOptions): void => {
+  notification.dispatch(options);
+};
+
+notifyUser({
+  title: 'TypeScript',
+  message: 'Full type safety included!',
+  variant: 'success'
+});
+```
+
+**Types entry point**: `es/index.d.ts`
+
+### Vue.js Projects
+
+Example setup for Vue 3 applications:
+
+```javascript
+import { createApp } from 'vue';
+import { location } from '@shopware-ag/meteor-admin-sdk';
+import App from './App.vue';
+
+if (location.is(location.MAIN_HIDDEN)) {
+  // Initialize extensions
+  import('./extensions/init-app.js');
+} else {
+  // Render the app
+  const app = createApp(App);
+  app.mount('#app');
+}
+```
+
+### React Projects
+
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { location } from '@shopware-ag/meteor-admin-sdk';
+import App from './App';
+
+if (location.is(location.MAIN_HIDDEN)) {
+  // Initialize extensions
+  import('./extensions/init-app.js');
+} else {
+  // Render the app
+  ReactDOM.render(<App />, document.getElementById('app'));
+}
+```
+
+## Granular Imports
+
+The SDK supports granular imports for specific modules, which can further reduce bundle size:
+
+```javascript
+// Import only the data module
+import * as data from '@shopware-ag/meteor-admin-sdk/es/data';
+
+// Import only the location utilities
+import * as location from '@shopware-ag/meteor-admin-sdk/es/location';
+
+// Import the Criteria class
+import { Criteria } from '@shopware-ag/meteor-admin-sdk/es/data/Criteria';
+
+// Import repository functionality
+import * as repository from '@shopware-ag/meteor-admin-sdk/es/data/repository';
+```
+
+### Available Module Paths
+
+Here are the main module paths available for granular imports:
+
+- `@shopware-ag/meteor-admin-sdk/es/channel` - Communication channel
+- `@shopware-ag/meteor-admin-sdk/es/data` - Data handling
+- `@shopware-ag/meteor-admin-sdk/es/data/Criteria` - Query builder
+- `@shopware-ag/meteor-admin-sdk/es/data/repository` - Repository pattern
+- `@shopware-ag/meteor-admin-sdk/es/data/composables` - Vue 3 composables
+- `@shopware-ag/meteor-admin-sdk/es/location` - Location utilities
+
+## Verification
+
+To verify your installation is working correctly, try this simple test:
+
+```javascript
+import { notification } from '@shopware-ag/meteor-admin-sdk';
+
+notification.dispatch({
+  title: 'Installation Successful',
+  message: 'The Admin SDK is ready to use!',
+  variant: 'success'
+});
+```
+
+If you see the notification in the Shopware Administration, your installation is complete!
+
+## Dependencies
+
+The Admin SDK has minimal production dependencies:
+
+- `jwt-decode` (^4.0.0) - For handling JWT tokens
+- `localforage` (^1.10.0) - For local storage management
+- `lodash-es` (^4.17.21) - Utility functions
+- `semver` (^7.7.1) - Version comparison
+
+All dependencies are bundled in the CDN version, so no additional setup is required when using the CDN.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Tutorial" icon="rocket" href="/admin-sdk/quickstart">
+    Build your first admin app with the SDK
+  </Card>
+  
+  <Card title="Core Concepts" icon="book" href="/admin-sdk/concepts/architecture">
+    Learn about locations, iframes, and communication patterns
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/admin-sdk/api/data">
+    Explore the complete API documentation
+  </Card>
+  
+  <Card title="Example App" icon="github" href="https://github.com/shopware/meteor/tree/main/examples/admin-sdk-app">
+    View a complete example application
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Module not found errors">
+    If you see module resolution errors:
+    - Ensure the package is installed: `npm list @shopware-ag/meteor-admin-sdk`
+    - Clear your node_modules and reinstall: `rm -rf node_modules && npm install`
+    - Check your bundler configuration for proper ES module support
+  </Accordion>
+
+  <Accordion title="TypeScript type errors">
+    If TypeScript can't find type definitions:
+    - Verify the package includes types: `es/index.d.ts` should exist
+    - Ensure your `tsconfig.json` has `"moduleResolution": "node"`
+    - Try restarting your TypeScript server
+  </Accordion>
+
+  <Accordion title="CDN version not loading">
+    If the CDN version doesn't work:
+    - Check your browser console for CORS errors
+    - Verify the CDN URL is correct and accessible
+    - Try using a specific version instead of latest
+    - Ensure your browser supports ES modules if using module imports
+  </Accordion>
+</AccordionGroup>

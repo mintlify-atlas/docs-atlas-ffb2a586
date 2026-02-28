@@ -1,0 +1,189 @@
+---
+title: Email Field
+description: Email input field with validation
+---
+
+The `MtEmailField` component is a specialized text input for email addresses with built-in validation and optional copy functionality.
+
+## Import
+
+```vue
+import { MtEmailField } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string">
+  v-model binding for the email field value.
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for the email field.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for the input element.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text displayed when the field is empty.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables the email field.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Marks the field as required.
+</ParamField>
+
+<ParamField path="small" type="boolean" default="false">
+  Renders the field in a smaller size.
+</ParamField>
+
+<ParamField path="copyable" type="boolean" default="false">
+  Adds a copy button to copy the email address to clipboard.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object with a `detail` property for validation messages.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Indicates if the value is inherited.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Enables inheritance functionality.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string) => void">
+  Emitted when the email value changes.
+</ParamField>
+
+<ParamField path="change" type="(value: string) => void">
+  Emitted when the input loses focus.
+</ParamField>
+
+<ParamField path="focus" type="() => void">
+  Emitted when the field gains focus.
+</ParamField>
+
+<ParamField path="blur" type="() => void">
+  Emitted when the field loses focus.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="() => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="() => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+## Slots
+
+<ParamField path="prefix" type="slot">
+  Content displayed before the input.
+</ParamField>
+
+<ParamField path="suffix" type="slot">
+  Content displayed after the input (not shown if copyable is true).
+</ParamField>
+
+<ParamField path="hint" type="slot">
+  Additional hint content below the field.
+</ParamField>
+
+## Usage
+
+### Basic Email Field
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const email = ref('');
+</script>
+
+<template>
+  <mt-email-field 
+    v-model="email"
+    label="Email address"
+    placeholder="Enter your email"
+  />
+</template>
+```
+
+### With Validation
+
+```vue
+<script setup>
+import { ref, computed } from 'vue';
+const email = ref('');
+const error = computed(() => {
+  if (!email.value) return null;
+  const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+  return isValid ? null : { detail: 'Please enter a valid email address' };
+});
+</script>
+
+<template>
+  <mt-email-field 
+    v-model="email"
+    label="Email"
+    :error="error"
+    required
+  />
+</template>
+```
+
+### Copyable Email
+
+```vue
+<template>
+  <mt-email-field 
+    v-model="contactEmail"
+    label="Contact email"
+    copyable
+  />
+</template>
+```
+
+### Small Size
+
+```vue
+<template>
+  <mt-email-field 
+    v-model="email"
+    label="Email"
+    small
+  />
+</template>
+```
+
+### With Prefix Icon
+
+```vue
+<template>
+  <mt-email-field v-model="email" label="Email">
+    <template #prefix>
+      <mt-icon name="regular-envelope" />
+    </template>
+  </mt-email-field>
+</template>
+```
+
+## Accessibility
+
+- Uses native email input type for browser validation
+- Label properly associated with input
+- Error messages linked via aria-describedby
+- Invalid state communicated via aria-invalid
+- Copy button has descriptive aria-label
+- Disabled state prevents interaction

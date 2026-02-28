@@ -1,0 +1,205 @@
+---
+title: Textarea
+description: Multi-line text input component
+---
+
+The `MtTextarea` component provides a multi-line text input area with character counting and validation.
+
+## Import
+
+```vue
+import { MtTextarea } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string">
+  v-model binding for the textarea value.
+</ParamField>
+
+<ParamField path="label" type="string">
+  Label text for the textarea.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text displayed when empty.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables the textarea.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Marks the field as required.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for the textarea.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="maxLength" type="number">
+  Maximum number of characters allowed. Shows character counter when set.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object with a detail property.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Indicates if the value is inherited.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Enables inheritance functionality.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string) => void">
+  Emitted when the textarea value changes.
+</ParamField>
+
+<ParamField path="change" type="(value: string) => void">
+  Emitted when the textarea loses focus.
+</ParamField>
+
+<ParamField path="focus" type="() => void">
+  Emitted when the textarea gains focus.
+</ParamField>
+
+<ParamField path="blur" type="() => void">
+  Emitted when the textarea loses focus.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="() => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="() => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+## Slots
+
+<ParamField path="hint" type="slot">
+  Additional hint content below the textarea.
+</ParamField>
+
+## Usage
+
+### Basic Textarea
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const description = ref('');
+</script>
+
+<template>
+  <mt-textarea 
+    v-model="description"
+    label="Description"
+    placeholder="Enter a description..."
+  />
+</template>
+```
+
+### With Character Limit
+
+```vue
+<template>
+  <mt-textarea 
+    v-model="bio"
+    label="Bio"
+    :max-length="500"
+    help-text="Tell us about yourself"
+  />
+</template>
+```
+
+### Required Textarea
+
+```vue
+<script setup>
+import { ref, computed } from 'vue';
+const feedback = ref('');
+const error = computed(() => 
+  !feedback.value ? { detail: 'Feedback is required' } : null
+);
+</script>
+
+<template>
+  <mt-textarea 
+    v-model="feedback"
+    label="Feedback"
+    :error="error"
+    required
+  />
+</template>
+```
+
+### Disabled Textarea
+
+```vue
+<template>
+  <mt-textarea 
+    v-model="readOnlyContent"
+    label="Content"
+    disabled
+  />
+</template>
+```
+
+### With Custom Hint
+
+```vue
+<template>
+  <mt-textarea v-model="notes" label="Notes">
+    <template #hint>
+      <span style="color: var(--color-text-secondary-default);">
+        Supports markdown formatting
+      </span>
+    </template>
+  </mt-textarea>
+</template>
+```
+
+### Multiple Textareas
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const form = ref({
+  title: '',
+  description: '',
+  notes: '',
+});
+</script>
+
+<template>
+  <div>
+    <mt-textarea v-model="form.title" label="Title" :max-length="100" />
+    <mt-textarea v-model="form.description" label="Description" :max-length="500" />
+    <mt-textarea v-model="form.notes" label="Notes" />
+  </div>
+</template>
+```
+
+## Styling
+
+The textarea has a default minimum height of 125px and maximum height of 300px. Users can resize it vertically within these bounds.
+
+## Accessibility
+
+- Uses native textarea element
+- Label properly associated via `for` attribute
+- Error messages linked via aria-describedby
+- Character count visible and announced
+- Focus visible outline for keyboard navigation
+- Disabled state prevents interaction
+- Required fields marked with asterisk
+- Resizable for user preference

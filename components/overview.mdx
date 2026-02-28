@@ -1,0 +1,104 @@
+---
+title: Component Library Overview
+description: Explore 96+ Vue components built for Shopware Apps with TypeScript support and Meteor Design System integration
+---
+
+The Meteor Component Library is a comprehensive Vue 3 component library developed by Shopware, based on the [Meteor Design System](https://shopware.design/). It provides everything you need to build modern, accessible Shopware Apps that seamlessly match the Shopware administration look and feel.
+
+## Key Features
+
+- **96+ Production-Ready Components**: Full-featured components for all common UI patterns
+- **TypeScript Support**: Complete type definitions for enhanced developer experience
+- **Tree-Shakeable**: Small bundle sizes with automatic tree-shaking
+- **Fully Tested**: Comprehensive test coverage with interaction and visual tests
+- **Accessible**: Built with accessibility best practices
+- **Documented**: Interactive documentation with [Storybook](https://meteor-component-library.vercel.app/)
+
+## Component Categories
+
+Browse components by category to find what you need:
+
+<CardGroup cols={2}>
+  <Card title="Form Components" icon="square-check" href="/components/form/button">
+    Input fields, buttons, checkboxes, selects, date pickers, and more
+  </Card>
+  
+  <Card title="Layout Components" icon="table-cells" href="/components/layout/card">
+    Cards, empty states, and structural components
+  </Card>
+  
+  <Card title="Navigation Components" icon="compass" href="/components/navigation/breadcrumbs">
+    Links, tabs, search, and segmented controls
+  </Card>
+  
+  <Card title="Feedback Indicators" icon="bell" href="/components/feedback/badge">
+    Badges, banners, toasts, loaders, and progress indicators
+  </Card>
+  
+  <Card title="Data Display" icon="table" href="/components/data/data-table">
+    Data tables, pagination, and entity management
+  </Card>
+  
+  <Card title="Overlay Components" icon="layer-group" href="/components/overlay/modal">
+    Modals, popovers, tooltips, and context menus
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+Here's how easy it is to use Meteor components in your application:
+
+```vue
+<template>
+  <div>
+    <mt-card>
+      <h2>User Profile</h2>
+      <mt-text-field 
+        label="Email" 
+        v-model="email"
+        type="email"
+      />
+      <mt-button variant="primary" @click="save">
+        Save Changes
+      </mt-button>
+    </mt-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { MtCard, MtTextField, MtButton } from '@shopware-ag/meteor-component-library';
+
+const email = ref('');
+
+const save = () => {
+  // Handle save logic
+};
+</script>
+```
+
+## Design System Integration
+
+All components are built to match the Shopware administration interface, ensuring your apps feel native to the Shopware ecosystem. The library uses design tokens from `@shopware-ag/meteor-tokens` for consistent theming.
+
+## Interactive Documentation
+
+Explore all components interactively in our [Storybook documentation](https://meteor-component-library.vercel.app/), where you can:
+
+- View live component examples
+- Interact with component props
+- Test different states and variants
+- Copy code snippets
+- View accessibility information
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/components/installation">
+    Get started with installation and setup
+  </Card>
+  
+  <Card title="Form Components" icon="square-check" href="/components/form/button">
+    Explore form inputs and controls
+  </Card>
+</CardGroup>

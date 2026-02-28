@@ -1,0 +1,478 @@
+---
+title: CMS Extensions
+description: Learn how to extend the Shopware CMS with custom blocks and elements
+---
+
+This guide shows you how to extend the Shopware CMS (Shopping Experiences) by creating custom CMS elements and blocks.
+
+## Overview
+
+The Admin SDK allows you to:
+- Register custom CMS elements
+- Register custom CMS blocks
+- Create configuration interfaces for your elements
+- Render custom content in the CMS
+
+## CMS Elements
+
+CMS elements are the building blocks of the Shopping Experiences. Each element represents a specific type of content.
+
+### Registering a CMS Element
+
+```typescript
+import { cms } from '@shopware-ag/meteor-admin-sdk';
+
+await cms.registerCmsElement({
+    name: 'my-company-video-element',
+    label: 'Video Player',
+    defaultConfig: {
+        videoUrl: {
+            source: 'static',
+            value: '',
+        },
+        autoplay: {
+            source: 'static',
+            value: false,
+        },
+    },
+});
+```
+
+### Element Location IDs
+
+When you register an element, three location IDs are automatically generated:
+
+```typescript
+// For name: 'my-company-video-element'
+
+'my-company-video-element-element'  // Main element rendering
+'my-company-video-element-preview'  // Preview in element selection
+'my-company-video-element-config'   // Configuration modal
+```
+
+### Complete CMS Element Example
+
+Here's a complete example for a video element:
+
+#### 1. Register the Element
+
+```typescript
+import { cms } from '@shopware-ag/meteor-admin-sdk';
+
+const ELEMENT_NAME = 'my-video-player';
+
+await cms.registerCmsElement({
+    name: ELEMENT_NAME,
+    label: 'Video Player',
+    defaultConfig: {
+        videoUrl: {
+            source: 'static',
+            value: 'https://example.com/video.mp4',
+        },
+        autoplay: {
+            source: 'static',
+            value: false,
+        },
+        controls: {
+            source: 'static',
+            value: true,
+        },
+    },
+});
+```
+
+#### 2. Create the Preview Component
+
+```vue
+<!-- my-video-player-preview.vue -->
+<template>
+    <div class="video-preview">
+        <div class="video-icon">
+            <i class="icon-play"></i>
+        </div>
+        <p>Video Player Element</p>
+    </div>
+</template>
+
+<style scoped>
+.video-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.video-icon {
+    font-size: 48px;
+    color: #1890ff;
+}
+</style>
+```
+
+#### 3. Create the Configuration Component
+
+```vue
+<!-- my-video-player-config.vue -->
+<template>
+    <div class="config-form">
+        <sw-text-field
+            label="Video URL"
+            v-model="config.videoUrl.value"
+            @input="updateConfig"
+        />
+        
+        <sw-switch-field
+            label="Autoplay"
+            v-model="config.autoplay.value"
+            @change="updateConfig"
+        />
+        
+        <sw-switch-field
+            label="Show Controls"
+            v-model="config.controls.value"
+            @change="updateConfig"
+        />
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { data } from '@shopware-ag/meteor-admin-sdk';
+import { SwTextField, SwSwitchField } from '@shopware-ag/meteor-component-library';
+
+export default defineComponent({
+    components: {
+        'sw-text-field': SwTextField,
+        'sw-switch-field': SwSwitchField,
+    },
+    data() {
+        return {
+            config: {
+                videoUrl: { source: 'static', value: '' },
+                autoplay: { source: 'static', value: false },
+                controls: { source: 'static', value: true },
+            }
+        };
+    },
+    methods: {
+        async loadConfig() {
+            const elementData = await data.get({
+                id: 'my-video-player__config-element',
+            });
+            
+            if (elementData?.config) {
+                this.config = elementData.config;
+            }
+        },
+        
+        updateConfig() {
+            data.update({
+                id: 'my-video-player__config-element',
+                data: {
+                    config: this.config
+                }
+            });
+        }
+    },
+    mounted() {
+        this.loadConfig();
+    }
+});
+</script>
+```
+
+#### 4. Create the Element Component
+
+```vue
+<!-- my-video-player-element.vue -->
+<template>
+    <div class="video-element">
+        <video
+            v-if="videoUrl"
+            :src="videoUrl"
+            :autoplay="autoplay"
+            :controls="controls"
+            class="video-player"
+        />
+        <div v-else class="no-video">
+            <p>No video URL configured</p>
+        </div>
+    </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+import { data } from '@shopware-ag/meteor-admin-sdk';
+
+export default defineComponent({
+    data() {
+        return {
+            videoUrl: '',
+            autoplay: false,
+            controls: true,
+        };
+    },
+    methods: {
+        async loadConfig() {
+            const elementData = await data.get({
+                id: 'my-video-player__config-element',
+            });
+            
+            if (elementData?.config) {
+                this.videoUrl = elementData.config.videoUrl.value;
+                this.autoplay = elementData.config.autoplay.value;
+                this.controls = elementData.config.controls.value;
+            }
+        }
+    },
+    mounted() {
+        this.loadConfig();
+        
+        // Subscribe to config changes
+        data.subscribe('my-video-player__config-element', (response) => {
+            if (response.data?.config) {
+                this.videoUrl = response.data.config.videoUrl.value;
+                this.autoplay = response.data.config.autoplay.value;
+                this.controls = response.data.config.controls.value;
+            }
+        });
+    }
+});
+</script>
+
+<style scoped>
+.video-element {
+    width: 100%;
+}
+
+.video-player {
+    width: 100%;
+    height: auto;
+}
+
+.no-video {
+    padding: 40px;
+    text-align: center;
+    background: #f5f5f5;
+    color: #999;
+}
+</style>
+```
+
+## CMS Blocks
+
+CMS blocks are containers that hold one or more CMS elements in a specific layout.
+
+### Registering a CMS Block
+
+```typescript
+import { cms } from '@shopware-ag/meteor-admin-sdk';
+
+await cms.registerCmsBlock({
+    name: 'my-company-two-column-block',
+    label: 'Two Column Layout',
+    category: 'text-image',
+    slots: [
+        {
+            element: 'image',
+        },
+        {
+            element: 'text',
+        }
+    ],
+    slotLayout: {
+        grid: 'auto / auto auto'
+    },
+    previewImage: 'https://example.com/preview.png'
+});
+```
+
+### Block Parameters
+
+- **name**: Unique identifier (use vendor prefix)
+- **label**: Display name in the block selector
+- **category**: Block category (see below)
+- **slots**: Array of element slots
+- **slotLayout**: CSS grid layout configuration
+- **previewImage**: Preview image URL (min width: 350px)
+
+### Block Categories
+
+Available categories:
+
+- `commerce` - Commerce-related blocks
+- `form` - Form elements
+- `image` - Image blocks
+- `sidebar` - Sidebar elements
+- `text-image` - Text and image combinations
+- `text` - Text blocks
+- `video` - Video blocks
+
+You can also create custom categories:
+
+```typescript
+await cms.registerCmsBlock({
+    name: 'my-custom-block',
+    label: 'Custom Block',
+    category: 'my-custom-category',  // Creates new category
+    slots: [{ element: 'text' }],
+});
+
+// Snippet key for custom category:
+// apps.sw-cms.detail.label.blockCategory.my-custom-category
+```
+
+### Grid Layouts
+
+The `grid` property uses CSS grid shorthand:
+
+```typescript
+// 1 column layout
+slotLayout: {
+    grid: 'auto / auto'
+}
+
+// 2 column layout (equal)
+slotLayout: {
+    grid: 'auto / auto auto'
+}
+
+// 2 column layout (2:1 ratio)
+slotLayout: {
+    grid: 'auto / 2fr 1fr'
+}
+
+// 2 row layout
+slotLayout: {
+    grid: 'auto auto / auto-flow auto'
+}
+
+// 3 column layout
+slotLayout: {
+    grid: 'auto / repeat(3, 1fr)'
+}
+```
+
+### Complete Block Example
+
+```typescript
+import { cms } from '@shopware-ag/meteor-admin-sdk';
+
+// Register a hero block with image and text
+await cms.registerCmsBlock({
+    name: 'my-company-hero-block',
+    label: 'Hero Section',
+    category: 'text-image',
+    slots: [
+        {
+            element: 'image',  // Left side
+        },
+        {
+            element: 'text',   // Right side
+        }
+    ],
+    slotLayout: {
+        grid: 'auto / 1fr 1fr'  // Equal columns
+    },
+    previewImage: 'https://cdn.example.com/hero-preview.png'
+});
+
+// Register a custom element block
+await cms.registerCmsBlock({
+    name: 'my-company-video-block',
+    label: 'Video Block',
+    category: 'video',
+    slots: [
+        {
+            element: 'my-video-player',  // Custom element
+        }
+    ],
+    slotLayout: {
+        grid: 'auto / auto'
+    }
+});
+```
+
+## Real-World Example: Dailymotion Element
+
+Here's a complete example from the admin-sdk-app:
+
+```typescript
+// Constants
+const CMS_DAILYMOTION_ELEMENT_NAME = 'ex-dailymotion';
+const PUBLISHING_KEY = `${CMS_DAILYMOTION_ELEMENT_NAME}__config-element`;
+
+// Register element
+await cms.registerCmsElement({
+    name: CMS_DAILYMOTION_ELEMENT_NAME,
+    label: 'Dailymotion video',
+    defaultConfig: {
+        dailyUrl: {
+            source: 'static',
+            value: '',
+        },
+    },
+});
+
+// Location IDs generated:
+// - ex-dailymotion-element
+// - ex-dailymotion-preview  
+// - ex-dailymotion-config
+```
+
+## Configuration Best Practices
+
+1. **Use meaningful names**: Include vendor prefix (e.g., `my-company-element-name`)
+2. **Provide defaults**: Always set sensible default values
+3. **Source types**: Use `static` for fixed values, `mapped` for dynamic data
+4. **Validation**: Validate user input in config components
+5. **Live preview**: Subscribe to config changes in element components
+
+## Config Object Structure
+
+The default config structure:
+
+```typescript
+{
+    propertyName: {
+        source: 'static' | 'mapped',
+        value: any,
+    }
+}
+```
+
+Example:
+
+```typescript
+defaultConfig: {
+    // Static text value
+    title: {
+        source: 'static',
+        value: 'Default Title',
+    },
+    // Mapped from entity
+    productName: {
+        source: 'mapped',
+        value: 'product.name',
+    },
+    // Boolean value
+    showBorder: {
+        source: 'static',
+        value: true,
+    },
+    // Number value
+    columns: {
+        source: 'static',
+        value: 3,
+    },
+}
+```
+
+## Next Steps
+
+- See the [Custom CMS Block Example](/admin-sdk/examples/custom-cms-block) for a complete implementation
+- Learn about [Building Apps](/admin-sdk/guides/building-apps) for app structure
+- Check out [Data Management](/admin-sdk/guides/data-management) for working with CMS data

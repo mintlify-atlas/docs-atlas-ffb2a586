@@ -1,0 +1,258 @@
+---
+title: Select
+description: Dropdown selection component with search
+---
+
+The `MtSelect` component provides a searchable dropdown for selecting one or multiple items from a list.
+
+## Import
+
+```vue
+import { MtSelect } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="options" type="Array" required>
+  An array of objects with the labelProperty and valueProperty.
+</ParamField>
+
+<ParamField path="modelValue" type="string | number | boolean | Array | object | null">
+  Dependent on multiSelection, either a single value or an array of values.
+</ParamField>
+
+<ParamField path="enableMultiSelection" type="boolean" default="false">
+  Toggles if either one or more items can be selected.
+</ParamField>
+
+<ParamField path="labelProperty" type="string | string[]" default="'label'">
+  The object key of the label property. Can be a single string or array of strings.
+</ParamField>
+
+<ParamField path="valueProperty" type="string" default="'value'">
+  The object key to use for the value.
+</ParamField>
+
+<ParamField path="valueLimit" type="number" default="5">
+  The number of items that are expanded by default.
+</ParamField>
+
+<ParamField path="label" type="string">
+  The label for the select field itself.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  The placeholder for the select field.
+</ParamField>
+
+<ParamField path="alwaysShowPlaceholder" type="boolean" default="true">
+  Determines if the placeholder should be shown even when there are selections.
+</ParamField>
+
+<ParamField path="isLoading" type="boolean" default="false">
+  Toggles the loading state of the select field.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disables or enables the select field.
+</ParamField>
+
+<ParamField path="hideClearableButton" type="boolean" default="false">
+  Toggles a button to clear all selections.
+</ParamField>
+
+<ParamField path="highlightSearchTerm" type="boolean" default="true">
+  Determines whether to highlight the searched term.
+</ParamField>
+
+<ParamField path="searchFunction" type="Function">
+  Used to implement a custom search function. Receives `{ options, labelProperty, valueProperty, searchTerm }`.
+</ParamField>
+
+<ParamField path="error" type="object">
+  An error in your business logic related to this field.
+</ParamField>
+
+<ParamField path="small" type="boolean" default="false">
+  Render the select field in small size without a search input.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Toggles the inheritance visualization.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Determines if the field is inheritable.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: any) => void">
+  Emitted when the selected value(s) change.
+</ParamField>
+
+<ParamField path="item-add" type="(item: any) => void">
+  Emitted when an item is added to selection.
+</ParamField>
+
+<ParamField path="item-remove" type="(item: any) => void">
+  Emitted when an item is removed from selection.
+</ParamField>
+
+<ParamField path="search-term-change" type="(term: string) => void">
+  Emitted when the search term changes.
+</ParamField>
+
+<ParamField path="display-values-expand" type="() => void">
+  Emitted when the value limit is expanded.
+</ParamField>
+
+<ParamField path="paginate" type="() => void">
+  Emitted when scrolling to bottom of results.
+</ParamField>
+
+## Slots
+
+<ParamField path="prefix" type="slot">
+  Content before the selection.
+</ParamField>
+
+<ParamField path="suffix" type="slot">
+  Content after the selection.
+</ParamField>
+
+<ParamField path="hint" type="slot">
+  Additional hint content.
+</ParamField>
+
+<ParamField path="result-item" type="slot">
+  Custom template for result items. Receives item, index, and helper functions.
+</ParamField>
+
+<ParamField path="result-label-property" type="slot">
+  Custom template for result item labels.
+</ParamField>
+
+<ParamField path="selection-label-property" type="slot">
+  Custom template for selected item labels.
+</ParamField>
+
+<ParamField path="before-item-list" type="slot">
+  Content before the item list.
+</ParamField>
+
+<ParamField path="after-item-list" type="slot">
+  Content after the item list.
+</ParamField>
+
+## Usage
+
+### Basic Select
+
+```vue
+<script setup>
+import { ref } from 'vue';
+
+const options = [
+  { label: 'Option 1', value: 'opt1' },
+  { label: 'Option 2', value: 'opt2' },
+  { label: 'Option 3', value: 'opt3' },
+];
+
+const selected = ref(null);
+</script>
+
+<template>
+  <mt-select 
+    v-model="selected"
+    :options="options"
+    label="Choose an option"
+    placeholder="Select..."
+  />
+</template>
+```
+
+### Multi-Select
+
+```vue
+<template>
+  <mt-select 
+    v-model="selectedItems"
+    :options="options"
+    enable-multi-selection
+    label="Choose multiple"
+  />
+</template>
+```
+
+### With Search
+
+```vue
+<template>
+  <mt-select 
+    v-model="selected"
+    :options="largeOptionList"
+    label="Search and select"
+    placeholder="Type to search..."
+  />
+</template>
+```
+
+### Custom Search Function
+
+```vue
+<script setup>
+const customSearch = ({ options, labelProperty, searchTerm }) => {
+  return options.filter(option => 
+    option[labelProperty].toLowerCase().includes(searchTerm.toLowerCase())
+  );
+};
+</script>
+
+<template>
+  <mt-select 
+    v-model="selected"
+    :options="options"
+    :search-function="customSearch"
+  />
+</template>
+```
+
+### Custom Result Template
+
+```vue
+<template>
+  <mt-select v-model="selected" :options="users">
+    <template #result-item="{ item }">
+      <div class="user-option">
+        <img :src="item.avatar" :alt="item.name" />
+        <div>
+          <div>{{ item.name }}</div>
+          <div class="email">{{ item.email }}</div>
+        </div>
+      </div>
+    </template>
+  </mt-select>
+</template>
+```
+
+### Small Select
+
+```vue
+<template>
+  <mt-select 
+    v-model="selected"
+    :options="options"
+    small
+  />
+</template>
+```
+
+## Accessibility
+
+- Keyboard navigation (arrow keys, enter to select)
+- Escape key closes dropdown
+- Screen reader support with ARIA attributes
+- Focus management within dropdown
+- Selected items announced to screen readers
+- Search input accessible

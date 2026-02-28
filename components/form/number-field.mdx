@@ -1,0 +1,221 @@
+---
+title: Number Field
+description: Numeric input with increment/decrement controls
+---
+
+The `MtNumberField` component provides a specialized input for numeric values with optional controls and validation.
+
+## Import
+
+```vue
+import { MtNumberField } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="number | null">
+  The value of the number field.
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for your number field.
+</ParamField>
+
+<ParamField path="numberType" type="'float' | 'int'" default="'float'">
+  Defines if the number should be a floating point number or integer.
+</ParamField>
+
+<ParamField path="step" type="number">
+  Defines the amount by which the number is increased or decreased per step.
+</ParamField>
+
+<ParamField path="min" type="number">
+  Defines the minimum value of the number.
+</ParamField>
+
+<ParamField path="max" type="number">
+  Defines the maximum value of the number.
+</ParamField>
+
+<ParamField path="digits" type="number" default="2">
+  Defines how many digits should be displayed after the decimal point.
+</ParamField>
+
+<ParamField path="fillDigits" type="boolean" default="false">
+  Defines if digits should be filled with zeros.
+</ParamField>
+
+<ParamField path="numberAlignEnd" type="boolean" default="false">
+  Defines if the number should be aligned to the end of the input field.
+</ParamField>
+
+<ParamField path="showControls" type="boolean" default="true">
+  Defines if the control arrows should be visible.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text for the input.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Determines if the field is disabled.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Determines if the field is required.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  Help text with additional information.
+</ParamField>
+
+<ParamField path="error" type="object">
+  Error object for validation messages.
+</ParamField>
+
+<ParamField path="size" type="'small' | 'default'" default="'default'">
+  The size of the field.
+</ParamField>
+
+<ParamField path="copyable" type="boolean" default="false">
+  Toggles the copy function.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Toggles the inheritance visualization.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Determines if the field is inheritable.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: number | null) => void">
+  Emitted when the value changes.
+</ParamField>
+
+<ParamField path="input-change" type="(value: number | null) => void">
+  Emitted during input (before blur).
+</ParamField>
+
+<ParamField path="change" type="(event: Event) => void">
+  Emitted when input loses focus.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="(event: unknown) => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="(event: unknown) => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+## Slots
+
+<ParamField path="prefix" type="slot">
+  Content before the input.
+</ParamField>
+
+<ParamField path="suffix" type="slot">
+  Content after the input.
+</ParamField>
+
+<ParamField path="hint" type="slot">
+  Additional hint content.
+</ParamField>
+
+## Usage
+
+### Basic Number Field
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const quantity = ref(0);
+</script>
+
+<template>
+  <mt-number-field 
+    v-model="quantity"
+    label="Quantity"
+  />
+</template>
+```
+
+### Integer Only
+
+```vue
+<template>
+  <mt-number-field 
+    v-model="count"
+    label="Item count"
+    number-type="int"
+    :min="0"
+  />
+</template>
+```
+
+### With Min and Max
+
+```vue
+<template>
+  <mt-number-field 
+    v-model="percentage"
+    label="Percentage"
+    :min="0"
+    :max="100"
+    :step="5"
+  />
+</template>
+```
+
+### Currency Input
+
+```vue
+<template>
+  <mt-number-field 
+    v-model="price"
+    label="Price"
+    :digits="2"
+    fill-digits
+  >
+    <template #prefix>
+      <span>$</span>
+    </template>
+  </mt-number-field>
+</template>
+```
+
+### Right Aligned
+
+```vue
+<template>
+  <mt-number-field 
+    v-model="amount"
+    label="Amount"
+    number-align-end
+  />
+</template>
+```
+
+### Without Controls
+
+```vue
+<template>
+  <mt-number-field 
+    v-model="value"
+    label="Value"
+    :show-controls="false"
+  />
+</template>
+```
+
+## Accessibility
+
+- Uses text input with numeric validation
+- Arrow up/down keys increment/decrement value
+- Increment/decrement buttons have descriptive aria-labels
+- Min/max constraints enforced automatically
+- Focus visible outline for keyboard navigation
+- Disabled state prevents interaction

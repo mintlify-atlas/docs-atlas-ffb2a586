@@ -1,0 +1,387 @@
+---
+title: Installation
+description: Install and configure Meteor Design System packages in your project
+---
+
+# Installation
+
+Meteor Design System is distributed as multiple packages, allowing you to install only what you need. This guide covers installation for all available packages.
+
+## Packages overview
+
+Meteor consists of four main packages:
+
+- **@shopware-ag/meteor-component-library** - Vue.js components
+- **@shopware-ag/meteor-admin-sdk** - SDK for Shopware 6 Administration
+- **@shopware-ag/meteor-icon-kit** - Icon library
+- **@shopware-ag/meteor-tokens** - Design tokens
+
+<Note>
+The component library automatically includes the icon kit and tokens as dependencies, so you only need to install it separately if you're using them without the components.
+</Note>
+
+## Component library
+
+The component library is a collection of Vue 3 components for building modern commerce interfaces.
+
+### Install the package
+
+<CodeGroup>
+```bash npm
+npm install @shopware-ag/meteor-component-library
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-component-library
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-component-library
+```
+</CodeGroup>
+
+### Peer dependencies
+
+The component library requires Vue 3 as a peer dependency. Make sure you have it installed:
+
+```json package.json
+{
+  "dependencies": {
+    "vue": "^3.5.0"
+  }
+}
+```
+
+### Import styles
+
+Import the Meteor styles in your main application file:
+
+```javascript main.js
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+```
+
+Alternatively, you can import them in your root Vue component:
+
+```vue App.vue
+<script setup>
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+</script>
+```
+
+<Tip>
+The `font.css` import includes the Inter font family. Skip this import if you want to use custom fonts.
+</Tip>
+
+### Import components
+
+Import components individually for better tree-shaking:
+
+```javascript
+import { SwButton, SwCard, SwTextField } from '@shopware-ag/meteor-component-library';
+```
+
+Or import everything (not recommended for production):
+
+```javascript
+import * as Meteor from '@shopware-ag/meteor-component-library';
+```
+
+### TypeScript support
+
+The component library is written in TypeScript and includes full type definitions. No additional configuration is needed:
+
+```typescript
+import type { MtButtonProps } from '@shopware-ag/meteor-component-library';
+```
+
+## Admin SDK
+
+The Admin SDK allows you to build apps and plugins for the Shopware 6 Administration.
+
+### Install the package
+
+<CodeGroup>
+```bash npm
+npm install @shopware-ag/meteor-admin-sdk
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-admin-sdk
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-admin-sdk
+```
+</CodeGroup>
+
+### Import and use
+
+Import the entire SDK:
+
+```javascript
+import * as sw from '@shopware-ag/meteor-admin-sdk';
+
+// Use SDK features
+sw.notification.dispatch({
+  title: 'My first notification',
+  message: 'This was really easy to do'
+});
+```
+
+Or import specific modules:
+
+```javascript
+import { notification, context } from '@shopware-ag/meteor-admin-sdk';
+
+// Throw a notification
+notification.dispatch({
+  title: 'Success!',
+  message: 'Your changes have been saved'
+});
+
+// Get context information
+const currency = await context.getCurrency();
+```
+
+### CDN usage
+
+You can also use the Admin SDK directly from a CDN without installation:
+
+```html
+<!-- Latest version -->
+<script src="https://unpkg.com/@shopware-ag/meteor-admin-sdk/cdn"></script>
+
+<!-- Specific version (recommended for production) -->
+<script src="https://unpkg.com/@shopware-ag/meteor-admin-sdk@6.5.1/cdn"></script>
+```
+
+Then access it via the global `sw` variable:
+
+```javascript
+sw.notification.dispatch({
+  title: 'My first notification',
+  message: 'This was really easy to do'
+});
+```
+
+<Note>
+The CDN approach is perfect for quick prototypes or simple apps, but we recommend using the npm package for production applications to benefit from tree-shaking and better build optimization.
+</Note>
+
+## Icon kit
+
+The icon kit provides a collection of SVG icons aligned with Shopware's product language.
+
+### Install the package
+
+<CodeGroup>
+```bash npm
+npm install @shopware-ag/meteor-icon-kit
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-icon-kit
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-icon-kit
+```
+</CodeGroup>
+
+<Tip>
+If you're using the component library, the icon kit is already included as a dependency - no need to install it separately.
+</Tip>
+
+### Using icons
+
+Icons are available in both regular and solid variants:
+
+```javascript
+import checkIcon from '@shopware-ag/meteor-icon-kit/icons/regular/check.svg';
+import checkIconSolid from '@shopware-ag/meteor-icon-kit/icons/solid/check.svg';
+```
+
+The exact usage depends on your build setup. Most modern bundlers can handle SVG imports directly.
+
+## Design tokens
+
+Design tokens provide a centralized source of design decisions like colors, typography, and spacing.
+
+### Install the package
+
+<CodeGroup>
+```bash npm
+npm install @shopware-ag/meteor-tokens
+```
+
+```bash yarn
+yarn add @shopware-ag/meteor-tokens
+```
+
+```bash pnpm
+pnpm add @shopware-ag/meteor-tokens
+```
+</CodeGroup>
+
+<Tip>
+If you're using the component library, the tokens are already included as a dependency - no need to install them separately.
+</Tip>
+
+### Import tokens
+
+Import the CSS files to use tokens as CSS custom properties:
+
+```javascript
+// Primitive tokens
+import '@shopware-ag/meteor-tokens/primitives.css';
+
+// Administration theme tokens
+import '@shopware-ag/meteor-tokens/administration/light.css';
+import '@shopware-ag/meteor-tokens/administration/dark.css';
+```
+
+### Using tokens in CSS
+
+Once imported, you can use tokens as CSS custom properties:
+
+```css
+.my-component {
+  color: var(--color-text-primary-default);
+  background-color: var(--color-background-primary-default);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-default);
+}
+```
+
+### Using tokens in JavaScript
+
+You can also import tokens as JSON:
+
+```javascript
+import primitives from '@shopware-ag/meteor-tokens/foundation/primitives.json';
+
+console.log(primitives);
+```
+
+## Framework-specific setup
+
+### Nuxt 3
+
+For Nuxt applications, import the styles in your `app.vue` or a layout component:
+
+```vue app.vue
+<script setup>
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+</script>
+
+<template>
+  <NuxtPage />
+</template>
+```
+
+Components can be imported in any component file:
+
+```vue
+<script setup>
+import { SwButton, SwCard } from '@shopware-ag/meteor-component-library';
+</script>
+```
+
+### Vite
+
+Vite works out of the box with Meteor. Just import styles and components as shown in the examples above.
+
+### Webpack
+
+Webpack requires no special configuration for Meteor. Import styles and components as usual.
+
+## Verification
+
+To verify your installation, create a simple test component:
+
+```vue
+<template>
+  <SwButton variant="primary">Hello Meteor</SwButton>
+</template>
+
+<script setup>
+import '@shopware-ag/meteor-component-library/styles.css';
+import { SwButton } from '@shopware-ag/meteor-component-library';
+</script>
+```
+
+If you see a styled button, your installation is successful!
+
+## Troubleshooting
+
+### Styles not loading
+
+Make sure you've imported the CSS files:
+
+```javascript
+import '@shopware-ag/meteor-component-library/styles.css';
+import '@shopware-ag/meteor-component-library/font.css';
+```
+
+### TypeScript errors
+
+If you're getting TypeScript errors, make sure your `tsconfig.json` includes:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "types": ["node"]
+  }
+}
+```
+
+### Components not found
+
+Verify that the package is installed correctly:
+
+<CodeGroup>
+```bash npm
+npm list @shopware-ag/meteor-component-library
+```
+
+```bash yarn
+yarn list @shopware-ag/meteor-component-library
+```
+
+```bash pnpm
+pnpm list @shopware-ag/meteor-component-library
+```
+</CodeGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Quick start guide"
+    icon="rocket"
+    href="/quickstart">
+    Build your first Meteor component
+  </Card>
+  <Card
+    title="Component library"
+    icon="cube"
+    href="/components/overview">
+    Explore all available components
+  </Card>
+  <Card
+    title="Design tokens"
+    icon="palette"
+    href="/design-tokens/overview">
+    Learn about design tokens
+  </Card>
+  <Card
+    title="Examples"
+    icon="code"
+    href="https://github.com/shopware/meteor/tree/main/examples">
+    View example projects on GitHub
+  </Card>
+</CardGroup>

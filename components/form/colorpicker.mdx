@@ -1,0 +1,170 @@
+---
+title: Colorpicker
+description: Color selection component with HSL/RGB/HEX support
+---
+
+The `MtColorpicker` component provides an interactive color picker with multiple color format outputs and alpha channel support.
+
+## Import
+
+```vue
+import { MtColorpicker } from '@meteroid/component-library';
+```
+
+## Props
+
+<ParamField path="modelValue" type="string">
+  The value of the colorpicker field (hex, rgb, or hsl).
+</ParamField>
+
+<ParamField path="label" type="string">
+  A label for your colorpicker field.
+</ParamField>
+
+<ParamField path="colorOutput" type="'auto' | 'hex' | 'hsl' | 'rgb'" default="'auto'">
+  Change the output value format. 'auto' outputs hex for opaque colors and rgba for transparent.
+</ParamField>
+
+<ParamField path="alpha" type="boolean" default="true">
+  If activated, the color value can contain alpha values.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Determines if the field is disabled.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  Determines if the field is required.
+</ParamField>
+
+<ParamField path="readonly" type="boolean" default="false">
+  Determines if the field can be edited.
+</ParamField>
+
+<ParamField path="colorLabels" type="boolean" default="true">
+  Toggle the labels above each field inside the colorpicker.
+</ParamField>
+
+<ParamField path="compact" type="boolean" default="false">
+  Show the colorpicker in a compact mode.
+</ParamField>
+
+<ParamField path="applyMode" type="boolean" default="false">
+  Use apply-mode to apply the color value on button click.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text to show when no color is selected.
+</ParamField>
+
+<ParamField path="helpText" type="string">
+  A text that helps the user understand what this field does.
+</ParamField>
+
+<ParamField path="error" type="object">
+  An error in your business logic related to this field.
+</ParamField>
+
+<ParamField path="zIndex" type="number | null">
+  Z-index for the colorpicker dropdown.
+</ParamField>
+
+<ParamField path="isInherited" type="boolean" default="false">
+  Toggles the inheritance visualization.
+</ParamField>
+
+<ParamField path="isInheritanceField" type="boolean" default="false">
+  Determines if the field is inheritable.
+</ParamField>
+
+<ParamField path="disableInheritanceToggle" type="boolean" default="false">
+  Determines the active state of the inheritance toggle.
+</ParamField>
+
+## Events
+
+<ParamField path="update:modelValue" type="(value: string) => void">
+  Emitted when the selected color value changes.
+</ParamField>
+
+<ParamField path="inheritance-restore" type="(event: unknown) => void">
+  Emitted when inheritance is restored.
+</ParamField>
+
+<ParamField path="inheritance-remove" type="(event: unknown) => void">
+  Emitted when inheritance is removed.
+</ParamField>
+
+## Usage
+
+### Basic Colorpicker
+
+```vue
+<script setup>
+import { ref } from 'vue';
+const color = ref('#0fcff5');
+</script>
+
+<template>
+  <mt-colorpicker 
+    v-model="color"
+    label="Brand color"
+  />
+</template>
+```
+
+### With Alpha Channel
+
+```vue
+<template>
+  <mt-colorpicker 
+    v-model="color"
+    label="Background color"
+    :alpha="true"
+  />
+</template>
+```
+
+### Different Output Formats
+
+```vue
+<template>
+  <div>
+    <mt-colorpicker v-model="hexColor" color-output="hex" label="HEX" />
+    <mt-colorpicker v-model="rgbColor" color-output="rgb" label="RGB" />
+    <mt-colorpicker v-model="hslColor" color-output="hsl" label="HSL" />
+  </div>
+</template>
+```
+
+### Compact Mode
+
+```vue
+<template>
+  <mt-colorpicker 
+    v-model="color"
+    compact
+  />
+</template>
+```
+
+### Apply Mode
+
+```vue
+<template>
+  <mt-colorpicker 
+    v-model="color"
+    label="Theme color"
+    apply-mode
+  />
+</template>
+```
+
+## Accessibility
+
+- Color picker uses ARIA labels for all interactive elements
+- Keyboard navigation supported (arrow keys for hue/saturation/lightness)
+- Focus trap when colorpicker is open
+- Escape key closes the colorpicker
+- Color input validates format automatically
+- Screen reader friendly with proper ARIA attributes
