@@ -1,0 +1,150 @@
+---
+title: Quickstart
+description: Get up and running with Meteor Design System in minutes
+---
+
+Get started with Meteor by installing your first component and creating a simple Vue application.
+
+<Steps>
+  <Step title="Install the Component Library">
+    Install the Meteor component library using your preferred package manager:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @shopware-ag/meteor-component-library
+    ```
+
+    ```bash yarn
+    yarn add @shopware-ag/meteor-component-library
+    ```
+
+    ```bash pnpm
+    pnpm add @shopware-ag/meteor-component-library
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Import Styles">
+    Import the component library styles in your main application file:
+
+    ```javascript
+    import '@shopware-ag/meteor-component-library/dist/style.css';
+    ```
+  </Step>
+
+  <Step title="Create Your First Component">
+    Create a simple Vue component using Meteor components:
+
+    ```vue
+    <template>
+      <div class="container">
+        <MtCard title="Welcome to Meteor">
+          <p>Get started with Shopware's design system</p>
+          
+          <MtTextField
+            v-model="name"
+            label="Your name"
+            placeholder="Enter your name"
+          />
+          
+          <MtButton variant="primary" @click="greet">
+            Say Hello
+          </MtButton>
+          
+          <MtBanner v-if="greeting" variant="success">
+            {{ greeting }}
+          </MtBanner>
+        </MtCard>
+      </div>
+    </template>
+
+    <script setup lang="ts">
+    import { ref, computed } from 'vue';
+    import { MtCard, MtTextField, MtButton, MtBanner } from '@shopware-ag/meteor-component-library';
+
+    const name = ref('');
+    const greeting = ref('');
+
+    const greet = () => {
+      greeting.value = `Hello, ${name.value || 'World'}!`;
+    };
+    </script>
+
+    <style scoped>
+    .container {
+      padding: 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    </style>
+    ```
+  </Step>
+
+  <Step title="Run Your Application">
+    Start your development server and view your application:
+
+    ```bash
+    npm run dev
+    ```
+
+    Your application should now be running with Meteor components!
+  </Step>
+</Steps>
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card title="Component Library" icon="cube" href="/components/overview">
+    Explore all available Vue components
+  </Card>
+  
+  <Card title="Design Tokens" icon="palette" href="/design-tokens/overview">
+    Learn about theming and customization
+  </Card>
+  
+  <Card title="Icon Kit" icon="icons" href="/icon-kit/overview">
+    Browse the icon library
+  </Card>
+  
+  <Card title="Installation Guide" icon="download" href="/installation">
+    View detailed installation instructions
+  </Card>
+</CardGroup>
+
+## Using Design Tokens
+
+Want to customize the appearance? Import and use design tokens:
+
+```javascript
+import '@shopware-ag/meteor-tokens/primitives.css';
+import '@shopware-ag/meteor-tokens/administration/light.css';
+```
+
+Now you can use token variables in your CSS:
+
+```css
+.custom-element {
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  padding: var(--spacing-16);
+  border-radius: var(--border-radius-default);
+}
+```
+
+## Using Icons
+
+Add icons to your application:
+
+```vue
+<template>
+  <MtIcon name="heart" size="24" />
+</template>
+
+<script setup>
+import { MtIcon } from '@shopware-ag/meteor-component-library';
+</script>
+```
+
+<Tip>
+For a complete working example, check out the [Nuxt example](https://github.com/shopware/meteor/tree/main/examples/nuxt-app) in the GitHub repository.
+</Tip>

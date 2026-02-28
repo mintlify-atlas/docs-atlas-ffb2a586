@@ -120,8 +120,7 @@
             "group": "Data Display Components",
             "pages": [
               "components/data/data-table",
-              "components/data/avatar",
-              "components/data/label"
+              "components/data/avatar"
             ]
           },
           {

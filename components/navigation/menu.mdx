@@ -1,24 +1,24 @@
 ---
-title: Menu
-description: Dropdown menu components for creating action menus and context menus with items, groups, and keyboard shortcuts
+title: Action Menu
+description: Dropdown menu component for creating action menus with items, groups, and keyboard shortcuts
 ---
 
 ## Overview
 
-The Meteor component library provides two menu systems: Action Menu (mt-action-menu) for dropdown menus with rich features like keyboard shortcuts and external links, and Context Menu (mt-context-button) for simpler popover-based menus. Both support menu items, grouping, and various states.
+The Meteor component library provides the Action Menu (mt-action-menu) component for creating dropdown menus with rich features like keyboard shortcuts, external links, menu items, grouping, and various states.
 
-## Action Menu
+<Note>
+The context menu components (mt-context-button, mt-context-menu-item) exist in the source code but are not currently exported in the public API. For context menus or popovers, use the MtPopover component instead.
+</Note>
 
-### Import
+## Import
 
 ```vue
-import { DropdownMenu, DropdownMenuTrigger } from 'reka-ui';
-import MtActionMenu from '@/components/action-menu/mt-action-menu/mt-action-menu.vue';
-import MtActionMenuItem from '@/components/action-menu/mt-action-menu-item/mt-action-menu-item.vue';
-import MtActionMenuGroup from '@/components/action-menu/mt-action-menu-group/mt-action-menu-group.vue';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuSub } from 'reka-ui';
+import { MtActionMenu, MtActionMenuItem, MtActionMenuGroup } from '@shopware-ag/meteor-component-library';
 ```
 
-### Action Menu Props
+## Action Menu Props
 
 <ParamField path="isSubMenu" type="boolean" default="false">
   Renders the menu as a submenu with adjusted positioning
@@ -28,7 +28,7 @@ import MtActionMenuGroup from '@/components/action-menu/mt-action-menu-group/mt-
   Makes the menu content match the trigger button's width
 </ParamField>
 
-### Action Menu Item Props
+## Action Menu Item Props
 
 <ParamField path="variant" type="'default' | 'critical'" default="'default'">
   Visual style variant. Use 'critical' for destructive actions
@@ -54,7 +54,7 @@ import MtActionMenuGroup from '@/components/action-menu/mt-action-menu-group/mt-
   External URL. Renders the item as a link that opens in a new tab
 </ParamField>
 
-### Shortcut Definition
+## Shortcut Definition
 
 ```typescript
 interface ShortcutDefinition {
@@ -62,51 +62,6 @@ interface ShortcutDefinition {
   key: string | 'enter' | 'esc' | 'tab' | 'space' | 'backspace' | 'delete' | 'up' | 'down' | 'left' | 'right';
 }
 ```
-
-## Context Menu
-
-### Import
-
-```vue
-import MtContextButton from '@/components/context-menu/mt-context-button/mt-context-button.vue';
-import MtContextMenuItem from '@/components/context-menu/mt-context-menu-item/mt-context-menu-item.vue';
-```
-
-### Context Button Props
-
-<ParamField path="icon" type="string" default="'solid-ellipsis-h-s'">
-  Icon name for the menu trigger button
-</ParamField>
-
-<ParamField path="title" type="string" default="''">
-  Title displayed at the top of the menu popover
-</ParamField>
-
-<ParamField path="disabled" type="boolean" default="false">
-  Disables the menu button
-</ParamField>
-
-<ParamField path="hasError" type="boolean" default="false">
-  Shows an error state on the button
-</ParamField>
-
-### Context Menu Item Props
-
-<ParamField path="label" type="string" required>
-  Text label for the menu item
-</ParamField>
-
-<ParamField path="icon" type="string">
-  Icon name to display before the label
-</ParamField>
-
-<ParamField path="disabled" type="boolean" default="false">
-  Disables the menu item
-</ParamField>
-
-<ParamField path="type" type="'default' | 'active' | 'critical'" default="'default'">
-  Visual style variant
-</ParamField>
 
 ## Usage Examples
 
@@ -119,19 +74,18 @@ import MtContextMenuItem from '@/components/context-menu/mt-context-menu-item/mt
       <button>Actions</button>
     </DropdownMenuTrigger>
     
-    <mt-action-menu>
-      <mt-action-menu-item icon="edit-s">Edit</mt-action-menu-item>
-      <mt-action-menu-item icon="copy-s">Duplicate</mt-action-menu-item>
-      <mt-action-menu-item icon="archive-s">Archive</mt-action-menu-item>
-      <mt-action-menu-item variant="critical" icon="trash-s">Delete</mt-action-menu-item>
-    </mt-action-menu>
+    <MtActionMenu>
+      <MtActionMenuItem icon="edit-s">Edit</MtActionMenuItem>
+      <MtActionMenuItem icon="copy-s">Duplicate</MtActionMenuItem>
+      <MtActionMenuItem icon="archive-s">Archive</MtActionMenuItem>
+      <MtActionMenuItem variant="critical" icon="trash-s">Delete</MtActionMenuItem>
+    </MtActionMenu>
   </DropdownMenu>
 </template>
 
 <script setup>
 import { DropdownMenu, DropdownMenuTrigger } from 'reka-ui';
-import MtActionMenu from '@/components/action-menu/mt-action-menu/mt-action-menu.vue';
-import MtActionMenuItem from '@/components/action-menu/mt-action-menu-item/mt-action-menu-item.vue';
+import { MtActionMenu, MtActionMenuItem } from '@shopware-ag/meteor-component-library';
 </script>
 ```
 
@@ -144,35 +98,35 @@ import MtActionMenuItem from '@/components/action-menu/mt-action-menu-item/mt-ac
       <button>Edit</button>
     </DropdownMenuTrigger>
     
-    <mt-action-menu>
-      <mt-action-menu-item
+    <MtActionMenu>
+      <MtActionMenuItem
         icon="undo-s"
         :shortcut="{ modifiers: ['mod'], key: 'z' }"
       >
         Undo
-      </mt-action-menu-item>
+      </MtActionMenuItem>
       
-      <mt-action-menu-item
+      <MtActionMenuItem
         icon="redo-s"
         :shortcut="{ modifiers: ['mod', 'shift'], key: 'z' }"
       >
         Redo
-      </mt-action-menu-item>
+      </MtActionMenuItem>
       
-      <mt-action-menu-item
+      <MtActionMenuItem
         icon="copy-s"
         :shortcut="{ modifiers: ['mod'], key: 'c' }"
       >
         Copy
-      </mt-action-menu-item>
+      </MtActionMenuItem>
       
-      <mt-action-menu-item
+      <MtActionMenuItem
         icon="paste-s"
         :shortcut="{ modifiers: ['mod'], key: 'v' }"
       >
         Paste
-      </mt-action-menu-item>
-    </mt-action-menu>
+      </MtActionMenuItem>
+    </MtActionMenu>
   </DropdownMenu>
 </template>
 ```
@@ -186,31 +140,29 @@ import MtActionMenuItem from '@/components/action-menu/mt-action-menu-item/mt-ac
       <button>More Options</button>
     </DropdownMenuTrigger>
     
-    <mt-action-menu>
-      <mt-action-menu-group label="View">
-        <mt-action-menu-item icon="grid-s">Grid View</mt-action-menu-item>
-        <mt-action-menu-item icon="list-s">List View</mt-action-menu-item>
-      </mt-action-menu-group>
+    <MtActionMenu>
+      <MtActionMenuGroup label="View">
+        <MtActionMenuItem icon="grid-s">Grid View</MtActionMenuItem>
+        <MtActionMenuItem icon="list-s">List View</MtActionMenuItem>
+      </MtActionMenuGroup>
       
-      <mt-action-menu-group label="Actions">
-        <mt-action-menu-item icon="download-s">Export</mt-action-menu-item>
-        <mt-action-menu-item icon="share-s">Share</mt-action-menu-item>
-      </mt-action-menu-group>
+      <MtActionMenuGroup label="Actions">
+        <MtActionMenuItem icon="download-s">Export</MtActionMenuItem>
+        <MtActionMenuItem icon="share-s">Share</MtActionMenuItem>
+      </MtActionMenuGroup>
       
-      <mt-action-menu-group>
-        <mt-action-menu-item variant="critical" icon="trash-s">
+      <MtActionMenuGroup>
+        <MtActionMenuItem variant="critical" icon="trash-s">
           Delete All
-        </mt-action-menu-item>
-      </mt-action-menu-group>
-    </mt-action-menu>
+        </MtActionMenuItem>
+      </MtActionMenuGroup>
+    </MtActionMenu>
   </DropdownMenu>
 </template>
 
 <script setup>
 import { DropdownMenu, DropdownMenuTrigger } from 'reka-ui';
-import MtActionMenu from '@/components/action-menu/mt-action-menu/mt-action-menu.vue';
-import MtActionMenuItem from '@/components/action-menu/mt-action-menu-item/mt-action-menu-item.vue';
-import MtActionMenuGroup from '@/components/action-menu/mt-action-menu-group/mt-action-menu-group.vue';
+import { MtActionMenu, MtActionMenuItem, MtActionMenuGroup } from '@shopware-ag/meteor-component-library';
 </script>
 ```
 
@@ -223,29 +175,29 @@ import MtActionMenuGroup from '@/components/action-menu/mt-action-menu-group/mt-
       <button>Help</button>
     </DropdownMenuTrigger>
     
-    <mt-action-menu>
-      <mt-action-menu-item icon="book-s">
+    <MtActionMenu>
+      <MtActionMenuItem icon="book-s">
         Documentation
-      </mt-action-menu-item>
+      </MtActionMenuItem>
       
-      <mt-action-menu-item
+      <MtActionMenuItem
         icon="external-link-s"
         link="https://community.example.com"
       >
         Community Forum
-      </mt-action-menu-item>
+      </MtActionMenuItem>
       
-      <mt-action-menu-item
+      <MtActionMenuItem
         icon="external-link-s"
-        link="https://github.com/example/repo"
+        link="https://github.com/shopware/meteor"
       >
         GitHub Repository
-      </mt-action-menu-item>
+      </MtActionMenuItem>
       
-      <mt-action-menu-item icon="question-circle-s">
+      <MtActionMenuItem icon="question-circle-s">
         Contact Support
-      </mt-action-menu-item>
-    </mt-action-menu>
+      </MtActionMenuItem>
+    </MtActionMenu>
   </DropdownMenu>
 </template>
 ```
@@ -259,172 +211,73 @@ import MtActionMenuGroup from '@/components/action-menu/mt-action-menu-group/mt-
       <button>File</button>
     </DropdownMenuTrigger>
     
-    <mt-action-menu>
-      <mt-action-menu-item icon="file-plus-s">New File</mt-action-menu-item>
-      <mt-action-menu-item icon="folder-open-s">Open</mt-action-menu-item>
+    <MtActionMenu>
+      <MtActionMenuItem icon="file-plus-s">New File</MtActionMenuItem>
+      <MtActionMenuItem icon="folder-open-s">Open</MtActionMenuItem>
       
       <DropdownMenuSub>
-        <mt-action-menu-item is-sub-trigger icon="save-s">
+        <MtActionMenuItem is-sub-trigger icon="save-s">
           Save As...
-        </mt-action-menu-item>
+        </MtActionMenuItem>
         
-        <mt-action-menu is-sub-menu>
-          <mt-action-menu-item>PDF Document</mt-action-menu-item>
-          <mt-action-menu-item>HTML Page</mt-action-menu-item>
-          <mt-action-menu-item>Plain Text</mt-action-menu-item>
-        </mt-action-menu>
+        <MtActionMenu is-sub-menu>
+          <MtActionMenuItem>PDF Document</MtActionMenuItem>
+          <MtActionMenuItem>HTML Page</MtActionMenuItem>
+          <MtActionMenuItem>Plain Text</MtActionMenuItem>
+        </MtActionMenu>
       </DropdownMenuSub>
       
-      <mt-action-menu-item variant="critical" icon="close-s">
+      <MtActionMenuItem variant="critical" icon="close-s">
         Close
-      </mt-action-menu-item>
-    </mt-action-menu>
+      </MtActionMenuItem>
+    </MtActionMenu>
   </DropdownMenu>
 </template>
 
 <script setup>
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuSub } from 'reka-ui';
-import MtActionMenu from '@/components/action-menu/mt-action-menu/mt-action-menu.vue';
-import MtActionMenuItem from '@/components/action-menu/mt-action-menu-item/mt-action-menu-item.vue';
+import { MtActionMenu, MtActionMenuItem } from '@shopware-ag/meteor-component-library';
 </script>
 ```
 
-### Basic Context Menu
+### Action Menu with Disabled Items
 
 ```vue
 <template>
-  <mt-context-button>
-    <mt-context-menu-item label="Edit" icon="edit-s" @click="handleEdit" />
-    <mt-context-menu-item label="Share" icon="share-s" @click="handleShare" />
-    <mt-context-menu-item label="Delete" icon="trash-s" type="critical" @click="handleDelete" />
-  </mt-context-button>
-</template>
-
-<script setup>
-import MtContextButton from '@/components/context-menu/mt-context-button/mt-context-button.vue';
-import MtContextMenuItem from '@/components/context-menu/mt-context-menu-item/mt-context-menu-item.vue';
-
-const handleEdit = () => console.log('Edit clicked');
-const handleShare = () => console.log('Share clicked');
-const handleDelete = () => console.log('Delete clicked');
-</script>
-```
-
-### Context Menu with Custom Button
-
-```vue
-<template>
-  <mt-context-button icon="cog-s">
-    <template #button-text>
-      Settings
-    </template>
+  <DropdownMenu>
+    <DropdownMenuTrigger>
+      <button>Actions</button>
+    </DropdownMenuTrigger>
     
-    <mt-context-menu-item label="General" />
-    <mt-context-menu-item label="Privacy" />
-    <mt-context-menu-item label="Security" />
-    <mt-context-menu-item label="Notifications" />
-  </mt-context-button>
+    <MtActionMenu>
+      <MtActionMenuItem icon="eye-s">View</MtActionMenuItem>
+      <MtActionMenuItem icon="edit-s">Edit</MtActionMenuItem>
+      <MtActionMenuItem icon="copy-s" disabled>Duplicate</MtActionMenuItem>
+      <MtActionMenuItem variant="critical" icon="trash-s" disabled>Delete</MtActionMenuItem>
+    </MtActionMenu>
+  </DropdownMenu>
 </template>
 ```
 
-### Context Menu in Card Header
+## Features
 
-```vue
-<template>
-  <mt-card title="Product Details">
-    <template #context-actions>
-      <mt-context-menu-item label="Edit Product" icon="edit-s" @click="editProduct" />
-      <mt-context-menu-item label="Duplicate" icon="copy-s" @click="duplicateProduct" />
-      <mt-context-menu-item label="Export" icon="download-s" @click="exportProduct" />
-      <mt-context-menu-item label="Delete" type="critical" icon="trash-s" @click="deleteProduct" />
-    </template>
-    
-    <p>Product information...</p>
-  </mt-card>
-</template>
+- **Keyboard shortcuts**: Display keyboard shortcuts for menu items
+- **Grouping**: Organize related items with visual dividers
+- **External links**: Render items as links that open in new tabs
+- **Nested menus**: Create hierarchical menu structures with submenus
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Variants**: Support for default and critical (destructive) actions
+- **Icons**: Display icons alongside menu item labels
 
-<script setup>
-import MtCard from '@/components/layout/mt-card/mt-card.vue';
-import MtContextMenuItem from '@/components/context-menu/mt-context-menu-item/mt-context-menu-item.vue';
+## Accessibility
 
-const editProduct = () => { /* ... */ };
-const duplicateProduct = () => { /* ... */ };
-const exportProduct = () => { /* ... */ };
-const deleteProduct = () => { /* ... */ };
-</script>
-```
-
-### Context Menu with Disabled Items
-
-```vue
-<template>
-  <mt-context-button>
-    <mt-context-menu-item label="View" icon="eye-s" />
-    <mt-context-menu-item label="Edit" icon="edit-s" :disabled="!canEdit" />
-    <mt-context-menu-item label="Delete" icon="trash-s" type="critical" :disabled="!canDelete" />
-  </mt-context-button>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-
-const canEdit = ref(false);
-const canDelete = ref(false);
-</script>
-```
-
-### Dynamic Menu Items
-
-```vue
-<template>
-  <mt-context-button>
-    <mt-context-menu-item
-      v-for="action in availableActions"
-      :key="action.id"
-      :label="action.label"
-      :icon="action.icon"
-      :type="action.type"
-      :disabled="action.disabled"
-      @click="handleAction(action)"
-    />
-  </mt-context-button>
-</template>
-
-<script setup>
-import { computed } from 'vue';
-
-const availableActions = computed(() => [
-  { id: 'view', label: 'View Details', icon: 'eye-s', type: 'default' },
-  { id: 'edit', label: 'Edit', icon: 'edit-s', type: 'default' },
-  { id: 'archive', label: 'Archive', icon: 'archive-s', type: 'default' },
-  { id: 'delete', label: 'Delete', icon: 'trash-s', type: 'critical' }
-]);
-
-const handleAction = (action) => {
-  console.log('Action clicked:', action.id);
-};
-</script>
-```
-
-## Action Menu Features
-
-- Keyboard navigation support
-- Keyboard shortcut display with platform-specific symbols (⌘ on Mac, Ctrl on Windows)
-- External link support with automatic target="_blank"
-- Submenu support with chevron indicators
-- Automatic icon alignment in groups
-- ARIA attributes for accessibility
-
-## Context Menu Features
-
-- Simpler popover-based implementation
-- Integrates seamlessly with Card component
-- Customizable trigger button
-- Auto-close on item click
+- Menu items announce keyboard shortcuts to screen readers
+- Full keyboard navigation support (arrow keys, Enter, Escape)
+- Proper ARIA attributes for menu structure
+- Focus management when opening and closing menus
 
 ## Source Files
 
-- Action Menu: `/home/daytona/workspace/source/packages/component-library/src/components/action-menu/mt-action-menu/mt-action-menu.vue:1`
-- Action Menu Item: `/home/daytona/workspace/source/packages/component-library/src/components/action-menu/mt-action-menu-item/mt-action-menu-item.vue:1`
-- Context Button: `/home/daytona/workspace/source/packages/component-library/src/components/context-menu/mt-context-button/mt-context-button.vue:1`
-- Context Menu Item: `/home/daytona/workspace/source/packages/component-library/src/components/context-menu/mt-context-menu-item/mt-context-menu-item.vue:1`
+- [mt-action-menu.vue](https://github.com/shopware/meteor/blob/main/packages/component-library/src/components/action-menu/mt-action-menu/mt-action-menu.vue)
+- [mt-action-menu-item.vue](https://github.com/shopware/meteor/blob/main/packages/component-library/src/components/action-menu/mt-action-menu-item/mt-action-menu-item.vue)
+- [mt-action-menu-group.vue](https://github.com/shopware/meteor/blob/main/packages/component-library/src/components/action-menu/mt-action-menu-group/mt-action-menu-group.vue)
